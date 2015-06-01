@@ -1,0 +1,8 @@
+/complex.txt
+/Debug
+/Release
+*.pyc
+*.pdf
+/input.txt
+/output.txt
+/test.txt

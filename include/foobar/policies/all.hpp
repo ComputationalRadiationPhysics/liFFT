@@ -1,0 +1,8 @@
+#include "foobar/policies/CalcIntensityImpl.hpp"
+#include "foobar/policies/GetExtents.hpp"
+#include "foobar/policies/GetExtentsRawPtr.hpp"
+#include "foobar/policies/GetIntensity.hpp"
+#include "foobar/policies/GetNumElements.hpp"
+#include "foobar/policies/GetRawPtr.hpp"
+#include "foobar/policies/GetValue.hpp"
+#include "foobar/policies/IntensityCalculator.hpp"
