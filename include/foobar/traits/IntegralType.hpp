@@ -20,9 +20,9 @@ namespace traits {
     template< typename T >
     struct IntegralTypeImpl<
             T,
-            typename std::enable_if<
+            std::enable_if_t<
                 (std::is_integral<T>::value || std::is_floating_point<T>::value)
-            >::type
+            >
         >
     {
         using type = T;

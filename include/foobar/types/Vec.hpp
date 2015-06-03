@@ -14,7 +14,7 @@ namespace types{
 
         template<
            typename... TArgs,
-           typename = typename std::enable_if<(sizeof...(TArgs) == (numDims-1))>::type
+           typename = std::enable_if_t<(sizeof...(TArgs) == (numDims-1))>
            >
             Vec(T val, TArgs ... values): values_{std::forward<T>(val), std::forward<TArgs>(values)...}
         {}

@@ -19,7 +19,7 @@ namespace policies {
         {
             return data_.extents[dimIdx];
         }
-    private:
+    protected:
         const Data& data_;;
     };
 

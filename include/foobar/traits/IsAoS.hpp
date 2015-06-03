@@ -7,16 +7,13 @@ namespace traits {
 
     /**
      * Evaluates to a true type if the given complex type is an Array of Structs, false otherwise
-     * Defaults to false for Real values
-     */
-    template< typename T, typename T_IsComplex = IsComplex<T> >
-    struct IsAoS: std::false_type{};
-
-    /**
-     * Undefined for (unknown) complex types
+     * Defaults to false for real values
      */
     template< typename T >
-    struct IsAoS< T, std::true_type >;
+    struct IsAoS: std::false_type
+    {
+        static_assert(!IsComplex<T>::value, "A user specialization must be provided for Complex types");
+    };
 
 }  // namespace traits
 }  // namespace foobar

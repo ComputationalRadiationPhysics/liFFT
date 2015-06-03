@@ -63,12 +63,9 @@ namespace foobar {
             GetRawPtr(const type& data): real_(&const_cast<type&>(data).real[0].value),
                                          imag_(&const_cast<type&>(data).imag[0].value){}
 
-            T* getRealData(){
-                return real_;
-            }
-
-            T* getImagData(){
-                return imag_;
+            std::pair< T*, T* >
+            operator()(){
+                return std::make_pair(real_, imag_);
             }
 
         private:

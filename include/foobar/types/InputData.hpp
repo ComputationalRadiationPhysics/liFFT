@@ -46,7 +46,7 @@ namespace foobar {
                 return getValue.getReal(values.data, idx);
             }
 
-            template< typename = std::enable_if< traits::IsComplex<type>::value > >
+            template< class T_Type = type, typename = std::enable_if_t< traits::IsComplex<T_Type>::value > >
             typename traits::IntegralType<T_Memory>::type
             getImag(const Data& values, unsigned idx){
                 return getValue.getImag(values.data, idx);

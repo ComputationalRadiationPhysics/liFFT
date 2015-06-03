@@ -15,5 +15,11 @@ namespace traits {
     template< typename T >
     struct IsComplex< T* >: IsComplex< T >{};
 
+    template<>
+    struct IsComplex< double >: std::false_type{};
+
+    template<>
+    struct IsComplex< float >: std::false_type{};
+
 }  // namespace traits
 }  // namespace foobar

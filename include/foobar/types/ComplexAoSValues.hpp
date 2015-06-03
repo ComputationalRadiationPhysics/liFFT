@@ -52,7 +52,8 @@ namespace foobar {
 
             GetRawPtr(const type& data): data_(&const_cast<type&>(data)[0].real.value){}
 
-            T* getData(){
+            T*
+            operator()(){
                 return data_;
             }
 

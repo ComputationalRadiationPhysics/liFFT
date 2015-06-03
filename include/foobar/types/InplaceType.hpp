@@ -14,7 +14,6 @@ namespace foobar {
     namespace traits {
 
         template< bool T_isComplex >
-        template
         struct IsInplace< types::InplaceType<T_isComplex> >: std::true_type{};
 
         template< bool T_isComplex >

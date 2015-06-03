@@ -14,7 +14,7 @@ namespace policies{
     template< typename T_Precision >
     struct FreePlan;
 
-    template
+    template<>
     struct FreePlan<float>
     {
         using PlanType = typename traits::Types<float>::PlanType;
@@ -26,7 +26,7 @@ namespace policies{
         }
     };
 
-    template
+    template<>
     struct FreePlan<double>
     {
         using PlanType = typename traits::Types<double>::PlanType;

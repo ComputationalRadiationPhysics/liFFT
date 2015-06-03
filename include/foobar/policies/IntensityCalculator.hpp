@@ -32,7 +32,7 @@ namespace policies {
         struct ExecutionPolicy< 1, false, T_isAoS >
         {
             void operator()(const Input& input, Output output){
-                LibFoo::calculateR1D(RawPtr(input).getData(), output, Extents(input)[0]);
+                LibFoo::calculateR1D(RawPtr(input)(), output, Extents(input)[0]);
             }
         };
 
@@ -42,7 +42,7 @@ namespace policies {
         {
             void operator()(const Input& input, Output output){
                 ExtentsPtr extents(input);
-                LibFoo::calculateRND(RawPtr(input).getData(), output, T_numDims, extents());
+                LibFoo::calculateRND(RawPtr(input)(), output, T_numDims, extents());
             }
         };
 
@@ -51,7 +51,7 @@ namespace policies {
         struct ExecutionPolicy< 1, true, true, DUMMY >
         {
             void operator()(const Input& input, Output output){
-                LibFoo::calculateC1D(RawPtr(input).getData(), output, Extents(input)[0]);
+                LibFoo::calculateC1D(RawPtr(input)(), output, Extents(input)[0]);
             }
         };
 
@@ -61,7 +61,7 @@ namespace policies {
         {
             void operator()(const Input& input, Output output){
                 ExtentsPtr extents(input);
-                LibFoo::calculateCND(RawPtr(input).getData(), output, T_numDims, extents());
+                LibFoo::calculateCND(RawPtr(input)(), output, T_numDims, extents());
             }
         };
 
@@ -70,8 +70,8 @@ namespace policies {
         struct ExecutionPolicy< 1, true, false, DUMMY >
         {
             void operator()(const Input& input, Output output){
-                RawPtr ptr(input);
-                LibFoo::calculateC1D(ptr.getRealData(), ptr.getImagData(), output, Extents(input)[0]);
+                auto ptr = RawPtr(input)();
+                LibFoo::calculateC1D(ptr.first, ptr.second, output, Extents(input)[0]);
             }
         };
 
@@ -81,8 +81,8 @@ namespace policies {
         {
             void operator()(const Input& input, Output output){
                 ExtentsPtr extents(input);
-                RawPtr ptr(input);
-                LibFoo::calculateCND(ptr.getRealData(), ptr.getImagData(), output, T_numDims, extents());
+                auto ptr = RawPtr(input)();
+                LibFoo::calculateCND(ptr.first, ptr.second, output, T_numDims, extents());
             }
         };
 

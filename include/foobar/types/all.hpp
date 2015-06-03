@@ -1,5 +1,7 @@
 #include "ComplexAoSValues.hpp"
 #include "ComplexSoAValues.hpp"
-#include "RealValues.hpp"
+#include "InplaceType.hpp"
 #include "InputData.hpp"
+#include "RealValues.hpp"
+#include "TypePair.hpp"
 #include "Vec.hpp"

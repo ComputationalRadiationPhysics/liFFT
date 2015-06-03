@@ -14,7 +14,7 @@ namespace policies{
     template< typename T_Precision >
     struct ExecutePlan;
 
-    template
+    template<>
     struct ExecutePlan<float>
     {
         using PlanType = typename traits::Types<float>::PlanType;
@@ -26,7 +26,7 @@ namespace policies{
         }
     };
 
-    template
+    template<>
     struct ExecutePlan<double>
     {
         using PlanType = typename traits::Types<double>::PlanType;

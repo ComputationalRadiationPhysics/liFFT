@@ -13,7 +13,7 @@ namespace traits{
         template< bool T_isFwd=true >
         struct Sign: std::integral_constant<int, FFTW_FORWARD>{};
 
-        template
+        template<>
         struct Sign<false>: std::integral_constant<int, FFTW_BACKWARD>{};
 
 } // namespace traits

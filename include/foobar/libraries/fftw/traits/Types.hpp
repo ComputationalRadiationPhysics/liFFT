@@ -12,14 +12,14 @@ namespace traits{
     template< typename T_Precision >
     struct Types;
 
-    template
+    template<>
     struct Types<float>
     {
         using PlanType = fftwf_plan;
         using ComplexType = fftwf_complex;
     };
 
-    template
+    template<>
     struct Types<double>
     {
         using PlanType = fftw_plan;
