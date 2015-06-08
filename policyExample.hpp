@@ -14,8 +14,9 @@ namespace foobar {
     {
         policies::GetIntensity< typename traits::MemoryType<T_Input>::type > getIntensity;
         policies::GetExtents<T_Input> extents(input);
+        policies::GetStrides<T_Input> strides(input);
         for(unsigned i=0; i<extents[0]; ++i){
-            output[i] = getIntensity(input.data, i*input.strides[0]);
+            output[i] = getIntensity(input.data, i*strides[0]);
         }
     }
 
@@ -25,8 +26,9 @@ namespace foobar {
     {
         policies::CalcIntensityImpl< policies::GetValue<T_Input> > calcIntensity;
         policies::GetExtents<T_Input> extents(input);
+        policies::GetStrides<T_Input> strides(input);
         for(unsigned i=0; i<extents[0]; ++i){
-            unsigned idx = i*input.strides[0];
+            unsigned idx = i*strides[0];
             output[i] = calcIntensity(input, idx);
         }
     }

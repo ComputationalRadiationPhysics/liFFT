@@ -20,9 +20,18 @@ namespace foobar {
             static constexpr bool isStrided = T_isStrided;
 
             Vec< unsigned, numDims > extents;
-            typename std::conditional< T_isStrided, Vec< unsigned, numDims >, ConstVec< unsigned, 1, numDims > >::type strides;
 
             Memory data;
+        };
+
+        template< unsigned T_numDims, class T_Memory >
+        struct DataContainer< T_numDims, T_Memory, true >: DataContainer< T_numDims, T_Memory, false >
+        {
+            static constexpr unsigned numDims = T_numDims;
+            using Memory = T_Memory;
+            static constexpr bool isStrided = true;
+
+            Vec< unsigned, numDims > strides;
         };
 
     }  // namespace types

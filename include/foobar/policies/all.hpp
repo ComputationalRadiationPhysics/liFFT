@@ -4,6 +4,7 @@
 #include "foobar/policies/GetIntensity.hpp"
 #include "foobar/policies/GetNumElements.hpp"
 #include "foobar/policies/GetRawPtr.hpp"
+#include "foobar/policies/GetStrides.hpp"
 #include "foobar/policies/GetValue.hpp"
 #include "foobar/policies/IntensityCalculator.hpp"
 #include "foobar/policies/Ptr2Ptr.hpp"
