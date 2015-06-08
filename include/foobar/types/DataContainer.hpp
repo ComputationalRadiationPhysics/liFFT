@@ -9,8 +9,11 @@ namespace foobar {
 
     namespace types {
 
+        /**
+         * Container used to store data with its meta-data
+         */
         template< unsigned T_numDims, class T_Memory, bool T_isStrided=false >
-        struct InputData
+        struct DataContainer
         {
             static constexpr unsigned numDims = T_numDims;
             using Memory = T_Memory;
@@ -27,15 +30,15 @@ namespace foobar {
     namespace traits {
 
         template< unsigned U, class T_Memory, bool V >
-        struct IntegralType< types::InputData< U, T_Memory, V > >: IntegralType<T_Memory>{};
+        struct IntegralType< types::DataContainer< U, T_Memory, V > >: IntegralType<T_Memory>{};
 
     }  // namespace traits
 
     namespace policies {
 
         template< unsigned U, class T_Memory, bool V >
-        struct GetValue< types::InputData< U, T_Memory, V > >{
-            using Data = types::InputData< U, T_Memory, V >;
+        struct GetValue< types::DataContainer< U, T_Memory, V > >{
+            using Data = types::DataContainer< U, T_Memory, V >;
             using GetValueInt = GetValue<T_Memory>;
             using type = typename GetValueInt::type;
 
@@ -54,9 +57,9 @@ namespace foobar {
         };
 
         template< unsigned U, class T_Memory >
-        struct GetRawPtr< types::InputData< U, T_Memory, false > >: GetRawPtr<T_Memory>{
+        struct GetRawPtr< types::DataContainer< U, T_Memory, false > >: GetRawPtr<T_Memory>{
             using GetRawPtrInt = GetRawPtr<T_Memory>;
-            using Data = types::InputData< U, T_Memory, false >;
+            using Data = types::DataContainer< U, T_Memory, false >;
             using type = typename GetRawPtrInt::type;
 
             type

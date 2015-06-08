@@ -28,9 +28,9 @@ void test(){
     using foobar::calcIntensity;
     using foobar::calcIntensity2;
 
-    InputData< 1, RealValues<double>> simpleRealData;
-    InputData< 1, ComplexAoSValues<double>> complexAoS;
-    InputData< 1, ComplexSoAValues<double>> complexSoA;
+    DataContainer< 1, RealValues<double>> simpleRealData;
+    DataContainer< 1, ComplexAoSValues<double>> complexAoS;
+    DataContainer< 1, ComplexSoAValues<double>> complexSoA;
 
     simpleRealData.extents = {NumVals};
     simpleRealData.data = new Real<double>[NumVals];

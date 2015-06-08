@@ -9,12 +9,12 @@ void testIntensityCalculator()
     using namespace foobar::types;
     using foobar::policies::getNumElements;
     using foobar::policies::useIntensityCalculator;
-    InputData< 1, RealValues<double>> real;
-    InputData< 1, ComplexAoSValues<double>> complexAoS;
-    InputData< 1, ComplexSoAValues<double>> complexSoA;
-    InputData< 3, RealValues<double>> real3D;
-    InputData< 3, ComplexAoSValues<double>> complexAoS3D;
-    InputData< 3, ComplexSoAValues<double>> complexSoA3D;
+    DataContainer< 1, RealValues<double>> real;
+    DataContainer< 1, ComplexAoSValues<double>> complexAoS;
+    DataContainer< 1, ComplexSoAValues<double>> complexSoA;
+    DataContainer< 3, RealValues<double>> real3D;
+    DataContainer< 3, ComplexAoSValues<double>> complexAoS3D;
+    DataContainer< 3, ComplexSoAValues<double>> complexSoA3D;
 
     std::vector<double> result(NumVals);
 
