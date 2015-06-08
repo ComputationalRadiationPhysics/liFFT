@@ -38,7 +38,7 @@ namespace policies{
         }
     };
 
-} // namespace traits
+}  // namespace traits
 }  // namespace fftw
 }  // namespace libraries
 }  // namespace foobar

@@ -2,7 +2,7 @@
 
 namespace foobar {
 namespace libraries {
-namespace fftw {
+namespace cuFFT {
 namespace traits{
 
     /**
@@ -15,18 +15,18 @@ namespace traits{
     template<>
     struct Types<float>
     {
-        using PlanType = fftwf_plan;
-        using ComplexType = fftwf_complex;
+        using ComplexType = cufftComplex;
+        using RealType = cufftReal;
     };
 
     template<>
     struct Types<double>
     {
-        using PlanType = fftw_plan;
-        using ComplexType = fftw_complex;
+        using ComplexType = cufftDoubleComplex;
+        using RealType = cufftDoubleReal;
     };
 
 }  // namespace traits
-}  // namespace fftw
+}  // namespace cuFFT
 }  // namespace libraries
 }  // namespace foobar

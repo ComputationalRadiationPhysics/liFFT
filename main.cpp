@@ -16,8 +16,9 @@
 #include "VolumeAdapter.hpp"
 #include "generateData.hpp"
 #include "IntensityCalculator_Test.hpp"
-#include "foobar/libraries/fftw/FFTW.hpp"
 #include "foobar/policies/FFT.hpp"
+#include "foobar/libraries/fftw/FFTW.hpp"
+#include "foobar/libraries/cuFFT/cuFFT.hpp"
 
 template< typename T = double >
 struct MyComplex{
@@ -93,12 +94,12 @@ void testComplex(){
     ComplexVol fftResult(aperture.xDim(), aperture.yDim(), aperture.zDim());
 	RealVol intensity(aperture.xDim(), aperture.yDim(), aperture.zDim());
     //fftw_plan plan = fftw_plan_dft_2d(aperture.yDim(), aperture.xDim(), reinterpret_cast<fftw_complex*>(aperture.data()), reinterpret_cast<fftw_complex*>(fftResult.data()), FFTW_FORWARD, FFTW_ESTIMATE);
-    using FFTType = typename foobar::policies::FFT< foobar::libraries::fftw::FFTW, true, ComplexVol, ComplexVol, std::integral_constant<unsigned, 2> >::type;
+    using FFTType = typename foobar::policies::FFT< foobar::libraries::cuFFT::CuFFT<>, ComplexVol, ComplexVol, foobar::policies::AutoDetect, std::integral_constant<unsigned, 2> >::type;
     FFTType fft(aperture, fftResult);
-	generateData(aperture, Spalt<double>(5));
+	generateData(aperture, Rect<double>(20,20));
 	//fftw_execute(plan);
 	//fftw_destroy_plan(plan);
-	fft();
+	fft(aperture, fftResult);
 	calcIntensities(aperture, intensity, aperture.xDim(), aperture.yDim());
 	write2File(intensity, "input.txt");
 	calcIntensities(fftResult, intensity, fftResult.xDim(), fftResult.yDim());
@@ -111,13 +112,13 @@ void testReal(){
     ComplexVolFFTW fftResult(aperture.xDim()/2+1, aperture.yDim(), aperture.zDim());
     RealVol intensity(aperture.xDim(), aperture.yDim(), aperture.zDim());
     //fftw_plan plan = fftw_plan_dft_r2c_2d(aperture.yDim(), aperture.xDim(), aperture.data(), reinterpret_cast<fftw_complex*>(fftResult.data()), FFTW_ESTIMATE);
-    using FFTType = typename foobar::policies::FFT< foobar::libraries::fftw::FFTW, true, RealVol, ComplexVolFFTW, std::integral_constant<unsigned, 2> >::type;
+    using FFTType = typename foobar::policies::FFT< foobar::libraries::fftw::FFTW<>, RealVol, ComplexVolFFTW, foobar::policies::AutoDetect, std::integral_constant<unsigned, 2> >::type;
     FFTType fft(aperture, fftResult);
     generateData(aperture, Rect<double>(20,20));
     write2File(aperture, "input.txt");
     //fftw_execute(plan);
     //fftw_destroy_plan(plan);
-    fft();
+    fft(aperture, fftResult);
     SymetricAdapter<fftw_complex> symAdapter(aperture.xDim(), fftResult);
     calcIntensities(symAdapter, intensity, symAdapter.xDim(), symAdapter.yDim());
     auto adapter = makeTransposeAdapter(intensity);
@@ -130,8 +131,8 @@ void testReal(){
 int main(int argc, char** argv) {
     //test();
     testIntensityCalculator();
-    //testComplex();
-    testReal();
+    testComplex();
+    //testReal();
     if(std::system("python writeData.py -i input.txt -o input.pdf"));
     if(std::system("python writeData.py -s -i output.txt -o output.pdf"));
     return 0;

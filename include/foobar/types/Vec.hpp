@@ -57,5 +57,5 @@ namespace types{
         }
     };
 
-} // namespace types
-} // namespace foobar
+}  // namespace types
+}  // namespace foobar

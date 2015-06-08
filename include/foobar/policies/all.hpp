@@ -6,3 +6,6 @@
 #include "foobar/policies/GetRawPtr.hpp"
 #include "foobar/policies/GetValue.hpp"
 #include "foobar/policies/IntensityCalculator.hpp"
+#include "foobar/policies/Ptr2Ptr.hpp"
+#include "foobar/policies/ReadData.hpp"
+#include "foobar/policies/WriteData.hpp"

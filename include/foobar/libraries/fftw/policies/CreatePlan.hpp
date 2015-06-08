@@ -9,7 +9,7 @@ namespace fftw {
 namespace policies{
 
     /**
-     * Executes a given plan
+     * Creates a plan for the given precision type
      */
     template< typename T_Precision >
     struct CreatePlan;
@@ -74,7 +74,7 @@ namespace policies{
         }
     };
 
-} // namespace traits
+}  // namespace traits
 }  // namespace fftw
 }  // namespace libraries
 }  // namespace foobar

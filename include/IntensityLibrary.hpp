@@ -34,4 +34,4 @@ namespace LibFoo
             std::cout << numEl[i] << ", ";
         std::cout << ") elements" << std::endl;
     }
-} // namespace LibFoo
+}  // namespace LibFoo

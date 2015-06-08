@@ -15,12 +15,12 @@ namespace policies {
 
         GetExtents(const Data& data): data_(data){}
 
-        unsigned operator[](unsigned dimIdx)
+        unsigned operator[](unsigned dimIdx) const
         {
             return data_.extents[dimIdx];
         }
     protected:
-        const Data& data_;;
+        const Data& data_;
     };
 
 }  // namespace policies

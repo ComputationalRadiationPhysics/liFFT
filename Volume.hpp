@@ -67,20 +67,15 @@ namespace foobar {
     namespace policies {
 
         template<typename T>
-        struct GetRawPtr< Volume<T> >: boost::noncopyable
+        struct GetRawPtr< Volume<T> >
         {
-            using type = Volume<T>;
-            using IntegralType = typename traits::IntegralType<T>::type;
+            using Data = Volume<T>;
+            using type = typename traits::IntegralType<T>::type*;
 
-            GetRawPtr(const type& data): data_( reinterpret_cast<IntegralType*>(const_cast<type&>(data).data()) ){}
-
-            IntegralType*
-            operator()(){
-                return data_;
+            type
+            operator()(Data& data){
+                return reinterpret_cast<type>(data.data());
             }
-
-        private:
-            IntegralType* data_;
         };
 
         template<typename T>
@@ -90,7 +85,7 @@ namespace foobar {
 
             GetExtents(const Data& data): data_(data){}
 
-            unsigned operator[](unsigned dimIdx)
+            unsigned operator[](unsigned dimIdx) const
             {
                 switch(dimIdx){
                 case 0:
@@ -103,7 +98,7 @@ namespace foobar {
                 throw std::logic_error("Invalid dimension");
             }
         protected:
-            const Data& data_;;
+            const Data& data_;
         };
 
         template<typename T, unsigned T_numDims >

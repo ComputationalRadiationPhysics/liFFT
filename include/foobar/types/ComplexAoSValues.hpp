@@ -1,6 +1,5 @@
 #pragma once
 
-#include <boost/utility.hpp>
 #include "foobar/types/Complex.hpp"
 #include "foobar/policies/all.hpp"
 
@@ -46,19 +45,20 @@ namespace foobar {
         };
 
         template< typename T >
-        struct GetRawPtr< types::ComplexAoSValues<T> >: private boost::noncopyable
+        struct GetRawPtr< types::ComplexAoSValues<T> >
         {
-            using type = types::ComplexAoSValues<T>;
+            using Data = types::ComplexAoSValues<T>;
+            using type = T*;
 
-            GetRawPtr(const type& data): data_(&const_cast<type&>(data)[0].real.value){}
+            type
+            operator()(Data& data){
+                return &data[0].real.value;
+            };
 
-            T*
-            operator()(){
-                return data_;
-            }
-
-        private:
-            T* data_;
+            const type
+            operator()(const Data& data){
+                return &data[0].real.value;
+            };
         };
 
     }  // namespace policies

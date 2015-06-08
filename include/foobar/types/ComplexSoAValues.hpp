@@ -1,6 +1,5 @@
 #pragma once
 
-#include <boost/utility.hpp>
 #include "foobar/types/RealValues.hpp"
 #include "foobar/traits/IsComplex.hpp"
 #include "foobar/traits/IsAoS.hpp"
@@ -56,20 +55,20 @@ namespace foobar {
         };
 
         template< typename T >
-        struct GetRawPtr< types::ComplexSoAValues<T> >: private boost::noncopyable
+        struct GetRawPtr< types::ComplexSoAValues<T> >
         {
-            using type = types::ComplexSoAValues<T>;
+            using Data = types::ComplexSoAValues<T>;
+            using type = std::pair< T*, T* >;
 
-            GetRawPtr(const type& data): real_(&const_cast<type&>(data).real[0].value),
-                                         imag_(&const_cast<type&>(data).imag[0].value){}
-
-            std::pair< T*, T* >
-            operator()(){
-                return std::make_pair(real_, imag_);
+            type
+            operator()(Data& data){
+                return std::make_pair(&data.real[0].value, &data.imag[0].value);
             }
 
-        private:
-            T *real_, *imag_;
+            const type
+            operator()(const Data& data){
+                return std::make_pair(&data.real[0].value, &data.imag[0].value);
+            }
         };
 
 

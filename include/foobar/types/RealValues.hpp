@@ -1,6 +1,5 @@
 #pragma once
 
-#include <boost/utility.hpp>
 #include "foobar/types/Real.hpp"
 #include "foobar/policies/all.hpp"
 
@@ -22,7 +21,7 @@ namespace foobar {
                 return r*r;
             }
         };
-
+#include <boost/utility.hpp>
         template< typename T >
         struct GetValue< types::RealValues<T> >
         {
@@ -34,19 +33,20 @@ namespace foobar {
         };
 
         template< typename T >
-        struct GetRawPtr< types::RealValues<T> >: private boost::noncopyable
+        struct GetRawPtr< types::RealValues<T> >
         {
-            using type = types::RealValues<T>;
+            using Data = types::RealValues<T>;
+            using type = T*;
 
-            GetRawPtr(const type& data): data_(&const_cast<type&>(data)[0].value){}
-
-            T*
-            operator()(){
-                return data_;
+            type
+            operator()(Data& data){
+                return &data[0].value;
             }
 
-        private:
-            T* data_;
+            const type
+            operator()(const Data& data){
+                return &data[0].value;
+            }
         };
 
     }  // namespace policies

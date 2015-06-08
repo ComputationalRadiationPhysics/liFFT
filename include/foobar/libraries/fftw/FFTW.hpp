@@ -1,19 +1,27 @@
 #pragma once
 
 #include <boost/utility.hpp>
+#include <boost/mpl/placeholders.hpp>
 #include "foobar/libraries/fftw/policies/Planner.hpp"
 #include "foobar/libraries/fftw/policies/ExecutePlan.hpp"
 #include "foobar/libraries/fftw/policies/FreePlan.hpp"
+
+namespace bmpl = boost::mpl;
 
 namespace foobar {
 namespace libraries {
 namespace fftw {
 
-    template< class T_FFT >
+    /**
+     * Wrapper for the CUDA-Library that executes the FFT on GPU(s)
+     *
+     * @param T_FFT_Properties Placeholder that will be replaced by a class containing the properties for this FFT
+     */
+    template< class T_FFT_Properties = bmpl::_1 >
     class FFTW: private boost::noncopyable
     {
     private:
-        using FFT = T_FFT;
+        using FFT = T_FFT_Properties;
         using Input = typename FFT::Input;
         using Output = typename FFT::Output;
         using PrecisionType = typename FFT::PrecisionType;
@@ -36,16 +44,21 @@ namespace fftw {
         using PlanType = typename traits::Types< PrecisionType >::PlanType;
 
         PlanType plan_;
+        PrecisionType *InPtr, *OutPtr;
 
     public:
-        explicit FFTW(const Input& input, Output& output)
+        explicit FFTW(Input& input, Output& output)
         {
             plan_ = Planner()(input, output);
+            InPtr = foobar::policies::GetRawPtr<Input>()(input);
+            OutPtr = foobar::policies::GetRawPtr<Output>()(output);
         }
 
-        explicit FFTW(const Input& inOut)
+        explicit FFTW(Input& inOut)
         {
             plan_ = Planner()(inOut);
+            InPtr = foobar::policies::GetRawPtr<Input>()(inOut);
+            OutPtr = nullptr;
         }
 
         ~FFTW()
@@ -53,8 +66,19 @@ namespace fftw {
             PlanDestroyer()(plan_);
         }
 
-        void operator()()
+        void operator()(Input& input, Output& output)
         {
+            if(foobar::policies::GetRawPtr<Input>()(input) != InPtr ||
+                    foobar::policies::GetRawPtr<Output>()(output) != OutPtr)
+                throw std::runtime_error("Pointers to data must not be changed after initialization");
+
+            Executer()(plan_);
+        }
+
+        void operator()(Input& inOut)
+        {
+            if(foobar::policies::GetRawPtr<Input>()(inOut) != InPtr)
+                throw std::runtime_error("Pointer to data must not be changed after initialization");
             Executer()(plan_);
         }
     };

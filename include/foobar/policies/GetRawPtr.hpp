@@ -4,9 +4,10 @@ namespace foobar {
 namespace policies {
 
     /**
-     * Returns the raw ptr to the underlying data
+     * Returns the raw ptr to the underlying (internal) data
      * This will be a pointer for a single pointer or a pair for ComplexSoA
-     * Takes the object in the constructor and defines the ()-operator
+     * Takes the object in the ()-operator
+     * It should also declare the type member ::type for the return type
      */
     template< typename T_Memory >
     struct GetRawPtr;
@@ -17,32 +18,16 @@ namespace policies {
         static_assert(std::is_integral<T>::value || std::is_floating_point<T>::value, "You must provide an own GetRawPt for types other than pointers to integral/floating point types");
         using type = T*;
 
-        GetRawPtr(const type& data): data_(data){}
-
         type
-        operator()(){
-            return data_;
+        operator()(type data){
+            return data;
         }
-
-    private:
-        type data_;
     };
 
     template< typename T >
-    struct GetRawPtr< T[] >
+    struct GetRawPtr< T[] >: GetRawPtr< T* >
     {
         static_assert(std::is_integral<T>::value || std::is_floating_point<T>::value, "You must provide an own GetRawPt for types other than pointers to integral/floating point types");
-        using type = T*;
-
-        GetRawPtr(const type& data): data_(data){}
-
-        type
-        operator()(){
-            return data_;
-        }
-
-    private:
-        type data_;
     };
 
 }  // namespace policies

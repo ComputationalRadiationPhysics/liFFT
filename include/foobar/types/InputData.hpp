@@ -55,10 +55,21 @@ namespace foobar {
 
         template< unsigned U, class T_Memory >
         struct GetRawPtr< types::InputData< U, T_Memory, false > >: GetRawPtr<T_Memory>{
-            using Data = types::InputData< U, T_Memory, false >;
             using GetRawPtrInt = GetRawPtr<T_Memory>;
+            using Data = types::InputData< U, T_Memory, false >;
+            using type = typename GetRawPtrInt::type;
 
-            GetRawPtr(const Data& data): GetRawPtrInt(data.data){}
+            type
+            operator()(Data& data)
+            {
+                return GetRawPtrInt::operator()(data.data);
+            }
+
+            const type
+            operator()(const Data& data)
+            {
+                return GetRawPtrInt::operator()(data.data);
+            }
         };
 
     }  // namespace policies

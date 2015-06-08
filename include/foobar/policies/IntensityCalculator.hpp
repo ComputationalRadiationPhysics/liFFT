@@ -32,7 +32,7 @@ namespace policies {
         struct ExecutionPolicy< 1, false, T_isAoS >
         {
             void operator()(const Input& input, Output output){
-                LibFoo::calculateR1D(RawPtr(input)(), output, Extents(input)[0]);
+                LibFoo::calculateR1D(RawPtr()(input), output, Extents(input)[0]);
             }
         };
 
@@ -42,7 +42,7 @@ namespace policies {
         {
             void operator()(const Input& input, Output output){
                 ExtentsPtr extents(input);
-                LibFoo::calculateRND(RawPtr(input)(), output, T_numDims, extents());
+                LibFoo::calculateRND(RawPtr()(input), output, T_numDims, extents());
             }
         };
 
@@ -51,7 +51,7 @@ namespace policies {
         struct ExecutionPolicy< 1, true, true, DUMMY >
         {
             void operator()(const Input& input, Output output){
-                LibFoo::calculateC1D(RawPtr(input)(), output, Extents(input)[0]);
+                LibFoo::calculateC1D(RawPtr()(input), output, Extents(input)[0]);
             }
         };
 
@@ -61,7 +61,7 @@ namespace policies {
         {
             void operator()(const Input& input, Output output){
                 ExtentsPtr extents(input);
-                LibFoo::calculateCND(RawPtr(input)(), output, T_numDims, extents());
+                LibFoo::calculateCND(RawPtr()(input), output, T_numDims, extents());
             }
         };
 
@@ -70,7 +70,7 @@ namespace policies {
         struct ExecutionPolicy< 1, true, false, DUMMY >
         {
             void operator()(const Input& input, Output output){
-                auto ptr = RawPtr(input)();
+                auto ptr = RawPtr()(input);
                 LibFoo::calculateC1D(ptr.first, ptr.second, output, Extents(input)[0]);
             }
         };
@@ -81,7 +81,7 @@ namespace policies {
         {
             void operator()(const Input& input, Output output){
                 ExtentsPtr extents(input);
-                auto ptr = RawPtr(input)();
+                auto ptr = RawPtr()(input);
                 LibFoo::calculateCND(ptr.first, ptr.second, output, T_numDims, extents());
             }
         };
