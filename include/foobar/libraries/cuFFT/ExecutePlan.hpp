@@ -10,6 +10,7 @@
 #include "foobar/libraries/cuFFT/traits/FFTType.hpp"
 #include "foobar/libraries/cuFFT/traits/Sign.hpp"
 #include "foobar/libraries/cuFFT/traits/Types.hpp"
+#include "foobar/libraries/cuFFT/traits/LibTypes.hpp"
 
 namespace foobar {
 namespace libraries {
@@ -18,33 +19,6 @@ namespace cuFFT {
 namespace policies {
 
     namespace detail {
-
-        /**
-         * Defines a couple of types commonly used
-         */
-        template<
-                typename T_Precision,
-                bool T_isComplexIn,
-                bool T_isComplexOut
-        >
-        struct DefineTypes
-        {
-            using Precision = T_Precision;
-            static constexpr bool isComplexIn = T_isComplexIn;
-            static constexpr bool isComplexOut = T_isComplexOut;
-            using RealType = typename traits::Types< Precision >::RealType;
-            using ComplexType = typename traits::Types< Precision >::ComplexType;
-            using LibInType = typename std::conditional<
-                                  isComplexIn,
-                                  ComplexType,
-                                  RealType
-                              >::type;
-            using LibOutType = typename std::conditional<
-                                  isComplexOut,
-                                  ComplexType,
-                                  RealType
-                              >::type;
-        };
 
         template<
                 typename T_Precision,
@@ -55,18 +29,18 @@ namespace policies {
         struct ExecutePlan;
 
         template< bool T_isFwd >
-        struct ExecutePlan< float, true, true, T_isFwd >: DefineTypes< float, true, true >
+        struct ExecutePlan< float, true, true, T_isFwd >: traits::LibTypes< float, true, true >
         {
-          cufftResult operator()(cufftHandle plan, LibInType* in, LibOutType* out)
+          cufftResult operator()(cufftHandle plan, InType* in, OutType* out)
           {
               return cufftExecC2C(plan, in, out, traits::Sign< T_isFwd >::value);
           }
         };
 
         template< bool T_isFwd >
-        struct ExecutePlan< float, false, true, T_isFwd >: DefineTypes< float, false, true >
+        struct ExecutePlan< float, false, true, T_isFwd >: traits::LibTypes< float, false, true >
         {
-          cufftResult operator()(cufftHandle plan, LibInType* in, LibOutType* out)
+          cufftResult operator()(cufftHandle plan, InType* in, OutType* out)
           {
               static_assert(T_isFwd, "R2C is always a forward transform!");
               return cufftExecR2C(plan, in, out);
@@ -74,9 +48,9 @@ namespace policies {
         };
 
         template< bool T_isFwd >
-        struct ExecutePlan< float, true, false, T_isFwd >: DefineTypes< float, true, false >
+        struct ExecutePlan< float, true, false, T_isFwd >: traits::LibTypes< float, true, false >
         {
-          cufftResult operator()(cufftHandle plan, typename LibInType* in, LibOutType* out)
+          cufftResult operator()(cufftHandle plan, typename InType* in, OutType* out)
           {
               static_assert(T_isFwd, "C2R is always a inverse transform!");
               return cufftExecC2R(plan, in, out);
@@ -84,18 +58,18 @@ namespace policies {
         };
 
         template< bool T_isFwd >
-        struct ExecutePlan< double, true, true, T_isFwd >: DefineTypes< double, true, true >
+        struct ExecutePlan< double, true, true, T_isFwd >: traits::LibTypes< double, true, true >
         {
-          cufftResult operator()(cufftHandle plan, LibInType* in, LibOutType* out)
+          cufftResult operator()(cufftHandle plan, InType* in, OutType* out)
           {
               return cufftExecZ2Z(plan, in, out, traits::Sign< T_isFwd >::value);
           }
         };
 
         template< bool T_isFwd >
-        struct ExecutePlan< double, false, true, T_isFwd >: DefineTypes< double, false, true >
+        struct ExecutePlan< double, false, true, T_isFwd >: traits::LibTypes< double, false, true >
         {
-          cufftResult operator()(cufftHandle plan, LibInType* in, LibOutType* out)
+          cufftResult operator()(cufftHandle plan, InType* in, OutType* out)
           {
               static_assert(T_isFwd, "R2C is always a forward transform!");
               return cufftExecD2Z(plan, in, out);
@@ -103,9 +77,9 @@ namespace policies {
         };
 
         template< bool T_isFwd >
-        struct ExecutePlan< double, true, false, T_isFwd >: DefineTypes< double, true, false >
+        struct ExecutePlan< double, true, false, T_isFwd >: traits::LibTypes< double, true, false >
         {
-          cufftResult operator()(cufftHandle plan, LibInType* in, LibOutType* out)
+          cufftResult operator()(cufftHandle plan, InType* in, OutType* out)
           {
               static_assert(T_isFwd, "C2R is always a inverse transform!");
               return cufftExecZ2D(plan, in, out);

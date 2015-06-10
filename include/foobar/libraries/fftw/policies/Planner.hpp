@@ -7,6 +7,7 @@
 #include "foobar/policies/Ptr2Ptr.hpp"
 #include "foobar/libraries/fftw/traits/Sign.hpp"
 #include "foobar/libraries/fftw/policies/CreatePlan.hpp"
+#include "c++14_types.hpp"
 
 namespace foobar {
 namespace libraries {
@@ -48,16 +49,16 @@ namespace policies {
         using RawPtrIn = foobar::policies::GetRawPtr< Input >;
         using RawPtrOut = foobar::policies::GetRawPtr< Output >;
         using ComplexType = typename traits::Types< Precision >::ComplexType;
-        using PtrConverterIn = typename std::conditional<
+        using PtrConverterIn = std::conditional_t<
                                     isComplexIn,
                                     foobar::policies::Ptr2Ptr<Precision, ComplexType>,
                                     foobar::policies::Ptr2Ptr<Precision>
-                                >::type;
-        using PtrConverterOut = typename std::conditional<
+                                >;
+        using PtrConverterOut = std::conditional_t<
                                     isComplexOut,
                                     foobar::policies::Ptr2Ptr<Precision, ComplexType>,
                                     foobar::policies::Ptr2Ptr<Precision>
-                                >::type;
+                                >;
         static_assert(isComplexIn || isComplexOut, "Real2Real transform not supported");
         static_assert(isComplexIn || isFwd, "Real2Complex is always a forward transform");
         static_assert(isComplexOut || !isFwd, "Complex2Real is always a backward transform");

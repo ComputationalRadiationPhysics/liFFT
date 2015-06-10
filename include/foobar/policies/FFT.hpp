@@ -10,6 +10,7 @@
 #include "foobar/policies/ReadData.hpp"
 #include "foobar/policies/WriteData.hpp"
 #include "util.hpp"
+#include "c++14_types.hpp"
 
 namespace bmpl = boost::mpl;
 
@@ -39,7 +40,7 @@ namespace policies {
         public:
             using Input = T_Input;
             static constexpr bool isInplace = traits::IsInplace<T_Output>::value;
-            using Output = typename std::conditional< isInplace, Input, T_Output >::type;
+            using Output = std::conditional_t< isInplace, Input, T_Output >;
         private:
             static constexpr bool autoDetectIsFwd = std::is_same< T_IsFwd, AutoDetect >::value;
             static constexpr bool autoDetectNumDims = std::is_same< T_NumDims, AutoDetect >::value;
@@ -47,15 +48,15 @@ namespace policies {
             static_assert(autoDetectNumDims || std::is_same< typename T_NumDims::value_type, unsigned >::value, "Wrong argument type for NumDims");
 
             using PrecisionTypeIn = typename traits::IntegralType<Input>::type;
-            using NumDimsIn = typename std::conditional<
+            using NumDimsIn = std::conditional_t<
                                 autoDetectNumDims,
                                 traits::NumDims<Input>,
-                                T_NumDims >::type;
+                                T_NumDims >;
             using PrecisionTypeOut = typename traits::IntegralType<Output>::type;
-            using NumDimsOut = typename std::conditional<
+            using NumDimsOut = std::conditional_t<
                                  autoDetectNumDims,
                                  traits::NumDims<Output>,
-                                 T_NumDims >::type;
+                                 T_NumDims >;
 
             static_assert( AssertValue< std::is_same< PrecisionTypeIn, PrecisionTypeOut > >::value, "Need same precision on In/Out");
             static_assert(NumDimsIn::value >= 1, "Need >= 1 dimension");
@@ -66,7 +67,7 @@ namespace policies {
             static constexpr bool isAoSIn = traits::IsAoS<Input>::value;
             static constexpr bool isStridedIn = traits::IsStrided<Input>::value;
 
-            static constexpr bool isComplexOut = traits::IsComplex< typename std::conditional< isInplace, T_Output, Output >::type >::value;
+            static constexpr bool isComplexOut = traits::IsComplex< std::conditional_t< isInplace, T_Output, Output > >::value;
             static constexpr bool isAoSOut = traits::IsAoS<Output>::value;
             static constexpr bool isStridedOut = traits::IsStrided<Output>::value;
 

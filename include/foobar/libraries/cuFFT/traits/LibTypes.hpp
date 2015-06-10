@@ -1,6 +1,7 @@
 #pragma once
 
 #include "foobar/libraries/cuFFT/traits/Types.hpp"
+#include "c++14_types.hpp"
 
 namespace foobar {
 namespace libraries {
@@ -23,16 +24,16 @@ namespace traits{
 
         using RealType = typename Types< Precision >::RealType;
         using ComplexType = typename Types< Precision >::ComplexType;
-        using InType = typename std::conditional<
+        using InType = std::conditional_t<
                               isComplexIn,
                               ComplexType,
                               RealType
-                          >::type;
-        using OutType = typename std::conditional<
+                          >;
+        using OutType = std::conditional_t<
                               isComplexOut,
                               ComplexType,
                               RealType
-                          >::type;
+                          >;
     };
 
 }  // namespace traits
