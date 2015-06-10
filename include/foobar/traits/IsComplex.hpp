@@ -1,12 +1,14 @@
 #pragma once
 
+#include "foobar/traits/void_t.hpp"
+
 namespace foobar {
 namespace traits {
 
     /**
      * Evaluates to true type if the given type is Complex, false for Real
      */
-    template< typename T >
+    template< typename T, typename T_SFINAE = void >
     struct IsComplex;
 
     /**
@@ -20,6 +22,9 @@ namespace traits {
 
     template<>
     struct IsComplex< float >: std::false_type{};
+
+    template< typename T >
+    struct IsComplex< T, void_t< decltype(T::isComplex) > >: std::integral_constant< bool, T::isComplex >{};
 
 }  // namespace traits
 }  // namespace foobar

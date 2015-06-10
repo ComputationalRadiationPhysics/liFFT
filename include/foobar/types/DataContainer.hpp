@@ -1,8 +1,11 @@
 #pragma once
 
 #include "foobar/traits/IntegralType.hpp"
+#include "foobar/traits/IsComplex.hpp"
+#include "foobar/traits/IsAoS.hpp"
 #include "foobar/policies/GetValue.hpp"
 #include "foobar/policies/GetRawPtr.hpp"
+#include "foobar/policies/GetIntensity.hpp"
 #include "foobar/types/Vec.hpp"
 
 namespace foobar {
@@ -19,7 +22,7 @@ namespace foobar {
             using Memory = T_Memory;
             static constexpr bool isStrided = T_isStrided;
 
-            Vec< unsigned, numDims > extents;
+            Vec< numDims > extents;
 
             Memory data;
         };
@@ -31,15 +34,21 @@ namespace foobar {
             using Memory = T_Memory;
             static constexpr bool isStrided = true;
 
-            Vec< unsigned, numDims > strides;
+            Vec< numDims > strides;
         };
 
     }  // namespace types
 
     namespace traits {
 
-        template< unsigned U, class T_Memory, bool V >
-        struct IntegralType< types::DataContainer< U, T_Memory, V > >: IntegralType<T_Memory>{};
+        template< class T >
+        struct IntegralTypeImpl< T, void_t< typename T::Memory > >: IntegralType< typename T::Memory >{};
+
+        template< class T >
+        struct IsComplex<T, void_t< typename T::Memory > >: IsComplex< typename T::Memory >{};
+
+        template< class T >
+        struct IsAoS<T, void_t< typename T::Memory > >: IsAoS< typename T::Memory >{};
 
     }  // namespace traits
 
@@ -81,6 +90,19 @@ namespace foobar {
             operator()(const Data& data)
             {
                 return GetRawPtrInt::operator()(data.data);
+            }
+        };
+
+        template< unsigned u, class T_Memory, bool v >
+        struct GetIntensity< types::DataContainer< u, T_Memory, v > >{
+            GetIntensity<T_Memory> getIntensity;
+
+            template< typename T_Arg >
+            auto
+            operator()(T_Arg&& values, unsigned idx)
+            -> decltype( getIntensity(std::forward<T_Arg>(values), idx) )
+            {
+                return getIntensity(std::forward<T_Arg>(values), idx);
             }
         };
 

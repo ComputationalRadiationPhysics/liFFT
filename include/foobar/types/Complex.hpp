@@ -1,7 +1,6 @@
 #pragma once
 
 #include "foobar/types/Real.hpp"
-#include "foobar/traits/IsComplex.hpp"
 
 namespace foobar {
     namespace types {
@@ -15,12 +14,5 @@ namespace foobar {
         };
 
     }  // namespace types
-
-    namespace traits {
-
-        template< typename T >
-        struct IsComplex< types::Complex<T> >: std::true_type{};
-
-    }  // namespace traits
 
 }  // namespace foobar

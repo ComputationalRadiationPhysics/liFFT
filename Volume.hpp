@@ -11,7 +11,7 @@ class Volume{
 public:
     using value_type = T;
 
-    Volume(size_t xDim, size_t yDim, size_t zDim): xDim_(xDim), yDim_(yDim), zDim_(zDim){
+    Volume(size_t xDim, size_t yDim = 1, size_t zDim = 1): xDim_(xDim), yDim_(yDim), zDim_(zDim){
         data_ = static_cast<T*>(fftw_malloc(xDim*yDim*zDim*sizeof(T))); //new T[xDim*yDim*zDim_];
         isOwned_ = true;
     }
@@ -40,12 +40,6 @@ public:
 
 namespace foobar {
     namespace traits {
-
-        template<typename T>
-        struct MemoryType< Volume<T> >
-        {
-            using type = Volume<T>;
-        };
 
         template<typename T>
         struct IntegralTypeImpl< Volume<T> >: IntegralType< T >{}; // or define "type = T" in Volume itself
@@ -78,12 +72,12 @@ namespace foobar {
             }
         };
 
-        template<typename T>
-        struct GetExtents< Volume<T> >: boost::noncopyable
+        template< class T_Data >
+        struct GetVolumeExtents: boost::noncopyable
         {
-            using Data = Volume<T>;
+            using Data = T_Data;
 
-            GetExtents(const Data& data): data_(data){}
+            GetVolumeExtents(const Data& data): data_(data){}
 
             unsigned operator[](unsigned dimIdx) const
             {
@@ -101,11 +95,11 @@ namespace foobar {
             const Data& data_;
         };
 
-        template<typename T, unsigned T_numDims >
-        struct GetExtentsRawPtr< Volume<T>, T_numDims >: GetExtentsRawPtrImpl< Volume<T>, true, T_numDims >{
-            using Parent = GetExtentsRawPtrImpl< Volume<T>, true, T_numDims >;
-
-            GetExtentsRawPtr(const Volume<T>& data): Parent(data){}
+        template<typename T>
+        struct GetExtents< Volume<T> >: GetVolumeExtents< Volume<T> >
+        {
+            using Parent = GetVolumeExtents< Volume<T> >;
+            using Parent::Parent;
         };
 
     }  // namespace policies

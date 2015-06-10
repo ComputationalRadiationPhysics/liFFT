@@ -3,6 +3,5 @@
 #include "IsComplex.hpp"
 #include "IsInplace.hpp"
 #include "IsStrided.hpp"
-#include "MemoryType.hpp"
 #include "NumDims.hpp"
 #include "RemoveModifiers.hpp"

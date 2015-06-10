@@ -5,21 +5,22 @@
 #include "foobar/traits/IsComplex.hpp"
 #include "foobar/traits/IsAoS.hpp"
 #include "foobar/traits/IsStrided.hpp"
-#include "foobar/traits/MemoryType.hpp"
 #include "foobar/traits/NumDims.hpp"
 #include "foobar/types/InplaceType.hpp"
 #include "foobar/policies/ReadData.hpp"
 #include "foobar/policies/WriteData.hpp"
+#include "util.hpp"
 
 namespace bmpl = boost::mpl;
 
 namespace foobar {
-namespace policies {
 
     /**
      * Type used to indicate that a given value should be automatically detected
      */
     struct AutoDetect: std::integral_constant<unsigned, 0>{};
+
+namespace policies {
 
     namespace detail {
 
@@ -39,38 +40,35 @@ namespace policies {
             using Input = T_Input;
             static constexpr bool isInplace = traits::IsInplace<T_Output>::value;
             using Output = typename std::conditional< isInplace, Input, T_Output >::type;
-
-            using MemIn = typename traits::MemoryType<Input>::type;
-            using MemOut = typename traits::MemoryType<Output>::type;
         private:
             static constexpr bool autoDetectIsFwd = std::is_same< T_IsFwd, AutoDetect >::value;
             static constexpr bool autoDetectNumDims = std::is_same< T_NumDims, AutoDetect >::value;
             static_assert(autoDetectIsFwd || std::is_same< typename T_IsFwd::value_type, bool >::value, "Wrong argument type for IsFwd");
             static_assert(autoDetectNumDims || std::is_same< typename T_NumDims::value_type, unsigned >::value, "Wrong argument type for NumDims");
 
-            using PrecisionTypeIn = typename traits::IntegralType<MemIn>::type;
+            using PrecisionTypeIn = typename traits::IntegralType<Input>::type;
             using NumDimsIn = typename std::conditional<
                                 autoDetectNumDims,
                                 traits::NumDims<Input>,
                                 T_NumDims >::type;
-            using PrecisionTypeOut = typename traits::IntegralType<MemOut>::type;
+            using PrecisionTypeOut = typename traits::IntegralType<Output>::type;
             using NumDimsOut = typename std::conditional<
                                  autoDetectNumDims,
                                  traits::NumDims<Output>,
                                  T_NumDims >::type;
 
-            static_assert(std::is_same< PrecisionTypeIn, PrecisionTypeOut >::value, "Need same precision on In/Out");
+            static_assert( AssertValue< std::is_same< PrecisionTypeIn, PrecisionTypeOut > >::value, "Need same precision on In/Out");
             static_assert(NumDimsIn::value >= 1, "Need >= 1 dimension");
             static_assert(NumDimsOut::value >= 1, "Need >= 1 dimension");
             static_assert(NumDimsIn::value == NumDimsOut::value, "Dimension mismatch");
         public:
-            static constexpr bool isComplexIn = traits::IsComplex<MemIn>::value;
-            static constexpr bool isAoSIn = traits::IsAoS<MemIn>::value;
-            static constexpr bool isStridedIn = traits::IsStrided<MemIn>::value;
+            static constexpr bool isComplexIn = traits::IsComplex<Input>::value;
+            static constexpr bool isAoSIn = traits::IsAoS<Input>::value;
+            static constexpr bool isStridedIn = traits::IsStrided<Input>::value;
 
-            static constexpr bool isComplexOut = traits::IsComplex< typename std::conditional< isInplace, T_Output, MemOut >::type >::value;
-            static constexpr bool isAoSOut = traits::IsAoS<MemOut>::value;
-            static constexpr bool isStridedOut = traits::IsStrided<MemOut>::value;
+            static constexpr bool isComplexOut = traits::IsComplex< typename std::conditional< isInplace, T_Output, Output >::type >::value;
+            static constexpr bool isAoSOut = traits::IsAoS<Output>::value;
+            static constexpr bool isStridedOut = traits::IsStrided<Output>::value;
 
             using PrecisionType = PrecisionTypeIn;
             static constexpr bool isAoS = isAoSIn || isAoSOut;

@@ -2,6 +2,7 @@
 #include "ComplexSoAValues.hpp"
 #include "InplaceType.hpp"
 #include "DataContainer.hpp"
+#include "FileContainer.hpp"
 #include "RealValues.hpp"
 #include "TypePair.hpp"
 #include "Vec.hpp"

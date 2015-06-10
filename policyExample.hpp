@@ -10,9 +10,9 @@ namespace foobar {
 
     template< class T_Input >
     void
-    calcIntensity(const T_Input& input, typename traits::IntegralType<T_Input>::type* output)
+    calcIntensity(T_Input& input, typename traits::IntegralType<T_Input>::type* output)
     {
-        policies::GetIntensity< typename traits::MemoryType<T_Input>::type > getIntensity;
+        policies::GetIntensity< T_Input > getIntensity;
         policies::GetExtents<T_Input> extents(input);
         policies::GetStrides<T_Input> strides(input);
         for(unsigned i=0; i<extents[0]; ++i){
@@ -22,7 +22,7 @@ namespace foobar {
 
     template< class T_Input >
     void
-    calcIntensity2(const T_Input& input, typename traits::IntegralType<T_Input>::type* output)
+    calcIntensity2(T_Input& input, typename traits::IntegralType<T_Input>::type* output)
     {
         policies::CalcIntensityImpl< policies::GetValue<T_Input> > calcIntensity;
         policies::GetExtents<T_Input> extents(input);

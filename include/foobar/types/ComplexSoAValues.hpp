@@ -1,7 +1,6 @@
 #pragma once
 
 #include "foobar/types/RealValues.hpp"
-#include "foobar/traits/IsComplex.hpp"
 #include "foobar/traits/IsAoS.hpp"
 #include "foobar/policies/all.hpp"
 
@@ -19,9 +18,6 @@ namespace foobar {
     }  // namespace types
 
     namespace traits {
-
-        template< typename T >
-        struct IsComplex< types::ComplexSoAValues<T> >: std::true_type{};
 
         template< typename T >
         struct IsAoS< types::ComplexSoAValues<T> >: std::false_type{};

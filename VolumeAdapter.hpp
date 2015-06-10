@@ -1,5 +1,8 @@
 #pragma once
 
+#include "Volume.hpp"
+#include "foobar/policies/GetExtents.hpp"
+
 template<typename T>
 class VolumeAdapter{
 protected:
@@ -56,3 +59,23 @@ template<typename T> inline
 TransposeAdapter<T> makeTransposeAdapter(T& obj){
     return TransposeAdapter<T>(obj);
 }
+
+namespace foobar{
+    namespace policies {
+
+        template<typename T>
+        struct GetExtents< SymetricAdapter<T> >: GetVolumeExtents< SymetricAdapter<T> >
+        {
+            using Parent = GetVolumeExtents< SymetricAdapter<T> >;
+            using Parent::Parent;
+        };
+
+        template<typename T>
+        struct GetExtents< TransposeAdapter<T> >: GetVolumeExtents< TransposeAdapter<T> >
+        {
+            using Parent = GetVolumeExtents< TransposeAdapter<T> >;
+            using Parent::Parent;
+        };
+
+    }  // namespace policies
+}  // namespace foobar

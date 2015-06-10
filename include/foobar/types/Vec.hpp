@@ -1,11 +1,15 @@
 #pragma once
 
 #include <cassert>
+#include <c++14_types.hpp>
 
 namespace foobar{
 namespace types{
 
-    template< typename T, unsigned T_numDims >
+    /**
+     * Simple stack-based vector that can be used e.g. for extents, strides...
+     */
+    template< unsigned T_numDims, typename T = unsigned >
     class Vec
     {
     public:
@@ -20,6 +24,15 @@ namespace types{
         {}
 
         Vec(){}
+
+        static Vec< numDims, type >
+        all(const type& val)
+        {
+            Vec< numDims, type > res;
+            for(unsigned i=0; i<numDims; i++)
+                res[i] = val;
+            return res;
+        }
 
         T&
         operator[](unsigned dim)

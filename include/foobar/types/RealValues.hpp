@@ -21,7 +21,7 @@ namespace foobar {
                 return r*r;
             }
         };
-#include <boost/utility.hpp>
+
         template< typename T >
         struct GetValue< types::RealValues<T> >
         {
