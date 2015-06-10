@@ -129,7 +129,7 @@ namespace policies {
      * Usage:
      *      1) The constructor takes the container(s) and may modify the memory returned by the GetRawPtr policy
      *         Note: An implementation may not need the memory at all
-     *      2) The ()-Operator is applied to the container(s) and calls the ReadData<Input> policy, than performs the transform
+     *      2) Execute the FFT with <fftInstance>(input, output), which calls the ReadData<Input> policy, than performs the transform
      *         from the memories returned by the GetRawPtr policies and calls the WriteData<Output> policy afterwards
      *
      * Parameters:
@@ -137,7 +137,7 @@ namespace policies {
      * @param T_Input   Input container type
      * @param T_Output  Output container type (Can be an InplaceType for in-place transforms)
      * @param T_IsFwd   Whether to use forward or backward transform (should have a bool ::value member) or AutoDetect (True for C2C or R2C, False for C2R)
-     * @param T_NumDums Number of dimensions, AutoDetect for using the NumDims trait on Input/Output containers
+     * @param T_NumDums Number of dimensions, AutoDetect for using the NumDims trait on Input/Output containers, if specified only the last n dimensions are used
      */
     template<
             class T_Library,

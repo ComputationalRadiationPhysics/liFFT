@@ -4,7 +4,6 @@
 #include <type_traits>
 #include <cufft.h>
 #include "foobar/types/TypePair.hpp"
-#include "foobar/policies/GetExtents.hpp"
 #include "foobar/policies/GetRawPtr.hpp"
 #include "foobar/libraries/cuFFT/Plan.hpp"
 #include "foobar/libraries/cuFFT/traits/FFTType.hpp"

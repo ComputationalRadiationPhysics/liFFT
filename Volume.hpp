@@ -44,8 +44,8 @@ namespace foobar {
         template<typename T>
         struct IntegralTypeImpl< Volume<T> >: IntegralType< T >{}; // or define "type = T" in Volume itself
 
-        //template<typename T>
-        //struct NumDims< Volume<T> >: std::integral_constant< unsigned, 3 >{};
+        template<typename T>
+        struct NumDims< Volume<T> >: std::integral_constant< unsigned, 3 >{};
 
         template<typename T>
         struct IsComplex< Volume<T> >: IsComplex<T>{};
@@ -83,11 +83,11 @@ namespace foobar {
             {
                 switch(dimIdx){
                 case 0:
-                    return data_.xDim();
+                    return data_.zDim();
                 case 1:
                     return data_.yDim();
                 case 2:
-                    return data_.zDim();
+                    return data_.xDim();
                 }
                 throw std::logic_error("Invalid dimension");
             }

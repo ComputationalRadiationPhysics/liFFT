@@ -9,6 +9,8 @@ protected:
     T& obj_;
 public:
     using value_type = typename T::value_type;
+    static constexpr unsigned numDims = 3;
+
     VolumeAdapter(T& obj):obj_(obj){}
 
     size_t xDim() const{ return obj_.xDim(); }

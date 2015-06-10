@@ -8,6 +8,7 @@
 #include "foobar/policies/LoopNDims.hpp"
 #include "foobar/policies/GetRawPtr.hpp"
 #include "foobar/policies/GetExtents.hpp"
+#include "foobar/policies/DataContainerAccessor.hpp"
 #include "c++14_types.hpp"
 
 namespace foobar {
@@ -15,7 +16,8 @@ namespace foobar {
 
         /**
          * A container that can load a file to an internal (contiguous) memory
-         * @param T_FileHandler File class. Must support open(string), close(), and a specialization for GetExtents
+         *
+         * @param T_FileHandler File class. Must support open(string), isOpen(), close(), and a specialization for GetExtents
          * @param T_FileAccessor Accessor used to access the contents of the file.
          *          operator(Vec<numDims> index, FileHandler file) should return either a Complex or Real value with the chosen accuracy
          * @param T_DataAccessor Accessor used to write to the internal DataContainer
@@ -27,7 +29,7 @@ namespace foobar {
         template<
             typename T_FileHandler,
             typename T_FileAccessor,
-            typename T_DataAccessor,
+            typename T_DataAccessor = policies::DataContainerAccessor,
             typename T_Accuracy = float,
             bool T_isComplex = false,
             unsigned T_numDims = traits::NumDims< T_FileHandler >::value
@@ -51,28 +53,30 @@ namespace foobar {
             FileHandler fileHandler_;
             Data data_;
             std::string filePath_;
-            bool gotExtents_, gotData_;
+            bool gotData_;
 
-            inline void
+            void
             loadExtents()
             {
-                if(gotExtents_)
-                    return;
-                gotExtents_ = true;
-                assert(!filePath_.empty());
+                assert(fileHandler_.isOpen());
                 policies::GetExtents< FileHandler > extents(fileHandler_);
                 for(unsigned i=0; i<numDims; ++i)
                     data_.extents[i] = extents[i];
             }
 
-
             void allocData()
             {
                 if(data_.data)
                     return;
-                loadExtents();
+                assert(fileHandler_.isOpen());
                 unsigned numEl = policies::GetNumElements< Data >()(data_);
                 data_.data = static_cast<Memory>(malloc(sizeof(ElementType) * numEl));
+            }
+
+            void freeData()
+            {
+                free(data_.data);
+                data_.data = nullptr;
             }
 
         public:
@@ -88,28 +92,24 @@ namespace foobar {
                 setFilePath("");
             }
 
-            void freeData()
-            {
-                free(data_.data);
-                data_.data = nullptr;
-            }
-
             void setFilePath(const std::string& filePath)
             {
                 if(!filePath_.empty())
                     fileHandler_.close();
                 filePath_ = filePath;
                 freeData();
-                gotExtents_ = false;
                 gotData_ = false;
-                if(!filePath.empty())
+                if(!filePath.empty()){
                     fileHandler_.open(filePath);
+                    if(fileHandler_.isOpen())
+                        loadExtents();
+                }
             }
 
             const ExtentsVec&
-            getExtents()
+            getExtents() const
             {
-                loadExtents();
+                assert(fileHandler_.isOpen());
                 return data_.extents;
             }
 
@@ -198,10 +198,10 @@ namespace foobar {
         {
             using type = types::FileContainer< T_FileHandler, T_FileAccessor, T_DataAccessor, T_Accuracy, T_isComplex, T_numDims >;
 
-            GetExtents(type& data): extents_(data.getExtents()){}
+            GetExtents(const type& data): extents_(data.getExtents()){}
 
             unsigned
-            operator[](unsigned dim)
+            operator[](unsigned dim) const
             {
                 return extents_[dim];
             }

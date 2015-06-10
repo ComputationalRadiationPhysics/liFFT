@@ -57,8 +57,8 @@ namespace policies {
         static constexpr bool isComplexIn  = T_isComplexIn;
         static constexpr bool isComplexOut = T_isComplexOut;
 
-        using ExtentsIn = foobar::policies::GetExtents< Input >;
-        using ExtentsOut = foobar::policies::GetExtents< Output >;
+        using ExtentsIn = foobar::policies::GetLastNExtents< Input, numDims >;
+        using ExtentsOut = foobar::policies::GetLastNExtents< Output, numDims >;
         using LibTypes = traits::LibTypes< Precision, isComplexIn, isComplexOut >;
         using LibInType = typename LibTypes::InType;
         using LibOutType = typename LibTypes::OutType;
@@ -75,15 +75,15 @@ namespace policies {
     private:
         template< class T_Extents >
         void
-        createPlan(PlanType& plan, T_Extents& extends)
+        createPlan(PlanType& plan, T_Extents& extents)
         {
             cufftResult result;
             if(numDims == 1)
-                result = cufftPlan1d(&plan.plan, extends[0], FFTType::value, 1);
+                result = cufftPlan1d(&plan.plan, extents[0], FFTType::value, 1);
             else if(numDims == 2)
-                result = cufftPlan2d(&plan.plan, extends[0], extends[1], FFTType::value);
+                result = cufftPlan2d(&plan.plan, extents[0], extents[1], FFTType::value);
             else
-                result = cufftPlan3d(&plan.plan, extends[0], extends[1], extends[2], FFTType::value);
+                result = cufftPlan3d(&plan.plan, extents[0], extents[1], extents[2], FFTType::value);
             if(result != CUFFT_SUCCESS)
                 throw std::runtime_error("Error creating plan: " + std::to_string(result));
         }
@@ -94,21 +94,21 @@ namespace policies {
         operator()(Input& input, Output& output, T_AllocatorIn allocIn, T_AllocatorOut allocOut)
         {
             static_assert(!isInplace, "Cannot be used for inplace transforms!");
-            ExtentsIn extends(input);
-            ExtentsOut extendsOut(output);
+            ExtentsIn extents(input);
+            ExtentsOut extentsOut(output);
             for(unsigned i=0; i<numDims; ++i){
-                unsigned eIn = extends[i];
-                unsigned eOut = extendsOut[i];
-                // Same extends in all dimensions unless we have a C2R or R2C and compare the first dimension
-                assert(eIn == eOut || (i == 0 && !(isComplexIn && isComplexOut)));
+                unsigned eIn = extents[i];
+                unsigned eOut = extentsOut[i];
+                // Same extents in all dimensions unless we have a C2R or R2C and compare the last dimension
+                assert(eIn == eOut || (i+1 == numDims && !(isComplexIn && isComplexOut)));
                 // Half input size for first dimension of R2C
-                assert(isComplexIn || i != 0 || eIn/2+1 == eOut);
+                assert(isComplexIn || i+1 != numDims || eIn/2+1 == eOut);
                 // Half output size for first dimension of C2R
-                assert(isComplexOut || i != 0 || eIn == eOut/2+1);
+                assert(isComplexOut || i+1 != numDims || eIn == eOut/2+1);
             }
             PlanType plan;
-            createPlan(plan, extends);
-            unsigned numElements = foobar::policies::GetNumElements< ExtentsIn, numDims >()(extends);
+            createPlan(plan, extents);
+            unsigned numElements = foobar::policies::GetNumElements< Input, numDims >()(input);
             allocIn.malloc(plan.InDevicePtr, numElements * sizeof(LibInType));
             allocOut.malloc(plan.OutDevicePtr, numElements * sizeof(LibOutType));
             return plan;
@@ -119,10 +119,10 @@ namespace policies {
         operator()(Input& inOut, T_Allocator alloc)
         {
             static_assert(isInplace, "Must be used for inplace transforms!");
-            ExtentsIn extends(inOut);
+            ExtentsIn extents(inOut);
             PlanType plan;
-            createPlan(plan, extends);
-            unsigned numElements = foobar::policies::GetNumElements< ExtentsIn, numDims >()(extends);
+            createPlan(plan, extents);
+            unsigned numElements = foobar::policies::GetNumElements< ExtentsIn, numDims >()(extents);
             alloc.malloc(plan.InDevicePtr, numElements * std::max(sizeof(LibInType), sizeof(LibOutType)));
             plan.OutDevicePtr = nullptr;
             return plan;

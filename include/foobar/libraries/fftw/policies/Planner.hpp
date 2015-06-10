@@ -40,12 +40,12 @@ namespace policies {
         static constexpr unsigned numDims = T_numDims;
         using Input  = typename T_InOutTypes::First;
         using Output = typename T_InOutTypes::Second;
-        static constexpr bool isFwd    = T_isFwd;
+        static constexpr bool isFwd        = T_isFwd;
         static constexpr bool isInplace    = T_isInplace;
         static constexpr bool isComplexIn  = T_isComplexIn;
         static constexpr bool isComplexOut = T_isComplexOut;
-        using ExtendsIn = foobar::policies::GetExtentsRawPtr< Input, numDims >;
-        using ExtendsOut = foobar::policies::GetExtentsRawPtr< Output, numDims >;
+        using ExtentsIn = foobar::policies::GetExtentsRawPtr< Input, numDims >;
+        using ExtentsOut = foobar::policies::GetExtentsRawPtr< Output, numDims >;
         using RawPtrIn = foobar::policies::GetRawPtr< Input >;
         using RawPtrOut = foobar::policies::GetRawPtr< Output >;
         using ComplexType = typename traits::Types< Precision >::ComplexType;
@@ -70,21 +70,21 @@ namespace policies {
         operator()(Input& input, Output& output, const unsigned flags = FFTW_ESTIMATE)
         {
             static_assert(!isInplace, "Cannot be used for inplace transforms!");
-            ExtendsIn extends(input);
-            ExtendsOut extendsOut(output);
+            ExtentsIn extents(input);
+            ExtentsOut extentsOut(output);
             for(unsigned i=0; i<numDims; ++i){
-                unsigned eIn = extends()[i];
-                unsigned eOut = extendsOut()[i];
-                // Same extends in all dimensions unless we have a C2R or R2C and compare the first dimension
-                assert(eIn == eOut || (i == 0 && !(isComplexIn && isComplexOut)));
+                unsigned eIn = extents()[i];
+                unsigned eOut = extentsOut()[i];
+                // Same extents in all dimensions unless we have a C2R or R2C and compare the last dimension
+                assert(eIn == eOut || (i+1 == numDims && !(isComplexIn && isComplexOut)));
                 // Half input size for first dimension of R2C
-                assert(isComplexIn || i != 0 || eIn/2+1 == eOut);
+                assert(isComplexIn || i+1 != numDims || eIn/2+1 == eOut);
                 // Half output size for first dimension of C2R
-                assert(isComplexOut || i != 0 || eIn == eOut/2+1);
+                assert(isComplexOut || i+1 != numDims || eIn == eOut/2+1);
             }
             return policies::CreatePlan<Precision>().Create(
                     numDims,
-                    reinterpret_cast<const int*>(extends()),
+                    reinterpret_cast<const int*>(extents()),
                     PtrConverterIn()(RawPtrIn()(input)),
                     PtrConverterOut()(RawPtrOut()(output)),
                     traits::Sign<isFwd>::value,
@@ -96,11 +96,11 @@ namespace policies {
         operator()(Input& inOut, const unsigned flags = FFTW_ESTIMATE)
         {
             static_assert(isInplace, "Must be used for inplace transforms!");
-            ExtendsIn extends(inOut);
+            ExtentsIn extents(inOut);
             RawPtrIn inPtr;
             return policies::CreatePlan<Precision>().Create(
                     numDims,
-                    reinterpret_cast<const int*>(extends()),
+                    reinterpret_cast<const int*>(extents()),
                     PtrConverterIn()(inPtr(inOut)),
                     PtrConverterOut()(inPtr(inOut)),
                     traits::Sign<isFwd>::value,

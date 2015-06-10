@@ -63,7 +63,7 @@ double absSqr(const fftw_complex& val){
 template< typename T, class T_Accessor >
 void write2File(T& data, T_Accessor&& acc, const std::string& name){
     std::ofstream inFile(name.c_str());
-    foobar::policies::GetExtents<T> extents(data);
+    foobar::policies::GetLastNExtents< T, 2 > extents(data);
     foobar::types::Vec<2> idx;
     for(idx[0]=0; idx[0]<extents[0]; ++idx[0]){
         for(idx[1]=0; idx[1]<extents[1]; ++idx[1]){
@@ -180,8 +180,10 @@ int main(int argc, char** argv) {
     FileType myFile("/home/grund59/Rect.tif");
     testFile(myFile);
     //testReal();
-    if(std::system("python writeData.py -i input.txt -o input.pdf"));
-    if(std::system("python writeData.py -s -i output.txt -o output.pdf"));
+    if(std::system("python writeData.py -i input.txt -o input.pdf"))
+        std::cout << "Error converting input";
+    if(std::system("python writeData.py -s -i output.txt -o output.pdf"))
+        std::cout << "Error converting output";
     return 0;
 }
 
