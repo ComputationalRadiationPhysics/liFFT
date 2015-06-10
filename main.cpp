@@ -16,7 +16,7 @@
 #include "libTiff/libTiff.hpp"
 #include "foobar/policies/ImageAccessor.hpp"
 #include "foobar/types/FileContainer.hpp"
-#include "foobar/policies/DataContainerAccessor.hpp"
+#include "foobar/policies/CopyArray2Array.hpp"
 #include "foobar/policies/VolumeAccessor.hpp"
 
 template< typename T = double >
@@ -172,8 +172,7 @@ int main(int argc, char** argv) {
     //testComplex();
     using FileType = foobar::types::FileContainer<
         libTiff::TiffImage<>,
-        foobar::policies::ImageAccessorGetColorAsFp<>,
-        foobar::policies::DataContainerAccessor,
+        foobar::policies::CopyArray2Array< foobar::policies::ImageAccessorGetColorAsFp<> >,
         float,
         false
         >;

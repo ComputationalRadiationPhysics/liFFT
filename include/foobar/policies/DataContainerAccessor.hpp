@@ -3,6 +3,9 @@
 namespace foobar {
 namespace policies {
 
+    /**
+     * Accessor that can read and write a DataContainer (type with an array-like member named data)
+     */
     struct DataContainerAccessor
     {
         template< class T_Index, class T_Data >

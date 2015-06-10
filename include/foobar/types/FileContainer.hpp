@@ -18,18 +18,15 @@ namespace foobar {
          * A container that can load a file to an internal (contiguous) memory
          *
          * @param T_FileHandler File class. Must support open(string), isOpen(), close(), and a specialization for GetExtents
-         * @param T_FileAccessor Accessor used to access the contents of the file.
-         *          operator(Vec<numDims> index, FileHandler file) should return either a Complex or Real value with the chosen accuracy
-         * @param T_DataAccessor Accessor used to write to the internal DataContainer
-         *          operator(Vec<numDims> index, DataContainer data, Value val) should write val to the Data container. Value is Real or Complex
+         * @param T_FileReaderPolicy Policy that should provide an operator(TFileHandler&, Data&, DataAccessor&) which
+         *          should read the entire file into the DataContainer using the DataAccessor(Idx, Data, Value) method
          * @param T_Accuracy The internal datatype used (float or double) [float]
          * @param T_isComplex Whether the values are complex [false]
          * @param T_numDims number of dimensions [Number of dimensions supported by the FileHandler]
          */
         template<
             typename T_FileHandler,
-            typename T_FileAccessor,
-            typename T_DataAccessor = policies::DataContainerAccessor,
+            typename T_FileReaderPolicy,
             typename T_Accuracy = float,
             bool T_isComplex = false,
             unsigned T_numDims = traits::NumDims< T_FileHandler >::value
@@ -38,8 +35,8 @@ namespace foobar {
         {
         public:
             using FileHandler = T_FileHandler;
-            using FileAccessor = T_FileAccessor;
-            using DataAccessor = T_DataAccessor;
+            using FileReaderPolicy = T_FileReaderPolicy;
+            using DataAccessor = policies::DataContainerAccessor;
             static constexpr unsigned numDims = T_numDims;
             static constexpr bool isComplex = T_isComplex;
             using Accuracy = T_Accuracy;
@@ -134,13 +131,7 @@ namespace foobar {
                     return;
                 gotData_ = true;
                 allocData();
-                auto func = [&](const ExtentsVec& idx, const FileHandler& file)
-                    {
-                        T_FileAccessor fileAcc;
-                        T_DataAccessor dataAcc;
-                        dataAcc(idx, data_, fileAcc(idx, file));
-                    };
-                policies::LoopNDims<numDims>::template loop(ExtentsVec(), data_.extents, func, fileHandler_);
+                FileReaderPolicy()(fileHandler_, data_, DataAccessor());
             }
 
         };
@@ -154,13 +145,12 @@ namespace foobar {
 
         template<
             typename T_FileHandler,
-            typename T_FileAccessor,
-            typename T_DataAccessor,
+            typename T_FileReaderPolicy,
             typename T_Accuracy,
             bool T_isComplex,
             unsigned T_numDims
         >
-        struct IsStrided< types::FileContainer< T_FileHandler, T_FileAccessor, T_DataAccessor, T_Accuracy, T_isComplex, T_numDims > >
+        struct IsStrided< types::FileContainer< T_FileHandler, T_FileReaderPolicy, T_Accuracy, T_isComplex, T_numDims > >
         : std::integral_constant< bool, false>{};
 
     }  // namespace traits
@@ -169,15 +159,14 @@ namespace foobar {
 
         template<
             typename T_FileHandler,
-            typename T_FileAccessor,
-            typename T_DataAccessor,
+            typename T_FileReaderPolicy,
             typename T_Accuracy,
             bool T_isComplex,
             unsigned T_numDims
         >
-        struct GetRawPtr< types::FileContainer< T_FileHandler, T_FileAccessor, T_DataAccessor, T_Accuracy, T_isComplex, T_numDims > >
+        struct GetRawPtr< types::FileContainer< T_FileHandler, T_FileReaderPolicy, T_Accuracy, T_isComplex, T_numDims > >
         {
-            using type = types::FileContainer< T_FileHandler, T_FileAccessor, T_DataAccessor, T_Accuracy, T_isComplex, T_numDims >;
+            using type = types::FileContainer< T_FileHandler, T_FileReaderPolicy, T_Accuracy, T_isComplex, T_numDims >;
 
             T_Accuracy*
             operator()(type& data)
@@ -188,15 +177,14 @@ namespace foobar {
 
         template<
             typename T_FileHandler,
-            typename T_FileAccessor,
-            typename T_DataAccessor,
+            typename T_FileReaderPolicy,
             typename T_Accuracy,
             bool T_isComplex,
             unsigned T_numDims
         >
-        struct GetExtents< types::FileContainer< T_FileHandler, T_FileAccessor, T_DataAccessor, T_Accuracy, T_isComplex, T_numDims > >
+        struct GetExtents< types::FileContainer< T_FileHandler, T_FileReaderPolicy, T_Accuracy, T_isComplex, T_numDims > >
         {
-            using type = types::FileContainer< T_FileHandler, T_FileAccessor, T_DataAccessor, T_Accuracy, T_isComplex, T_numDims >;
+            using type = types::FileContainer< T_FileHandler, T_FileReaderPolicy, T_Accuracy, T_isComplex, T_numDims >;
 
             GetExtents(const type& data): extents_(data.getExtents()){}
 

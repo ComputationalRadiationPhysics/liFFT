@@ -20,10 +20,10 @@ namespace policies {
     {
         using type = libTiff::TiffImage<T_Allocator>;
 
-        GetExtents(type& data): extents_(data.getHeight(), data.getWidth()){}
+        GetExtents(const type& data): extents_(data.getHeight(), data.getWidth()){}
 
         unsigned
-        operator[](unsigned dim)
+        operator[](unsigned dim) const
         {
             return extents_[dim];
         }
