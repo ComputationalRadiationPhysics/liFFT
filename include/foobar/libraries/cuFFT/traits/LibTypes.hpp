@@ -1,7 +1,7 @@
 #pragma once
 
 #include "foobar/libraries/cuFFT/traits/Types.hpp"
-#include "c++14_types.hpp"
+#include "foobar/c++14_types.hpp"
 
 namespace foobar {
 namespace libraries {

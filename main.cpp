@@ -4,13 +4,13 @@
 #include <cmath>
 #include <fftw3.h>
 #include <libTiff/traitsAndPolicies.hpp>
-#include "c++14_types.hpp"
+#include "foobar/c++14_types.hpp"
 #include "policyTest.hpp"
 #include "Volume.hpp"
 #include "VolumeAdapter.hpp"
 #include "generateData.hpp"
 #include "IntensityCalculator_Test.hpp"
-#include "foobar/policies/FFT.hpp"
+#include "foobar/FFT.hpp"
 #include "foobar/libraries/fftw/FFTW.hpp"
 #include "foobar/libraries/cuFFT/cuFFT.hpp"
 #include "libTiff/libTiff.hpp"
@@ -96,7 +96,7 @@ void testComplex()
     ComplexVol fftResult(aperture.xDim(), aperture.yDim(), aperture.zDim());
 	RealVol intensity(aperture.xDim(), aperture.yDim(), aperture.zDim());
     //fftw_plan plan = fftw_plan_dft_2d(aperture.yDim(), aperture.xDim(), reinterpret_cast<fftw_complex*>(aperture.data()), reinterpret_cast<fftw_complex*>(fftResult.data()), FFTW_FORWARD, FFTW_ESTIMATE);
-    using FFTType = typename foobar::policies::FFT<
+    using FFTType = typename foobar::FFT<
                         foobar::libraries::cuFFT::CuFFT<>,
                         ComplexVol,
                         ComplexVol,
@@ -121,7 +121,7 @@ void testReal()
     ComplexVolFFTW fftResult(aperture.xDim()/2+1, aperture.yDim(), aperture.zDim());
     RealVol intensity(aperture.xDim(), aperture.yDim(), aperture.zDim());
     //fftw_plan plan = fftw_plan_dft_r2c_2d(aperture.yDim(), aperture.xDim(), aperture.data(), reinterpret_cast<fftw_complex*>(fftResult.data()), FFTW_ESTIMATE);
-    using FFTType = typename foobar::policies::FFT<
+    using FFTType = typename foobar::FFT<
                         foobar::libraries::fftw::FFTW<>,
                         RealVol, ComplexVolFFTW,
                         foobar::AutoDetect,
@@ -146,7 +146,7 @@ void testFile( T_File& file )
     FFTResult_t fftResult(file.getExtents()[0]/2+1, file.getExtents()[1]);
     Volume< float > intensity(file.getExtents()[0], file.getExtents()[1]);
     //fftw_plan plan = fftw_plan_dft_r2c_2d(aperture.yDim(), aperture.xDim(), aperture.data(), reinterpret_cast<fftw_complex*>(fftResult.data()), FFTW_ESTIMATE);
-    using FFTType = typename foobar::policies::FFT<
+    using FFTType = typename foobar::FFT<
                         foobar::libraries::fftw::FFTW<>,
                         T_File,
                         FFTResult_t,
