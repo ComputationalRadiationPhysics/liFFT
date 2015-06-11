@@ -18,6 +18,9 @@
 #include "foobar/types/FileContainer.hpp"
 #include "foobar/policies/CopyArray2Array.hpp"
 #include "foobar/policies/VolumeAccessor.hpp"
+#include "foobar/policies/CopyArray2Stream.hpp"
+#include "foobar/policies/StreamAccessor.hpp"
+#include "foobar/types/StreamWrapper.hpp"
 
 template< typename T = double >
 struct MyComplex{
@@ -60,20 +63,23 @@ double absSqr(const fftw_complex& val){
 	return val[0]*val[0] + val[1]*val[1];
 }
 
-template< typename T, class T_Accessor >
-void write2File(T& data, T_Accessor&& acc, const std::string& name){
-    std::ofstream inFile(name.c_str());
-    foobar::policies::GetLastNExtents< T, 2 > extents(data);
-    foobar::types::Vec<2> idx;
-    for(idx[0]=0; idx[0]<extents[0]; ++idx[0]){
-        for(idx[1]=0; idx[1]<extents[1]; ++idx[1]){
-            inFile << acc(idx, data);
-            if(idx[1]+1 < extents[1])
-                inFile << " ";
-        }
-        if(idx[0]+1 < extents[0])
-            inFile << "\n";
-    }
+template< class T_Accessor, typename T >
+void write2File(T& data, const std::string& name){
+    using F = foobar::policies::CopyArray2Stream< T_Accessor, foobar::policies::StringStreamAccessor >;
+
+    foobar::types::StreamWrapper< std::ofstream, 2 > inFile(name.c_str());
+    F()(data, inFile);
+//    foobar::policies::GetLastNExtents< T, 2 > extents(data);
+//    foobar::types::Vec<2> idx;
+//    for(idx[0]=0; idx[0]<extents[0]; ++idx[0]){
+//        for(idx[1]=0; idx[1]<extents[1]; ++idx[1]){
+//            inFile << acc(idx, data);
+//            if(idx[1]+1 < extents[1])
+//                inFile << " ";
+//        }
+//        if(idx[0]+1 < extents[0])
+//            inFile << "\n";
+//    }
     inFile.close();
 }
 
@@ -109,10 +115,10 @@ void testComplex()
 	//fftw_destroy_plan(plan);
 	fft(aperture, fftResult);
 	calcIntensities(aperture, intensity, aperture.xDim(), aperture.yDim());
-	write2File(intensity, foobar::policies::VolumeAccessor(), "input.txt");
+	write2File<foobar::policies::VolumeAccessor>(intensity, "input.txt");
 	calcIntensities(fftResult, intensity, fftResult.xDim(), fftResult.yDim());
 	auto adapter = makeTransposeAdapter(intensity);
-	write2File(adapter, foobar::policies::VolumeAccessor(), "output.txt");
+	write2File<foobar::policies::VolumeAccessor>(adapter, "output.txt");
 }
 
 void testReal()
@@ -129,14 +135,14 @@ void testReal()
                     >::type;
     FFTType fft(aperture, fftResult);
     generateData(aperture, Rect<double>(20,20));
-    write2File(aperture, foobar::policies::VolumeAccessor(), "input.txt");
+    write2File<foobar::policies::VolumeAccessor>(aperture, "input.txt");
     //fftw_execute(plan);
     //fftw_destroy_plan(plan);
     fft(aperture, fftResult);
     SymetricAdapter<fftw_complex> symAdapter(aperture.xDim(), fftResult);
     calcIntensities(symAdapter, intensity, symAdapter.xDim(), symAdapter.yDim());
     auto adapter = makeTransposeAdapter(intensity);
-    write2File(adapter, foobar::policies::VolumeAccessor(), "output.txt");
+    write2File<foobar::policies::VolumeAccessor>(adapter, "output.txt");
 }
 
 template< typename T_File >
@@ -159,8 +165,8 @@ void testFile( T_File& file )
     SymetricAdapter< MyComplex<float> > symAdapter(intensity.xDim(), fftResult);
     calcIntensities(symAdapter, intensity, symAdapter.xDim(), symAdapter.yDim());
     auto adapter = makeTransposeAdapter(intensity);
-    write2File(file.getData(), foobar::policies::DataContainerAccessor(), "input.txt");
-    write2File(adapter, foobar::policies::VolumeAccessor(), "output.txt");
+    write2File<foobar::policies::DataContainerAccessor>(file.getData(), "input.txt");
+    write2File<foobar::policies::VolumeAccessor>(adapter, "output.txt");
 }
 
 /*
@@ -172,7 +178,7 @@ int main(int argc, char** argv) {
     //testComplex();
     using FileType = foobar::types::FileContainer<
         libTiff::TiffImage<>,
-        foobar::policies::CopyArray2Array< foobar::policies::ImageAccessorGetColorAsFp<> >,
+        foobar::policies::CopyArray2Array< foobar::policies::ImageAccessorGetColorAsFp<>, bmpl::_1 >,
         float,
         false
         >;

@@ -10,22 +10,27 @@ namespace policies {
 
     /**
      * Policy that copies the contents of an array(-like) type to another
+     * Provides a ()-operator(source, destination)
+     *
+     * @param T_SrcAccessor Accessor used to get an element from src: <type> operator(idx, src)
+     * @param T_DstAccessor Accessor used to set an element in dst  : operator(idx, dst, value)
      */
-    template< class T_SrcAccessor >
+    template< class T_SrcAccessor, class T_DstAccessor >
     struct CopyArray2Array
     {
         T_SrcAccessor accSrc_;
+        T_DstAccessor accDst_;
 
-        template< class T_Src, class T_Dst, class T_DstAccessor >
+        template< class T_Src, class T_Dst >
         void
-        operator()(const T_Src& src, T_Dst& dst, T_DstAccessor&& accDst)
+        operator()(const T_Src& src, T_Dst& dst)
         {
             static constexpr unsigned numDims = traits::NumDims<T_Src>::value;
             static_assert(numDims == traits::NumDims<T_Dst>::value, "Dimensions must match");
             using ExtentsVec = types::Vec<numDims>;
             auto func = [&](const ExtentsVec& idx)
             {
-                accDst(idx, dst, accSrc_(idx, src));
+                accDst_(idx, dst, accSrc_(idx, src));
             };
             policies::LoopNDims<numDims>::template loop(ExtentsVec(), GetExtents<T_Src>(src), func);
         }

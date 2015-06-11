@@ -11,6 +11,10 @@
 #include "foobar/policies/DataContainerAccessor.hpp"
 #include "foobar/c++14_types.hpp"
 
+#include <boost/mpl/apply.hpp>
+
+namespace bmpl = boost::mpl;
+
 namespace foobar {
     namespace types {
 
@@ -20,6 +24,7 @@ namespace foobar {
          * @param T_FileHandler File class. Must support open(string), isOpen(), close(), and a specialization for GetExtents
          * @param T_FileReaderPolicy Policy that should provide an operator(TFileHandler&, Data&, DataAccessor&) which
          *          should read the entire file into the DataContainer using the DataAccessor(Idx, Data, Value) method
+         *          Note: Should provide the bmpl::_1 placeholder as template parameter for the destination accessor
          * @param T_Accuracy The internal datatype used (float or double) [float]
          * @param T_isComplex Whether the values are complex [false]
          * @param T_numDims number of dimensions [Number of dimensions supported by the FileHandler]
@@ -35,8 +40,8 @@ namespace foobar {
         {
         public:
             using FileHandler = T_FileHandler;
-            using FileReaderPolicy = T_FileReaderPolicy;
             using DataAccessor = policies::DataContainerAccessor;
+            using FileReaderPolicy = typename bmpl::apply< T_FileReaderPolicy, DataAccessor >::type;
             static constexpr unsigned numDims = T_numDims;
             static constexpr bool isComplex = T_isComplex;
             using Accuracy = T_Accuracy;
@@ -131,7 +136,7 @@ namespace foobar {
                     return;
                 gotData_ = true;
                 allocData();
-                FileReaderPolicy()(fileHandler_, data_, DataAccessor());
+                FileReaderPolicy()(fileHandler_, data_);
             }
 
         };

@@ -14,5 +14,8 @@ namespace traits {
     template< typename T >
     struct NumDims< T, void_t< decltype(T::numDims) > >: std::integral_constant< unsigned, T::numDims >{};
 
+    template< typename T >
+    struct NumDims< T& >: NumDims<T>{};
+
 }  // namespace traits
 }  // namespace foobar

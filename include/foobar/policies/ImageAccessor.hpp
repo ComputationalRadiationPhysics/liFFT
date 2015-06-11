@@ -8,22 +8,6 @@ namespace foobar {
 namespace policies {
 
     /**
-     * Functor that just returns the value passed to it
-     */
-    template< typename T >
-    struct IdentityOperator
-    {
-        using type = T;
-        using result_type = T;
-
-        T
-        operator()(const T value) const
-        {
-            return value;
-        }
-    };
-
-    /**
      * Enumeration of all possible Color(Channel)s
      */
     enum class Color
@@ -88,7 +72,7 @@ namespace policies {
         unsigned
         operator()(const IdxType& idx, const T_Image& img) const
         {
-            return img(idx[0], idx[1]);
+            return img(idx[1], idx[0]);
         }
     };
 
