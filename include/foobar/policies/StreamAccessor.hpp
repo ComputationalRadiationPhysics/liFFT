@@ -31,7 +31,7 @@ namespace policies {
     template< class T_Delimiters >
     struct StreamAccessor
     {
-        const T_Delimiters delimiters_;
+        const T_Delimiters delimiters_ = T_Delimiters();
 
         template< class T_Stream, typename T_Value >
         void operator()(T_Stream& stream, T_Value&& value)

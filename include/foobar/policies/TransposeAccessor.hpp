@@ -15,7 +15,7 @@ namespace policies {
 
         template< class T_Index, class T_Data >
         void
-        transposeIdx(const T_Index& idxIn, T_Index& idxOut, T_Data& data)
+        transposeIdx(const T_Index& idxIn, T_Index& idxOut, const T_Data& data) const
         {
             static constexpr unsigned numDims = traits::NumDims< T_Data >::value;
             GetExtents< T_Data > extents(data);
@@ -39,7 +39,7 @@ namespace policies {
         -> decltype(acc_(idx, data))
         {
             T_Index transposedIdx;
-            transposedIdx(idx, transposedIdx, data);
+            transposeIdx(idx, transposedIdx, data);
             return acc_(transposedIdx, data);
         }
 
@@ -48,7 +48,7 @@ namespace policies {
         operator()(const T_Index& idx, T_Data& data, T_Value&& value)
         {
             T_Index transposedIdx;
-            transposedIdx(idx, transposedIdx, data);
+            transposeIdx(idx, transposedIdx, data);
             acc_(transposedIdx, data, std::forward<T_Value>(value));
         }
     };

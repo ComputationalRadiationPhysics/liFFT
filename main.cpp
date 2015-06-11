@@ -20,6 +20,7 @@
 #include "foobar/policies/VolumeAccessor.hpp"
 #include "foobar/policies/CopyArray2Stream.hpp"
 #include "foobar/policies/StreamAccessor.hpp"
+#include "foobar/policies/TransposeAccessor.hpp"
 #include "foobar/types/StreamWrapper.hpp"
 
 template< typename T = double >
@@ -166,7 +167,7 @@ void testFile( T_File& file )
     calcIntensities(symAdapter, intensity, symAdapter.xDim(), symAdapter.yDim());
     auto adapter = makeTransposeAdapter(intensity);
     write2File<foobar::policies::DataContainerAccessor>(file.getData(), "input.txt");
-    write2File<foobar::policies::VolumeAccessor>(adapter, "output.txt");
+    write2File<foobar::policies::TransposeAccessor<foobar::policies::VolumeAccessor>>(intensity, "output.txt");
 }
 
 /*
