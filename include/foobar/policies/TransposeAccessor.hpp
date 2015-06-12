@@ -1,12 +1,14 @@
 #pragma once
 
+#include "foobar/policies/ArrayAccessor.hpp"
+
 namespace foobar {
 namespace policies {
 
     /**
      * Accessor that transposes all accesses such that the 2nd half comes before the first
      */
-    template< class T_BaseAccessor >
+    template< class T_BaseAccessor = ArrayAccessor >
     struct TransposeAccessor
     {
     private:

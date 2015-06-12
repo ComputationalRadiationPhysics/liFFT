@@ -89,7 +89,7 @@ namespace libTiff
         operator()(unsigned x, unsigned y) const
         {
             assert(isOpen());
-            return data_[y * width_ + x];
+            return data_[(height_ - 1 - y) * width_ + x];
         }
     };
 

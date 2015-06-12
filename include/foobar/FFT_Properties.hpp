@@ -20,8 +20,7 @@ namespace detail {
     template<
         typename T_Input,
         typename T_Output,
-        typename T_IsFwd,
-        typename T_NumDims
+        typename T_IsFwd
         >
     struct FFT_Properties
     {
@@ -31,20 +30,12 @@ namespace detail {
         using Output = std::conditional_t< isInplace, Input, T_Output >;
     private:
         static constexpr bool autoDetectIsFwd = std::is_same< T_IsFwd, AutoDetect >::value;
-        static constexpr bool autoDetectNumDims = std::is_same< T_NumDims, AutoDetect >::value;
-        static_assert(autoDetectIsFwd || std::is_same< typename T_IsFwd::value_type, bool >::value, "Wrong argument type for IsFwd");
-        static_assert(autoDetectNumDims || std::is_same< typename T_NumDims::value_type, unsigned >::value, "Wrong argument type for NumDims");
+        static_assert(autoDetectIsFwd || std::is_same< decltype(T_IsFwd::value), bool >::value, "Wrong argument type for IsFwd");
 
         using PrecisionTypeIn = typename traits::IntegralType<Input>::type;
-        using NumDimsIn = std::conditional_t<
-                            autoDetectNumDims,
-                            traits::NumDims<Input>,
-                            T_NumDims >;
+        using NumDimsIn = traits::NumDims<Input>;
         using PrecisionTypeOut = typename traits::IntegralType<Output>::type;
-        using NumDimsOut = std::conditional_t<
-                             autoDetectNumDims,
-                             traits::NumDims<Output>,
-                             T_NumDims >;
+        using NumDimsOut = traits::NumDims<Output>;
 
         static_assert( AssertValue< std::is_same< PrecisionTypeIn, PrecisionTypeOut > >::value, "Need same precision on In/Out");
         static_assert(NumDimsIn::value >= 1, "Need >= 1 dimension");

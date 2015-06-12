@@ -15,5 +15,10 @@ namespace traits {
         static_assert(!IsComplex<T>::value, "A user specialization must be provided for Complex types");
     };
 
+
+    template< typename T >
+    struct IsAoS< T, void_t< decltype(T::isAoS) > >: std::integral_constant< bool, T::isAoS >{};
+
+
 }  // namespace traits
 }  // namespace foobar

@@ -10,11 +10,11 @@ namespace policies {
      * Returns the total number of elements for a given data structure
      * regarding only the last n dimensions
      */
-    template< typename T_Data, unsigned T_numDims = traits::NumDims<T_Data>::value >
+    template< typename T_Data >
     struct GetNumElements
     {
-        static constexpr unsigned numDims = T_numDims;
-        using Extents = GetLastNExtents< T_Data, numDims >;
+        static constexpr unsigned numDims = traits::NumDims<T_Data>::value;
+        using Extents = GetExtents< T_Data >;
 
         unsigned operator()(const T_Data& data){
             Extents extents(data);

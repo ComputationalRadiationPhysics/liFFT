@@ -131,7 +131,7 @@ namespace policies {
             auto pIn = PtrConverterIn()(ptrIn(input));
             if( plan.InDevicePtr != nullptr)
             {
-                unsigned numElements = foobar::policies::GetNumElements< Input, numDims >()(input);
+                unsigned numElements = foobar::policies::GetNumElements< Input >()(input);
                 copy.H2D( plan.InDevicePtr, pIn, numElements * sizeof(LibInType));
                 pIn = plan.InDevicePtr;
             }
@@ -141,7 +141,7 @@ namespace policies {
                 throw std::runtime_error("Error executing plan: " + std::to_string(result));
             if( plan.OutDevicePtr != nullptr)
             {
-                unsigned numElements = foobar::policies::GetNumElements< Output, numDims >()(output);
+                unsigned numElements = foobar::policies::GetNumElements< Output >()(output);
                 pOut = PtrConverterOut()(ptrOut(output));
                 copy.D2H(pOut, plan.OutDevicePtr, numElements * sizeof(LibInType));
             }
@@ -157,7 +157,7 @@ namespace policies {
             auto pIn = PtrConverterIn()(ptrIn(inOut));
             if( plan.InDevicePtr != nullptr)
             {
-                unsigned numElements = foobar::policies::GetNumElements< Input, numDims >()(inOut);
+                unsigned numElements = foobar::policies::GetNumElements< Input >()(inOut);
                 copy.H2D( plan.InDevicePtr, pIn, numElements * sizeof(LibInType));
                 pIn = plan.InDevicePtr;
             }
@@ -166,7 +166,7 @@ namespace policies {
                 throw std::runtime_error("Error executing plan: " + std::to_string(result));
             if( plan.InDevicePtr != nullptr)
             {
-                unsigned numElements = foobar::policies::GetNumElements< Output, numDims >()(inOut);
+                unsigned numElements = foobar::policies::GetNumElements< Output >()(inOut);
                 pIn = PtrConverterOut()(ptrIn(inOut));
                 copy.H2D(pIn, plan.InDevicePtr, numElements * sizeof(LibInType));
             }

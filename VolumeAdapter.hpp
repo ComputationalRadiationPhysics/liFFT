@@ -1,7 +1,9 @@
 #pragma once
 
 #include "Volume.hpp"
+#include "foobar/traits/NumDims.hpp"
 #include "foobar/policies/GetExtents.hpp"
+#include "foobar/types/DimOffsetWrapper.hpp"
 
 template<typename T>
 class VolumeAdapter{
@@ -23,6 +25,8 @@ class SymetricAdapter: public Volume<T>{
     const size_t realXDim;
 public:
     using parent_type = Volume<T>;
+    static constexpr unsigned numDims = 3;
+
     SymetricAdapter(size_t xDim, size_t yDim, size_t zDim): parent_type(xDim/2+1, yDim, zDim), realXDim(xDim){}
     SymetricAdapter(size_t xDim, size_t yDim, size_t zDim, T* data): parent_type(xDim/2+1, yDim, zDim, data), realXDim(xDim){}
     SymetricAdapter(size_t realXDim, parent_type& data): parent_type(data.xDim(), data.yDim(), data.zDim(), data.data()), realXDim(realXDim){}
@@ -58,8 +62,15 @@ public:
 };
 
 template<typename T> inline
-TransposeAdapter<T> makeTransposeAdapter(T& obj){
+TransposeAdapter<T>
+makeTransposeAdapter(T& obj){
     return TransposeAdapter<T>(obj);
+}
+
+template<typename T, unsigned T_offset> inline
+foobar::types::DimOffsetWrapper<TransposeAdapter<T> , T_offset>
+makeTransposeAdapter(foobar::types::DimOffsetWrapper<T, T_offset>& obj){
+    return foobar::types::DimOffsetWrapper<TransposeAdapter<T> , T_offset>(obj);
 }
 
 namespace foobar{

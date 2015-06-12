@@ -57,8 +57,8 @@ namespace policies {
         static constexpr bool isComplexIn  = T_isComplexIn;
         static constexpr bool isComplexOut = T_isComplexOut;
 
-        using ExtentsIn = foobar::policies::GetLastNExtents< Input, numDims >;
-        using ExtentsOut = foobar::policies::GetLastNExtents< Output, numDims >;
+        using ExtentsIn = foobar::policies::GetExtents< Input >;
+        using ExtentsOut = foobar::policies::GetExtents< Output >;
         using LibTypes = traits::LibTypes< Precision, isComplexIn, isComplexOut >;
         using LibInType = typename LibTypes::InType;
         using LibOutType = typename LibTypes::OutType;
@@ -108,7 +108,7 @@ namespace policies {
             }
             PlanType plan;
             createPlan(plan, extents);
-            unsigned numElements = foobar::policies::GetNumElements< Input, numDims >()(input);
+            unsigned numElements = foobar::policies::GetNumElements< Input >()(input);
             allocIn.malloc(plan.InDevicePtr, numElements * sizeof(LibInType));
             allocOut.malloc(plan.OutDevicePtr, numElements * sizeof(LibOutType));
             return plan;
@@ -122,7 +122,7 @@ namespace policies {
             ExtentsIn extents(inOut);
             PlanType plan;
             createPlan(plan, extents);
-            unsigned numElements = foobar::policies::GetNumElements< ExtentsIn, numDims >()(extents);
+            unsigned numElements = foobar::policies::GetNumElements< ExtentsIn >()(extents);
             alloc.malloc(plan.InDevicePtr, numElements * std::max(sizeof(LibInType), sizeof(LibOutType)));
             plan.OutDevicePtr = nullptr;
             return plan;

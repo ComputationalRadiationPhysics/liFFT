@@ -21,7 +21,10 @@
 #include "foobar/policies/CopyArray2Stream.hpp"
 #include "foobar/policies/StreamAccessor.hpp"
 #include "foobar/policies/TransposeAccessor.hpp"
+#include "foobar/policies/TransformAccessor.hpp"
 #include "foobar/types/StreamWrapper.hpp"
+#include "foobar/types/DimOffsetWrapper.hpp"
+#include "foobar/types/SymmetricWrapper.hpp"
 
 template< typename T = double >
 struct MyComplex{
@@ -70,7 +73,7 @@ void write2File(T& data, const std::string& name){
 
     foobar::types::StreamWrapper< std::ofstream, 2 > inFile(name.c_str());
     F()(data, inFile);
-//    foobar::policies::GetLastNExtents< T, 2 > extents(data);
+//    foobar::policies::GetExtents< T, 2 > extents(data);
 //    foobar::types::Vec<2> idx;
 //    for(idx[0]=0; idx[0]<extents[0]; ++idx[0]){
 //        for(idx[1]=0; idx[1]<extents[1]; ++idx[1]){
@@ -93,22 +96,36 @@ void calcIntensities(const T& in, T2& out, size_t numX, size_t numY){
     }
 }
 
-using ComplexVol = Volume< MyComplex<> >;
+template< typename T >
+struct CalcIntensityFunc
+{
+    auto
+    operator()(const T& val) const
+    -> decltype(val.real*val.real + val.imag*val.imag)
+    {
+        return val.real*val.real + val.imag*val.imag;
+    }
+};
+
+using ComplexVol     = Volume< MyComplex<> >;
 using ComplexVolFFTW = Volume< fftw_complex >;
-using RealVol = Volume<>;
+using RealVol        = Volume<>;
+
+using foobar::types::DimOffsetWrapper;
+using ComplexVol2D     = DimOffsetWrapper< ComplexVol,     1 >;
+using ComplexVolFFTW2D = DimOffsetWrapper< ComplexVolFFTW, 1 >;
+using RealVol2D        = DimOffsetWrapper< RealVol,        1 >;
 
 void testComplex()
 {
-    ComplexVol aperture(1024, 1024);
-    ComplexVol fftResult(aperture.xDim(), aperture.yDim(), aperture.zDim());
-	RealVol intensity(aperture.xDim(), aperture.yDim(), aperture.zDim());
+    ComplexVol2D aperture(1024, 1024);
+    ComplexVol2D fftResult(aperture.xDim(), aperture.yDim(), aperture.zDim());
+    RealVol2D intensity(aperture.xDim(), aperture.yDim(), aperture.zDim());
     //fftw_plan plan = fftw_plan_dft_2d(aperture.yDim(), aperture.xDim(), reinterpret_cast<fftw_complex*>(aperture.data()), reinterpret_cast<fftw_complex*>(fftResult.data()), FFTW_FORWARD, FFTW_ESTIMATE);
     using FFTType = typename foobar::FFT<
                         foobar::libraries::cuFFT::CuFFT<>,
-                        ComplexVol,
-                        ComplexVol,
-                        foobar::AutoDetect,
-                        std::integral_constant<unsigned, 2>
+                        ComplexVol2D,
+                        ComplexVol2D
                     >::type;
     FFTType fft(aperture, fftResult);
 	generateData(aperture, Rect<double>(20,20));
@@ -124,15 +141,14 @@ void testComplex()
 
 void testReal()
 {
-    RealVol aperture(1024, 1024);
-    ComplexVolFFTW fftResult(aperture.xDim()/2+1, aperture.yDim(), aperture.zDim());
-    RealVol intensity(aperture.xDim(), aperture.yDim(), aperture.zDim());
+    RealVol2D aperture(1024, 1024);
+    ComplexVolFFTW2D fftResult(aperture.xDim()/2+1, aperture.yDim(), aperture.zDim());
+    RealVol2D intensity(aperture.xDim(), aperture.yDim(), aperture.zDim());
     //fftw_plan plan = fftw_plan_dft_r2c_2d(aperture.yDim(), aperture.xDim(), aperture.data(), reinterpret_cast<fftw_complex*>(fftResult.data()), FFTW_ESTIMATE);
     using FFTType = typename foobar::FFT<
                         foobar::libraries::fftw::FFTW<>,
-                        RealVol, ComplexVolFFTW,
-                        foobar::AutoDetect,
-                        std::integral_constant<unsigned, 2>
+                        RealVol,
+                        ComplexVolFFTW
                     >::type;
     FFTType fft(aperture, fftResult);
     generateData(aperture, Rect<double>(20,20));
@@ -149,25 +165,28 @@ void testReal()
 template< typename T_File >
 void testFile( T_File& file )
 {
-    using FFTResult_t = Volume< MyComplex<float> >;
+    using FFTResult_t = DimOffsetWrapper< Volume< MyComplex<float> >, 1 >;
     FFTResult_t fftResult(file.getExtents()[0]/2+1, file.getExtents()[1]);
-    Volume< float > intensity(file.getExtents()[0], file.getExtents()[1]);
+    DimOffsetWrapper< Volume< float >, 1 > intensity(file.getExtents()[0], file.getExtents()[1]);
     //fftw_plan plan = fftw_plan_dft_r2c_2d(aperture.yDim(), aperture.xDim(), aperture.data(), reinterpret_cast<fftw_complex*>(fftResult.data()), FFTW_ESTIMATE);
     using FFTType = typename foobar::FFT<
                         foobar::libraries::fftw::FFTW<>,
                         T_File,
-                        FFTResult_t,
-                        foobar::AutoDetect,
-                        std::integral_constant<unsigned, 2>
+                        FFTResult_t
                     >::type;
     FFTType fft(file, fftResult);
     file.loadData(true);
     fft(file, fftResult);
-    SymetricAdapter< MyComplex<float> > symAdapter(intensity.xDim(), fftResult);
-    calcIntensities(symAdapter, intensity, symAdapter.xDim(), symAdapter.yDim());
-    auto adapter = makeTransposeAdapter(intensity);
+    foobar::types::SymmetricWrapper< decltype(fftResult), foobar::policies::VolumeAccessor > fullResult(fftResult, file.getExtents()[0]);
+    using GetIntensityOfOutput =
+        foobar::policies::TransformAccessor<
+            foobar::policies::TransposeAccessor<>,
+            CalcIntensityFunc<
+                MyComplex<float>
+            >
+        >;s
     write2File<foobar::policies::DataContainerAccessor>(file.getData(), "input.txt");
-    write2File<foobar::policies::TransposeAccessor<foobar::policies::VolumeAccessor>>(intensity, "output.txt");
+    write2File<GetIntensityOfOutput>(fullResult, "output.txt");
 }
 
 /*
@@ -183,13 +202,13 @@ int main(int argc, char** argv) {
         float,
         false
         >;
+    testReal();
     FileType myFile("/home/grund59/Rect.tif");
     testFile(myFile);
-    //testReal();
     if(std::system("python writeData.py -i input.txt -o input.pdf"))
-        std::cout << "Error converting input";
+        std::cout << "Error converting input\n";
     if(std::system("python writeData.py -s -i output.txt -o output.pdf"))
-        std::cout << "Error converting output";
+        std::cout << "Error converting output\n";
     return 0;
 }
 

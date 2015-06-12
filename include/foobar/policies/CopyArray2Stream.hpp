@@ -84,15 +84,17 @@ namespace policies {
         void
         operator()(const T_Src& src, T_Dst& dst)
         {
-            static constexpr unsigned numDimsSrc = traits::NumDims<T_Src>::value;
+            static constexpr unsigned numDims    = traits::NumDims<T_Src>::value;
             static constexpr unsigned numDimsDst = traits::NumDims<T_Dst>::value;
-            static constexpr unsigned numDims = (numDimsSrc<numDimsDst) ? numDimsSrc : numDimsDst;
+            static_assert(numDims == 2, "Dimensions must match");
+            static_assert(2 == numDimsDst, "Dimensions must match");
+            static_assert(numDims == numDimsDst, "Dimensions must match");
 
             static_assert(numDims <= traits::NumDims<decltype(accDst_.getDelimiters())>::value, "Accessor does not provide enough delimiters");
             using ExtentsVec = types::Vec<numDims>;
             ExtentsVec idx;
             detail::CopyArray2StreamImpl< (numDims == 1) >::
-                    template loop< 0, numDims >(idx, GetLastNExtents<T_Src, numDims>(src), src, accSrc_, dst, accDst_);
+                    template loop< 0, numDims >(idx, GetExtents<T_Src>(src), src, accSrc_, dst, accDst_);
         }
     };
 

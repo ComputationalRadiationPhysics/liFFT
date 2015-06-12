@@ -44,8 +44,8 @@ namespace policies {
         static constexpr bool isInplace    = T_isInplace;
         static constexpr bool isComplexIn  = T_isComplexIn;
         static constexpr bool isComplexOut = T_isComplexOut;
-        using ExtentsIn = foobar::policies::GetExtentsRawPtr< Input, numDims >;
-        using ExtentsOut = foobar::policies::GetExtentsRawPtr< Output, numDims >;
+        using ExtentsIn = foobar::policies::GetExtentsRawPtr< Input >;
+        using ExtentsOut = foobar::policies::GetExtentsRawPtr< Output >;
         using RawPtrIn = foobar::policies::GetRawPtr< Input >;
         using RawPtrOut = foobar::policies::GetRawPtr< Output >;
         using ComplexType = typename traits::Types< Precision >::ComplexType;

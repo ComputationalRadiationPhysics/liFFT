@@ -22,14 +22,12 @@ namespace foobar {
      * @param T_Input   Input container type
      * @param T_Output  Output container type (Can be an InplaceType for in-place transforms)
      * @param T_IsFwd   Whether to use forward or backward transform (should have a bool ::value member) or AutoDetect (True for C2C or R2C, False for C2R)
-     * @param T_NumDums Number of dimensions, AutoDetect for using the NumDims trait on Input/Output containers, if specified only the last n dimensions are used
      */
     template<
             class T_Library,
             typename T_Input,
             typename T_Output = types::InplaceType<>,
-            typename T_IsFwd = AutoDetect,
-            typename T_NumDims = AutoDetect
+            typename T_IsFwd = AutoDetect
             >
     struct FFT
     {
@@ -37,9 +35,8 @@ namespace foobar {
         using Input = T_Input;
         using Output = T_Output;
         using IsFwd = T_IsFwd;
-        using NumDims = T_NumDims;
 
-        using FFT_Properties = detail::FFT_Properties< Input, Output, IsFwd, NumDims >;
+        using FFT_Properties = detail::FFT_Properties< Input, Output, IsFwd >;
 
         using type = detail::FFT_Impl< Library, FFT_Properties >;
     };
