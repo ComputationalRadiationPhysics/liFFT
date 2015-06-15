@@ -1,6 +1,6 @@
 #pragma once
 
-#include "foobar/traits/void_t.hpp"
+#include "foobar/void_t.hpp"
 
 namespace foobar {
 namespace traits {

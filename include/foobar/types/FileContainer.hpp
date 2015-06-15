@@ -9,6 +9,7 @@
 #include "foobar/policies/GetRawPtr.hpp"
 #include "foobar/policies/GetExtents.hpp"
 #include "foobar/policies/DataContainerAccessor.hpp"
+#include "foobar/policies/Copy.hpp"
 #include "foobar/c++14_types.hpp"
 
 #include <boost/mpl/apply.hpp>
@@ -22,16 +23,15 @@ namespace foobar {
          * A container that can load a file to an internal (contiguous) memory
          *
          * @param T_FileHandler File class. Must support open(string), isOpen(), close(), and a specialization for GetExtents
-         * @param T_FileReaderPolicy Policy that should provide an operator(TFileHandler&, Data&, DataAccessor&) which
-         *          should read the entire file into the DataContainer using the DataAccessor(Idx, Data, Value) method
-         *          Note: Should provide the bmpl::_1 placeholder as template parameter for the destination accessor
+         * @param T_FileAccessor Either an Array- or StreamAccessor that should provide an operator([index,] TFileHandler&) which
+         *          gets an element from the file
          * @param T_Accuracy The internal datatype used (float or double) [float]
          * @param T_isComplex Whether the values are complex [false]
          * @param T_numDims number of dimensions [Number of dimensions supported by the FileHandler]
          */
         template<
             typename T_FileHandler,
-            typename T_FileReaderPolicy,
+            typename T_FileAccessor,
             typename T_Accuracy = float,
             bool T_isComplex = false,
             unsigned T_numDims = traits::NumDims< T_FileHandler >::value
@@ -41,11 +41,12 @@ namespace foobar {
         public:
             using FileHandler = T_FileHandler;
             using DataAccessor = policies::DataContainerAccessor;
-            using FileReaderPolicy = typename bmpl::apply< T_FileReaderPolicy, DataAccessor >::type;
+            using FileAccessor = T_FileAccessor;
             static constexpr unsigned numDims = T_numDims;
             static constexpr bool isComplex = T_isComplex;
             using Accuracy = T_Accuracy;
         private:
+            using CopyPolicy = policies::Copy< FileAccessor, DataAccessor >;
             using ElementType = std::conditional_t< T_isComplex, Complex<Accuracy>, Real<Accuracy> >;
             using Memory = ElementType*;
 
@@ -136,7 +137,7 @@ namespace foobar {
                     return;
                 gotData_ = true;
                 allocData();
-                FileReaderPolicy()(fileHandler_, data_);
+                CopyPolicy()(fileHandler_, data_);
             }
 
         };

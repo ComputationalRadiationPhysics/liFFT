@@ -2,7 +2,7 @@
 
 #include <type_traits>
 #include "foobar/traits/RemoveModifiers.hpp"
-#include "foobar/traits/void_t.hpp"
+#include "foobar/void_t.hpp"
 
 namespace foobar {
 namespace traits {

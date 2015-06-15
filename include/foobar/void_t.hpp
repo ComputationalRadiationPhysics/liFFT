@@ -1,7 +1,6 @@
 #pragma once
 
 namespace foobar {
-namespace traits {
 
     /**
      * Helper for void_t (Workaround, see Paper from Walter Brown)
@@ -16,5 +15,4 @@ namespace traits {
     template <typename... Ts>
     using void_t = typename voider<Ts...>::type;
 
-}  // namespace traits
 }  // namespace foobar

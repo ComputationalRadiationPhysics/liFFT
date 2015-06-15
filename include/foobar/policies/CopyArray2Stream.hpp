@@ -7,61 +7,59 @@
 
 namespace foobar {
 namespace policies {
+namespace detail {
 
-    namespace detail {
-
-        template<bool T_lastDim>
-        struct CopyArray2StreamImpl
+    template<bool T_lastDim>
+    struct CopyArray2StreamImpl
+    {
+        template<
+            unsigned T_curDim,
+            unsigned T_endDim,
+            class T_Index,
+            class T_Extents,
+            class T_Src,
+            class T_SrcAccessor,
+            class T_Dst,
+            class T_DstAccessor
+        >
+        static void
+        loop(T_Index& idx, const T_Extents& extents, const T_Src& src, T_SrcAccessor&& accSrc, T_Dst& dst, T_DstAccessor&& accDst)
         {
-            template<
-                unsigned T_curDim,
-                unsigned T_endDim,
-                class T_Index,
-                class T_Extents,
-                class T_Src,
-                class T_SrcAccessor,
-                class T_Dst,
-                class T_DstAccessor
-            >
-            static void
-            loop(T_Index& idx, const T_Extents& extents, const T_Src& src, T_SrcAccessor&& accSrc, T_Dst& dst, T_DstAccessor&& accDst)
+            for(idx[T_curDim]=0; idx[T_curDim]<extents[T_curDim]; ++idx[T_curDim])
             {
-                for(idx[T_curDim]=0; idx[T_curDim]<extents[T_curDim]; ++idx[T_curDim])
-                {
-                    if(idx[T_curDim] > 0)
-                        accDst(dst, accDst.getDelimiters()[T_curDim]);
-                    accDst(dst, accSrc(idx, src));
-                }
+                if(idx[T_curDim] > 0)
+                    accDst(dst, accDst.getDelimiters()[T_curDim]);
+                accDst(dst, accSrc(idx, src));
             }
-        };
+        }
+    };
 
-        template<>
-        struct CopyArray2StreamImpl<false>
+    template<>
+    struct CopyArray2StreamImpl<false>
+    {
+        template<
+            unsigned T_curDim,
+            unsigned T_lastDim,
+            class T_Index,
+            class T_Extents,
+            class T_Src,
+            class T_SrcAccessor,
+            class T_Dst,
+            class T_DstAccessor
+        >
+        static void
+        loop(T_Index& idx, const T_Extents& extents, const T_Src& src, T_SrcAccessor&& accSrc, T_Dst& dst, T_DstAccessor&& accDst)
         {
-            template<
-                unsigned T_curDim,
-                unsigned T_lastDim,
-                class T_Index,
-                class T_Extents,
-                class T_Src,
-                class T_SrcAccessor,
-                class T_Dst,
-                class T_DstAccessor
-            >
-            static void
-            loop(T_Index& idx, const T_Extents& extents, const T_Src& src, T_SrcAccessor&& accSrc, T_Dst& dst, T_DstAccessor&& accDst)
+            for(idx[T_curDim]=0; idx[T_curDim]<extents[T_curDim]; ++idx[T_curDim])
             {
-                for(idx[T_curDim]=0; idx[T_curDim]<extents[T_curDim]; ++idx[T_curDim])
-                {
-                    if(idx[T_curDim] > 0)
-                        accDst(dst, accDst.getDelimiters()[T_curDim]);
-                    CopyArray2StreamImpl< (T_curDim+2 == T_lastDim) >::
-                            template loop< T_curDim+1, T_lastDim >(idx, extents, src, std::forward<T_SrcAccessor>(accSrc), dst, std::forward<T_DstAccessor>(accDst));
-                }
+                if(idx[T_curDim] > 0)
+                    accDst(dst, accDst.getDelimiters()[T_curDim]);
+                CopyArray2StreamImpl< (T_curDim+2 == T_lastDim) >::
+                        template loop< T_curDim+1, T_lastDim >(idx, extents, src, std::forward<T_SrcAccessor>(accSrc), dst, std::forward<T_DstAccessor>(accDst));
             }
-        };
+        }
+    };
 
-    }  // namespace detail
 
     /**
      * Policy that copies the contents of an array(-like) type to a stream(-like) type
@@ -77,8 +75,10 @@ namespace policies {
     template< class T_SrcAccessor, class T_DstAccessor >
     struct CopyArray2Stream
     {
-        T_SrcAccessor accSrc_;
-        T_DstAccessor accDst_;
+        T_SrcAccessor& accSrc_;
+        T_DstAccessor& accDst_;
+
+        CopyArray2Stream(T_SrcAccessor& accSrc, T_DstAccessor& accDst): accSrc_(accSrc), accDst_(accDst){}
 
         template< class T_Src, class T_Dst >
         void
@@ -98,5 +98,6 @@ namespace policies {
         }
     };
 
+}  // namespace detail
 }  // namespace policies
 }  // namespace foobar

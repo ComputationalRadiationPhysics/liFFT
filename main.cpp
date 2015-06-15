@@ -16,15 +16,14 @@
 #include "libTiff/libTiff.hpp"
 #include "foobar/policies/ImageAccessor.hpp"
 #include "foobar/types/FileContainer.hpp"
-#include "foobar/policies/CopyArray2Array.hpp"
 #include "foobar/policies/VolumeAccessor.hpp"
-#include "foobar/policies/CopyArray2Stream.hpp"
 #include "foobar/policies/StreamAccessor.hpp"
 #include "foobar/policies/TransposeAccessor.hpp"
 #include "foobar/policies/TransformAccessor.hpp"
 #include "foobar/types/StreamWrapper.hpp"
 #include "foobar/types/DimOffsetWrapper.hpp"
 #include "foobar/types/SymmetricWrapper.hpp"
+#include "foobar/FFT_DataWrapper.hpp"
 
 template< typename T = double >
 struct MyComplex{
@@ -69,7 +68,7 @@ double absSqr(const fftw_complex& val){
 
 template< class T_Accessor, typename T >
 void write2File(T& data, const std::string& name){
-    using F = foobar::policies::CopyArray2Stream< T_Accessor, foobar::policies::StringStreamAccessor >;
+    using F = foobar::policies::Copy< T_Accessor, foobar::policies::StringStreamAccessor >;
 
     foobar::types::StreamWrapper< std::ofstream, 2 > inFile(name.c_str());
     F()(data, inFile);
@@ -167,6 +166,7 @@ void testFile( T_File& file )
 {
     using FFTResult_t = DimOffsetWrapper< Volume< MyComplex<float> >, 1 >;
     FFTResult_t fftResult(file.getExtents()[0]/2+1, file.getExtents()[1]);
+    foobar::FFT_DataWrapper<FFTResult_t> myFFTResult(fftResult);
     DimOffsetWrapper< Volume< float >, 1 > intensity(file.getExtents()[0], file.getExtents()[1]);
     //fftw_plan plan = fftw_plan_dft_r2c_2d(aperture.yDim(), aperture.xDim(), aperture.data(), reinterpret_cast<fftw_complex*>(fftResult.data()), FFTW_ESTIMATE);
     using FFTType = typename foobar::FFT<
@@ -184,7 +184,7 @@ void testFile( T_File& file )
             CalcIntensityFunc<
                 MyComplex<float>
             >
-        >;s
+        >;
     write2File<foobar::policies::DataContainerAccessor>(file.getData(), "input.txt");
     write2File<GetIntensityOfOutput>(fullResult, "output.txt");
 }
@@ -198,7 +198,7 @@ int main(int argc, char** argv) {
     //testComplex();
     using FileType = foobar::types::FileContainer<
         libTiff::TiffImage<>,
-        foobar::policies::CopyArray2Array< foobar::policies::ImageAccessorGetColorAsFp<>, bmpl::_1 >,
+        foobar::policies::ImageAccessorGetColorAsFp<>,
         float,
         false
         >;

@@ -36,7 +36,7 @@ namespace policies {
     struct Planner;
 
     /**
-     * Both AoS (if complex), Both non-strided
+     * Both AoS, Both non-strided
      */
     template<
             typename T_Precision,
@@ -46,7 +46,7 @@ namespace policies {
             bool T_isComplexIn,
             bool T_isComplexOut
     >
-    struct Planner< T_Precision, T_InOutTypes, T_isInplace, T_numDims, T_isComplexIn, T_isComplexOut, T_isComplexIn, T_isComplexOut, false, false >
+    struct Planner< T_Precision, T_InOutTypes, T_isInplace, T_numDims, T_isComplexIn, T_isComplexOut, true, true, false, false >
     {
     private:
         using Precision = T_Precision;

@@ -54,7 +54,7 @@ namespace foobar {
         struct IsStrided< Volume<T> >: std::false_type{};
 
         template<typename T>
-        struct IsAoS< Volume<T> >: IsComplex<T>{};
+        struct IsAoS< Volume<T> >: std::true_type{};
 
     }  // namespace traits
 
