@@ -68,9 +68,10 @@ double absSqr(const fftw_complex& val){
 
 template< class T_Accessor, typename T >
 void write2File(T& data, const std::string& name){
-    using F = foobar::policies::Copy< T_Accessor, foobar::policies::StringStreamAccessor >;
+    using F = foobar::policies::Copy< T_Accessor, foobar::policies::StringStreamAccessor<> >;
 
     foobar::types::StreamWrapper< std::ofstream, 2 > inFile(name.c_str());
+    static_assert(foobar::traits::IsStreamAccessor< foobar::policies::StringStreamAccessor<>, decltype(inFile)>::value, "bbb");
     F()(data, inFile);
 //    foobar::policies::GetExtents< T, 2 > extents(data);
 //    foobar::types::Vec<2> idx;

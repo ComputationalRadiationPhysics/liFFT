@@ -9,10 +9,10 @@
 #include "foobar/policies/GetRawPtr.hpp"
 #include "foobar/policies/GetExtents.hpp"
 #include "foobar/policies/DataContainerAccessor.hpp"
-#include "foobar/policies/Copy.hpp"
 #include "foobar/c++14_types.hpp"
 
 #include <boost/mpl/apply.hpp>
+#include <foobar/policies/Copy.hpp>
 
 namespace bmpl = boost::mpl;
 
