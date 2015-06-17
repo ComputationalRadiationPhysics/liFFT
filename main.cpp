@@ -190,44 +190,13 @@ void testFile( T_File& file )
     write2File<GetIntensityOfOutput>(fullResult, "output.txt");
 }
 
-using ComplexArray = foobar::types::ComplexSoAValues<double>;
-
-template< class T_Data, class T_Acc >
-void __attribute__((noinline))
-setZero(T_Data& data, T_Acc&& acc, double f)
-{
-    for(unsigned i=0; i<100; i++)
-    {
-        acc(i, data) = foobar::types::Complex<>(1,1);
-    }
-    acc(10, data, foobar::types::Complex<>(f, 5));
-}
-
-template< class T_Data, class T_Acc >
-void
-f(const T_Data& data, T_Acc&& acc)
-{
-    auto x = acc(10, data);
-    x = foobar::types::Complex<>(1, 5);
-}
-
 /*
  *
  */
 int main(int argc, char** argv) {
-    ComplexArray data;
-    data.allocData(100);
-
-    f(data, foobar::policies::ArrayAccessor<>());
-    foobar::policies::ArrayAccessor<>()(1, data) = 999;
-    std::cout << data[1].real;
-
-    setZero(data, foobar::policies::ArrayAccessor<>(), argc+5);
-    std::cout << 0x1337 << " " << data[5].real << " " << data[10].real;
-
-    test();
-    testIntensityCalculator();
-    testComplex();
+    //test();
+    //testIntensityCalculator();
+    //testComplex();
     using FileType = foobar::types::FileContainer<
         libTiff::TiffImage<>,
         foobar::policies::ImageAccessorGetColorAsFp<>,
