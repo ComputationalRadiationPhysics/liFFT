@@ -1,0 +1,7 @@
+/Debug/
+/Release/
+*.pyc
+/input.pdf
+/input.txt
+/output.pdf
+/output.txt

@@ -1,0 +1,7 @@
+#include "IntegralType.hpp"
+#include "IsAoS.hpp"
+#include "IsComplex.hpp"
+#include "IsInplace.hpp"
+#include "IsStrided.hpp"
+#include "NumDims.hpp"
+#include "RemoveModifiers.hpp"
