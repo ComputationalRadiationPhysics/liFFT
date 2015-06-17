@@ -190,10 +190,41 @@ void testFile( T_File& file )
     write2File<GetIntensityOfOutput>(fullResult, "output.txt");
 }
 
+using ComplexArray = foobar::types::ComplexSoAValues<double>;
+
+struct ComplexAcc
+{
+    foobar::types::ComplexRef<>
+    operator()(ComplexArray& data, unsigned idx)
+    {
+        return foobar::types::ComplexRef<>(data.real[idx], data.imag[idx]);
+    }
+};
+
+template< class T_Data, class T_Acc >
+void __attribute__((noinline))
+setZero(T_Data& data, T_Acc&& acc, double f)
+{
+    for(unsigned i=0; i<100; i++)
+    {
+        auto val = acc(data, i);
+        val.real = 0;
+        val.imag = 0;
+    }
+    acc(data, 10) = foobar::types::Complex<>(f, 5);
+}
+
 /*
  *
  */
 int main(int argc, char** argv) {
+    ComplexArray data;
+    data.real = new foobar::types::Real<double>[100];
+    data.imag = new foobar::types::Real<double>[100];
+
+    setZero(data, ComplexAcc(), argc+5);
+    std::cout << 0x1337 << data.real[10];
+
     //test();
     //testIntensityCalculator();
     //testComplex();
