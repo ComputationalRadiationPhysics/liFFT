@@ -2,6 +2,7 @@
 
 #include "foobar/void_t.hpp"
 #include "foobar/traits/NumDims.hpp"
+#include "foobar/c++14_types.hpp"
 
 namespace foobar {
 namespace traits {
@@ -16,7 +17,7 @@ namespace traits {
 
     template< class T_Accessor, typename T_Data, typename T_Index>
     struct IsReadAccessor< T_Accessor, T_Data, T_Index, void_t<
-            typename std::result_of<T_Accessor(T_Index, T_Data)>::type
+            std::result_of_t<T_Accessor(T_Index, T_Data)>
         >
     >: std::true_type{};
 
@@ -31,7 +32,7 @@ namespace traits {
 
     template< class T_Accessor, typename T_Data, typename T_Value, typename T_Index>
     struct IsWriteAccessor< T_Accessor, T_Data, T_Value, T_Index, void_t<
-            typename std::result_of<T_Accessor(T_Index, T_Data&, T_Value)>::type
+            std::result_of_t<T_Accessor(T_Index, T_Data&, T_Value)>
         >
     >: std::true_type{};
 
@@ -67,7 +68,7 @@ namespace traits {
                 IsReadAccessor< T_Accessor, T_Data >::value,
                 "Only Read-Accessors should be checked with this trait");
 
-        using type = typename std::result_of<T_Accessor(T_Index, T_Data)>::type;
+        using type = std::result_of_t<T_Accessor(T_Index, T_Data)>;
     };
 
 }  // namespace traits

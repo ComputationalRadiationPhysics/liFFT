@@ -52,7 +52,7 @@ namespace foobar {
         static constexpr bool isStrided = traits::IsStrided< T_Base >::value;
 
         using RawPtr = policies::GetRawPtr< T_Base >;
-        using RawPtrType = typename std::result_of<RawPtr(T_Base&)>::type; // Type returned by RawPtr(base)
+        using RawPtrType = std::result_of_t<RawPtr(T_Base&)>; // Type returned by RawPtr(base)
         using Extents = policies::GetExtents< T_Base >;
         using Strides = policies::GetStrides< T_Base >;
         // Precision (double, float...) is the base type of RawPtrType (which is a pointer)
