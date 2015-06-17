@@ -1,9 +1,7 @@
-/complex.txt
-/Debug
-/Release
+/Debug/
+/Release/
 *.pyc
-*.pdf
+/input.pdf
 /input.txt
+/output.pdf
 /output.txt
-/test.txt
-/FFTTest.tar.gz
