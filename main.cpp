@@ -192,26 +192,23 @@ void testFile( T_File& file )
 
 using ComplexArray = foobar::types::ComplexSoAValues<double>;
 
-struct ComplexAcc
-{
-    foobar::types::ComplexRef<>
-    operator()(ComplexArray& data, unsigned idx)
-    {
-        return foobar::types::ComplexRef<>(data.real[idx], data.imag[idx]);
-    }
-};
-
 template< class T_Data, class T_Acc >
 void __attribute__((noinline))
 setZero(T_Data& data, T_Acc&& acc, double f)
 {
     for(unsigned i=0; i<100; i++)
     {
-        auto val = acc(data, i);
-        val.real = 0;
-        val.imag = 0;
+        acc(i, data) = foobar::types::Complex<>(1,1);
     }
-    acc(data, 10) = foobar::types::Complex<>(f, 5);
+    acc(10, data, foobar::types::Complex<>(f, 5));
+}
+
+template< class T_Data, class T_Acc >
+void
+f(const T_Data& data, T_Acc&& acc)
+{
+    auto x = acc(10, data);
+    x = foobar::types::Complex<>(1, 5);
 }
 
 /*
@@ -219,15 +216,18 @@ setZero(T_Data& data, T_Acc&& acc, double f)
  */
 int main(int argc, char** argv) {
     ComplexArray data;
-    data.real = new foobar::types::Real<double>[100];
-    data.imag = new foobar::types::Real<double>[100];
+    data.allocData(100);
 
-    setZero(data, ComplexAcc(), argc+5);
-    std::cout << 0x1337 << data.real[10];
+    f(data, foobar::policies::ArrayAccessor<>());
+    foobar::policies::ArrayAccessor<>()(1, data) = 999;
+    std::cout << data[1].real;
 
-    //test();
-    //testIntensityCalculator();
-    //testComplex();
+    setZero(data, foobar::policies::ArrayAccessor<>(), argc+5);
+    std::cout << 0x1337 << " " << data[5].real << " " << data[10].real;
+
+    test();
+    testIntensityCalculator();
+    testComplex();
     using FileType = foobar::types::FileContainer<
         libTiff::TiffImage<>,
         foobar::policies::ImageAccessorGetColorAsFp<>,

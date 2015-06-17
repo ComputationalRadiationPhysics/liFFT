@@ -1,69 +1,111 @@
 #pragma once
 
 #include "foobar/types/RealValues.hpp"
-#include "foobar/traits/IsAoS.hpp"
-#include "foobar/policies/all.hpp"
+#include "foobar/types/Complex.hpp"
+#include "foobar/policies/GetRawPtr.hpp"
+#include "foobar/policies/ArrayAccessor.hpp"
 
 namespace foobar {
     namespace types {
 
-        template< typename T >
-        struct ComplexSoAValues
+        template< typename T, bool T_ownsPointer = true >
+        class ComplexSoAValues
         {
+        public:
             using type = T;
             static constexpr bool isComplex = true;
-            RealValues<T> real, imag;
+            static constexpr bool isAoS = false;
+            static constexpr bool ownsPointer = T_ownsPointer;
+            using Data = RealValues<T, ownsPointer>;
+            using Ptr = typename Data::Ptr;
+            using Value = Complex<T>;
+            using Ref = ComplexRef<T>;
+            using ConstRef = const Ref;
+            using Accessor = policies::ArrayAccessor<>;
+
+            ComplexSoAValues(){}
+            ComplexSoAValues(Ptr realData, Ptr imagData): real_(realData), imag_(imagData){}
+
+            void
+            operator=(std::pair<Ptr, Ptr> data)
+            {
+                real_ = data.first;
+                imag_ = data.second;
+            }
+
+            void
+            allocData(size_t numElements)
+            {
+                real_.allocData(numElements);
+                imag_.allocData(numElements);
+            }
+
+            void
+            freeData()
+            {
+                real_.freeData();
+                imag_.freeData();
+            }
+
+            void
+            releaseData()
+            {
+                real_.releaseData();
+                imag_.releaseData();
+            }
+
+            std::pair<Ptr, Ptr>
+            getData() const
+            {
+                return std::make_pair(real_.getData(), imag_.getData());
+            }
+
+            ConstRef
+            operator[](size_t idx) const
+            {
+                return ConstRef(real_[idx], imag_[idx]);
+            }
+
+            Ref
+            operator[](size_t idx)
+            {
+                return Ref(real_[idx], imag_[idx]);
+            }
+
+            Data&
+            getRealData()
+            {
+                return real_;
+            }
+
+            Data&
+            getImagData()
+            {
+                return imag_;
+            }
+
+        private:
+            Data real_, imag_;
         };
 
     }  // namespace types
 
-    namespace traits {
-
-        template< typename T >
-        struct IsAoS< types::ComplexSoAValues<T> >: std::false_type{};
-
-    }  // namespace traits
-
     namespace policies {
 
-        template< typename T >
-        struct GetIntensity< types::ComplexSoAValues<T> >
+        template< typename T, bool T_ownsPointer >
+        struct GetRawPtr< types::ComplexSoAValues<T, T_ownsPointer> >
         {
-            T operator()(const types::ComplexSoAValues<T>& values, unsigned idx){
-                T r = values.real[idx];
-                T i = values.imag[idx];
-                return r*r + i*i;
-            }
-        };
-
-        template< typename T >
-        struct GetValue< types::ComplexSoAValues<T> >
-        {
-            using type = types::ComplexSoAValues<T>;
-
-            T getReal(const type& values, unsigned idx){
-                return values.real[idx];
-            }
-
-            T getImag(const type& values, unsigned idx){
-                return values.imag[idx];
-            }
-        };
-
-        template< typename T >
-        struct GetRawPtr< types::ComplexSoAValues<T> >
-        {
-            using Data = types::ComplexSoAValues<T>;
+            using Data = types::ComplexSoAValues<T, T_ownsPointer>;
             using type = std::pair< T*, T* >;
 
             type
             operator()(Data& data){
-                return std::make_pair(&data.real[0].value, &data.imag[0].value);
+                return std::make_pair(&data.getRealData().getData()->value, &data.getImagData().getData()->value);
             }
 
             const type
             operator()(const Data& data){
-                return std::make_pair(&data.real[0].value, &data.imag[0].value);
+                return std::make_pair(&data.getRealData().getData()->value, &data.getImagData().getData()->value);
             }
         };
 

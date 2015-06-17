@@ -3,6 +3,11 @@
 #include "policyExample.hpp"
 #include <chrono>
 #include <vector>
+#include "foobar/types/DataContainer.hpp"
+#include "foobar/types/RealValues.hpp"
+#include "foobar/types/ComplexAoSValues.hpp"
+#include "foobar/types/ComplexSoAValues.hpp"
+
 
 using millisecs = std::chrono::duration<unsigned long long, std::milli>;
 using std::chrono::duration_cast;
@@ -28,9 +33,9 @@ void test(){
     using foobar::calcIntensity;
     using foobar::calcIntensity2;
 
-    DataContainer< 1, RealValues<double>> simpleRealData;
-    DataContainer< 1, ComplexAoSValues<double>> complexAoS;
-    DataContainer< 1, ComplexSoAValues<double>> complexSoA;
+    DataContainer< 1, RealValues<double> > simpleRealData;
+    DataContainer< 1, ComplexAoSValues<double> > complexAoS;
+    DataContainer< 1, ComplexSoAValues<double> > complexSoA;
 
     simpleRealData.extents = {NumVals};
     simpleRealData.data = new Real<double>[NumVals];
@@ -45,11 +50,11 @@ void test(){
     }
 
     complexSoA.extents = {NumVals};
-    complexSoA.data.real = new Real<double>[NumVals];
-    complexSoA.data.imag = new Real<double>[NumVals];
+    complexSoA.data.getRealData() = new Real<double>[NumVals];
+    complexSoA.data.getImagData() = new Real<double>[NumVals];
     for(unsigned i=0; i<NumVals; i++){
-        complexSoA.data.real[i] = 4;
-        complexSoA.data.imag[i] = 3;
+        complexSoA.data.getRealData()[i] = 4;
+        complexSoA.data.getImagData()[i] = 3;
     }
 
     std::vector<double> result(NumVals);

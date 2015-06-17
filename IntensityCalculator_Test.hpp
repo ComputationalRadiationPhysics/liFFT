@@ -25,8 +25,8 @@ void testIntensityCalculator()
     complexAoS.data = new Complex<double>[getNumElements(complexAoS)];
 
     complexSoA.extents = {NumVals};
-    complexSoA.data.real = new Real<double>[getNumElements(complexSoA)];
-    complexSoA.data.imag = new Real<double>[getNumElements(complexSoA)];
+    complexSoA.data.getRealData() = new Real<double>[getNumElements(complexSoA)];
+    complexSoA.data.getImagData() = new Real<double>[getNumElements(complexSoA)];
 
     real3D.extents = {NumVals, NumVals+1, NumVals+2};
     real3D.data = new Real<double>[getNumElements(real3D)];
@@ -35,8 +35,8 @@ void testIntensityCalculator()
     complexAoS3D.data = new Complex<double>[getNumElements(complexAoS3D)];
 
     complexSoA3D.extents = {NumVals, NumVals+1, NumVals+2};
-    complexSoA3D.data.real = new Real<double>[getNumElements(complexSoA3D)];
-    complexSoA3D.data.imag = new Real<double>[getNumElements(complexSoA3D)];
+    complexSoA3D.data.getRealData() = new Real<double>[getNumElements(complexSoA3D)];
+    complexSoA3D.data.getImagData() = new Real<double>[getNumElements(complexSoA3D)];
 
     useIntensityCalculator(real, result.data());
     useIntensityCalculator(complexAoS, result.data());

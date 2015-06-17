@@ -70,7 +70,7 @@ namespace policies {
 
         template< class T_Image >
         unsigned
-        operator()(const IdxType& idx, const T_Image& img) const
+        operator()(const IdxType& idx, T_Image& img) const
         {
             return img(idx[1], idx[0]);
         }

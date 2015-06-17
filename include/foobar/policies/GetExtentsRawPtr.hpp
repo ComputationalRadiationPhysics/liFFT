@@ -1,6 +1,7 @@
 #pragma once
 
 #include <boost/utility.hpp>
+#include <array>
 #include "foobar/traits/NumDims.hpp"
 #include "foobar/policies/GetExtents.hpp"
 #include "foobar/c++14_types.hpp"

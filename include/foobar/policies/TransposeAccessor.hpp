@@ -8,7 +8,7 @@ namespace policies {
     /**
      * Accessor that transposes all accesses such that the 2nd half comes before the first
      */
-    template< class T_BaseAccessor = ArrayAccessor >
+    template< class T_BaseAccessor = ArrayAccessor<true> >
     struct TransposeAccessor
     {
     private:

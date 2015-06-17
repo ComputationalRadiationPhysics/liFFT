@@ -1,5 +1,9 @@
 #pragma once
 
+#include "foobar/policies/GetExtents.hpp"
+#include "foobar/c++14_types.hpp"
+#include "foobar/util.hpp"
+
 namespace foobar {
 namespace policies {
 
@@ -9,7 +13,14 @@ namespace policies {
     struct DataContainerAccessor
     {
         template< class T_Index, class T_Data >
-        unsigned
+        std::enable_if_t< std::is_integral<T_Index>::value, unsigned >
+        getFlatIdx(const T_Index& idx, const T_Data& data) const
+        {
+            return idx;
+        }
+
+        template< class T_Index, class T_Data >
+        std::enable_if_t< !std::is_integral<T_Index>::value, unsigned >
         getFlatIdx(const T_Index& idx, const T_Data& data) const
         {
             static constexpr unsigned numDims = traits::NumDims<T_Data>::value;
@@ -22,27 +33,21 @@ namespace policies {
 
         template< class T_Index, class T_Data >
         auto
-        operator()(const T_Index& idx, const T_Data& data) const
-        -> typename std::remove_pointer< decltype(data.data) >::type
+        operator()(T_Index&& idx, T_Data& data) const
+        -> decltype(std::declval< typename T_Data::Accessor >()(0, data.data))
         {
-            using DataType = decltype(T_Data::data);
-            using ReturnType = typename std::remove_pointer< DataType >::type;
-            static_assert(!std::is_same< DataType, ReturnType >::value, "This only works for pointer data types");
-
             auto flatIdx = getFlatIdx(idx, data);
-            return data.data[flatIdx];
+            typename T_Data::Accessor acc;
+            return acc(flatIdx, data.data);
         }
 
-        template< class T_Index, class T_Data >
+        template< class T_Index, class T_Data, typename T_Value >
         void
-        operator()(const T_Index& idx, T_Data& data, typename std::remove_pointer< decltype(data.data) >::type&& value)
+        operator()(T_Index&& idx, T_Data& data, T_Value&& value) const
         {
-            using DataType = decltype(data.data);
-            using ReturnType = typename std::remove_pointer< DataType >::type;
-            static_assert(!std::is_same< DataType, ReturnType >::value, "This only works for pointer data types");
-
             auto flatIdx = getFlatIdx(idx, data);
-            data.data[flatIdx] = value;
+            typename T_Data::Accessor acc;
+            acc(flatIdx, data.data, value);
         }
     };
 

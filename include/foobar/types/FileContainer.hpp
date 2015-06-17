@@ -1,7 +1,7 @@
 #pragma once
 
-#include "foobar/types/Real.hpp"
-#include "foobar/types/Complex.hpp"
+#include "foobar/types/RealValues.hpp"
+#include "foobar/types/ComplexAoSValues.hpp"
 #include "foobar/types/DataContainer.hpp"
 #include "foobar/traits/IsStrided.hpp"
 #include "foobar/traits/IntegralType.hpp"
@@ -47,10 +47,11 @@ namespace foobar {
             using Accuracy = T_Accuracy;
         private:
             using CopyPolicy = policies::Copy< FileAccessor, DataAccessor >;
-            using ElementType = std::conditional_t< T_isComplex, Complex<Accuracy>, Real<Accuracy> >;
-            using Memory = ElementType*;
+            using ArrayType = std::conditional_t< isComplex, ComplexAoSValues<Accuracy>, RealValues<Accuracy> >;
+            using ElementType = typename ArrayType::Value;
+            using Ptr = ElementType*;
 
-            using Data = DataContainer< numDims, Memory >;
+            using Data = DataContainer< numDims, ArrayType >;
             using ExtentsVec = decltype(std::declval<Data>().extents);
 
             FileHandler fileHandler_;
@@ -69,24 +70,22 @@ namespace foobar {
 
             void allocData()
             {
-                if(data_.data)
+                if(data_.data.getData())
                     return;
                 assert(fileHandler_.isOpen());
                 unsigned numEl = policies::GetNumElements< Data >()(data_);
-                data_.data = static_cast<Memory>(malloc(sizeof(ElementType) * numEl));
+                data_.data.allocData(numEl);
             }
 
             void freeData()
             {
-                free(data_.data);
-                data_.data = nullptr;
+                data_.data.freeData();
             }
 
         public:
             FileContainer(): FileContainer(""){}
             explicit FileContainer(const std::string& filePath)
             {
-                data_.data = nullptr;
                 setFilePath(filePath);
             }
 
@@ -116,11 +115,11 @@ namespace foobar {
                 return data_.extents;
             }
 
-            Memory
+            Ptr
             getAllocatedMemory()
             {
                 allocData();
-                return data_.data;
+                return data_.data.getData();
             }
 
             Data&

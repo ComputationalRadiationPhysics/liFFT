@@ -10,6 +10,8 @@ class Volume{
     const size_t xDim_, yDim_, zDim_;
 public:
     using value_type = T;
+    using Ref = T&;
+    using ConstRef = const Ref;
 
     Volume(size_t xDim, size_t yDim = 1, size_t zDim = 1): xDim_(xDim), yDim_(yDim), zDim_(zDim){
         data_ = static_cast<T*>(fftw_malloc(xDim*yDim*zDim*sizeof(T))); //new T[xDim*yDim*zDim_];
@@ -23,13 +25,16 @@ public:
         if(isOwned_)
             fftw_free(data_);//delete[] data_;
     }
-    T* data(){
+    T*
+    data(){
         return data_;
     }
-    T& operator()(size_t x, size_t y=0, size_t z=0){
+    Ref
+    operator()(size_t x, size_t y=0, size_t z=0){
         return data_[(z*yDim_ + y)*xDim_ + x];
     }
-    const T& operator()(size_t x, size_t y=0, size_t z=0) const{
+    ConstRef
+    operator()(size_t x, size_t y=0, size_t z=0) const{
         return data_[(z*yDim_ + y)*xDim_ + x];
     }
 

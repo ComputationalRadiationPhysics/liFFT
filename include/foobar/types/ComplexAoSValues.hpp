@@ -1,48 +1,25 @@
 #pragma once
 
+#include <memory>
 #include "foobar/types/Complex.hpp"
-#include "foobar/policies/all.hpp"
+#include "foobar/policies/GetRawPtr.hpp"
+#include "foobar/types/AoSValues.hpp"
 
 namespace foobar {
     namespace types {
 
-        template< typename T >
-        using ComplexAoSValues = Complex<T>*;
+        template< typename T, bool T_ownsPointer = true >
+        class ComplexAoSValues: public detail::AoSValues< Complex<T>, T_ownsPointer >
+        {
+        public:
+            using Parent = detail::AoSValues< Complex<T>, T_ownsPointer >;
+
+            using Parent::Parent;
+        };
 
     }  // namespace types
 
-    namespace traits {
-
-        template< typename T >
-        struct IsAoS< types::ComplexAoSValues<T> >: std::true_type{};
-
-    }  // namespace traits
-
     namespace policies {
-
-        template< typename T >
-        struct GetIntensity< types::ComplexAoSValues<T> >
-        {
-            T operator()(const types::ComplexAoSValues<T>& values, unsigned idx){
-                T r = values[idx].real;
-                T i = values[idx].imag;
-                return r*r + i*i;
-            }
-        };
-
-        template< typename T >
-        struct GetValue< types::ComplexAoSValues<T> >
-        {
-            using type = types::ComplexAoSValues<T>;
-
-            T getReal(const type& values, unsigned idx){
-                return values[idx].real;
-            }
-
-            T getImag(const type& values, unsigned idx){
-                return values[idx].imag;
-            }
-        };
 
         template< typename T >
         struct GetRawPtr< types::ComplexAoSValues<T> >

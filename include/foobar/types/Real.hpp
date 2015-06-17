@@ -12,7 +12,7 @@ namespace foobar {
 
             Real(){}
             Real(T val):value(val){}
-            operator T(){return value;}
+            operator T() const {return value;}
         };
 
     }  // namespace types

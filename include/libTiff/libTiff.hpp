@@ -36,6 +36,8 @@ namespace libTiff
     {
         using Allocator = T_Allocator;
         using DataType = uint32;
+        using Ref = DataType;
+        using ConstRef = const Ref;
 
         Allocator alloc_;
         std::string filepath_;
@@ -85,7 +87,14 @@ namespace libTiff
             return sizeof(DataType) * width_ * height_;
         }
 
-        DataType
+        Ref
+        operator()(unsigned x, unsigned y)
+        {
+            assert(isOpen());
+            return data_[(height_ - 1 - y) * width_ + x];
+        }
+
+        ConstRef
         operator()(unsigned x, unsigned y) const
         {
             assert(isOpen());

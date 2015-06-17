@@ -1,36 +1,24 @@
 #pragma once
 
 #include "foobar/types/Real.hpp"
-#include "foobar/policies/all.hpp"
+#include "foobar/policies/GetRawPtr.hpp"
+#include "foobar/types/AoSValues.hpp"
 
 namespace foobar {
     namespace types {
 
-        template< typename T >
-        using RealValues = Real<T>*;
+        template< typename T, bool T_ownsPointer = true >
+        class RealValues: public detail::AoSValues< Real<T>, T_ownsPointer >
+        {
+        public:
+            using Parent = detail::AoSValues< Real<T>, T_ownsPointer >;
+
+            using Parent::Parent;
+        };
 
     }  // namespace types
 
     namespace policies {
-
-        template< typename T >
-        struct GetIntensity< types::RealValues<T> >
-        {
-            T operator()(const types::RealValues<T>& values, unsigned idx){
-                T r = values[idx];
-                return r*r;
-            }
-        };
-
-        template< typename T >
-        struct GetValue< types::RealValues<T> >
-        {
-            using type = types::RealValues<T>;
-
-            T getReal(const type& values, unsigned idx){
-                return values[idx];
-            }
-        };
 
         template< typename T >
         struct GetRawPtr< types::RealValues<T> >
