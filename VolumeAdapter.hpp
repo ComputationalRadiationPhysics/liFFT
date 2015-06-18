@@ -1,9 +1,10 @@
 #pragma once
 
+#include <foobar/types/DimOffsetWrapper.hpp>
+
 #include "Volume.hpp"
 #include "foobar/traits/NumDims.hpp"
 #include "foobar/policies/GetExtents.hpp"
-#include "foobar/types/DimOffsetWrapper.hpp"
 
 template<typename T>
 class VolumeAdapter{

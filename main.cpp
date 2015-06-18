@@ -3,6 +3,8 @@
 #include <fstream>
 #include <cmath>
 #include <fftw3.h>
+#include <foobar/types/AddDimsWrapper.hpp>
+#include <foobar/types/DimOffsetWrapper.hpp>
 #include <libTiff/traitsAndPolicies.hpp>
 #include "foobar/c++14_types.hpp"
 #include "policyTest.hpp"
@@ -20,8 +22,6 @@
 #include "foobar/policies/StreamAccessor.hpp"
 #include "foobar/policies/TransposeAccessor.hpp"
 #include "foobar/policies/TransformAccessor.hpp"
-#include "foobar/types/StreamWrapper.hpp"
-#include "foobar/types/DimOffsetWrapper.hpp"
 #include "foobar/types/SymmetricWrapper.hpp"
 #include "foobar/FFT_DataWrapper.hpp"
 
@@ -70,7 +70,7 @@ template< class T_Accessor, typename T >
 void write2File(T& data, const std::string& name){
     using F = foobar::policies::Copy< T_Accessor, foobar::policies::StringStreamAccessor<> >;
 
-    foobar::types::StreamWrapper< std::ofstream, 2 > inFile(name.c_str());
+    foobar::types::AddDimsWrapper< std::ofstream, 2 > inFile(name.c_str());
     static_assert(foobar::traits::IsStreamAccessor< foobar::policies::StringStreamAccessor<>, decltype(inFile)>::value, "bbb");
     F()(data, inFile);
 //    foobar::policies::GetExtents< T, 2 > extents(data);
