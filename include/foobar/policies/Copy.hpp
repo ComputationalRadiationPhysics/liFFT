@@ -121,15 +121,41 @@ namespace policies {
             std::enable_if_t< !traits::IsStreamAccessor< BaseAccessor, T_Data, char >::value >
             writeDelimiter(T_Data& data, unsigned dim){}
 
+            /**
+             * Write method for accessors that have an extra write method, that is a ()-operator with 3 arguments
+             *
+             * @param idx Index
+             * @param data Datacontainer to write to
+             * @param value Value to write
+             */
             template<
                 typename T_Index,
                 typename T_Data,
                 typename T_Value
             >
-            void
+            std::enable_if_t< traits::IsWriteAccessor< BaseAccessor, T_Data, T_Value, T_Index >::value >
             write(const T_Index& idx, T_Data& data, T_Value&& value)
             {
                 acc_(idx, data, std::forward<T_Value>(value));
+            }
+
+            /**
+             * Fallback write method for accessors without write method
+             * Tries to use the read method ( ()-operator with 2 arguments) and write to its result
+             *
+             * @param idx Index
+             * @param data Datacontainer to write to
+             * @param value Value to write
+             */
+            template<
+                typename T_Index,
+                typename T_Data,
+                typename T_Value
+            >
+            std::enable_if_t< !traits::IsWriteAccessor< BaseAccessor, T_Data, T_Value, T_Index >::value >
+            write(const T_Index& idx, T_Data& data, T_Value&& value)
+            {
+                acc_(idx, data) = std::forward<T_Value>(value);
             }
         };
     }  // namespace detail
