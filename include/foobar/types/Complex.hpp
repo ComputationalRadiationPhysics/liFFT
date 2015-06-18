@@ -84,7 +84,10 @@ std::ostream& operator<< (std::ostream& stream, foobar::types::ComplexRef<T, T_i
 
 namespace std {
 
-    template< typename T >
-    struct is_lvalue_reference< foobar::types::ComplexRef<T> >: std::true_type{};
+    template< typename T, bool T_isConst >
+    struct is_const< foobar::types::ComplexRef<T, T_isConst> >: std::integral_constant< bool, T_isConst >{};
+
+    template< typename T, bool T_isConst >
+    struct is_lvalue_reference< foobar::types::ComplexRef<T, T_isConst> >: std::true_type{};
 
 }  // namespace std
