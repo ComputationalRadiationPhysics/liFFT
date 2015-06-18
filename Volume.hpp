@@ -11,7 +11,7 @@ class Volume{
 public:
     using value_type = T;
     using Ref = T&;
-    using ConstRef = const Ref;
+    using ConstRef = const T&;
 
     Volume(size_t xDim, size_t yDim = 1, size_t zDim = 1): xDim_(xDim), yDim_(yDim), zDim_(zDim){
         data_ = static_cast<T*>(fftw_malloc(xDim*yDim*zDim*sizeof(T))); //new T[xDim*yDim*zDim_];

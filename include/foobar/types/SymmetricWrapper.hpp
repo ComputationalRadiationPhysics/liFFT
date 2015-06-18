@@ -22,7 +22,25 @@ namespace foobar {
             template< typename T_Index >
             auto
             operator()(const T_Index& idx) const
-            -> decltype(std::declval<Accessor>()(idx, std::declval<Base>()))
+            -> std::result_of_t< Accessor(const T_Index&, const Base&) >
+            {
+                static constexpr unsigned lastDim = numDims - 1;
+                // If this instance is const, the base type (and therefore the returned type)
+                // must also be const, but base_ is a reference and therefore not const yet
+                const Base& cBase = base_;
+                policies::GetExtents<Base> extents(cBase);
+                if(idx[lastDim] >= extents[lastDim]){
+                    T_Index newIdx(idx);
+                    newIdx[lastDim] = realSize_ - idx[lastDim];
+                    return acc_(newIdx, cBase);
+                }else
+                    return acc_(idx, cBase);
+            }
+
+            template< typename T_Index >
+            auto
+            operator()(const T_Index& idx)
+            -> std::result_of_t< Accessor(const T_Index&, Base&) >
             {
                 static constexpr unsigned lastDim = numDims - 1;
                 policies::GetExtents<Base> extents(base_);

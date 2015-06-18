@@ -36,15 +36,17 @@ namespace types {
      * Generic reference to a complex value
      * Can be used with either AoS or SoA
      */
-    template< typename T=double >
+    template< typename T=double, bool T_isConst = false >
     struct ComplexRef
     {
         using type = T;
+        static constexpr bool isConst = true;
         static constexpr bool isComplex = true;
-        using Real_t = Real<T>;
-        using Complex_t = Complex<T>;
+        using Real_t = std::conditional_t< isConst, const Real<T>, Real<T> >;
+        using Complex_t = std::conditional_t< isConst, const Complex<T>, Complex<T> >;
 
-        Real_t &real, &imag;
+        Real_t &real;
+        Real_t &imag;
 
         explicit ComplexRef(Complex_t& value): real(value.real), imag(value.imag){}
         ComplexRef(Real_t& r, Real_t& i): real(r), imag(i){}

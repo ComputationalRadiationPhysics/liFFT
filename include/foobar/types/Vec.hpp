@@ -41,7 +41,7 @@ namespace types{
             return values_[dim];
         }
 
-        T
+        const T
         operator[](unsigned dim) const
         {
             assert(dim>=0 && dim<numDims);

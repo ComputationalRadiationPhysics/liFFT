@@ -18,7 +18,7 @@ namespace policies {
             >*
         >
         auto
-        operator()(const T_Index& idx, const T_Data& data) const
+        operator()(const T_Index& idx, T_Data& data) const
         -> decltype(data(idx[0]))
         {
             return data(idx[0]);
@@ -32,7 +32,7 @@ namespace policies {
             >*
         >
         auto
-        operator()(const T_Index& idx, const T_Data& data) const
+        operator()(const T_Index& idx, T_Data& data) const
         -> decltype(data(idx[1], idx[0]))
         {
             return data(idx[1], idx[0]);
@@ -46,7 +46,7 @@ namespace policies {
             >*
         >
         auto
-        operator()(const T_Index& idx, const T_Data& data) const
+        operator()(const T_Index& idx, T_Data& data) const
         -> decltype(data(idx[2], idx[1], idx[0]))
         {
             return data(idx[2], idx[1], idx[0]);

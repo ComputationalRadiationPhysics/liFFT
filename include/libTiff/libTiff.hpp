@@ -36,8 +36,8 @@ namespace libTiff
     {
         using Allocator = T_Allocator;
         using DataType = uint32;
-        using Ref = DataType;
-        using ConstRef = const Ref;
+        using Ref = DataType&;
+        using ConstRef = const DataType&;
 
         Allocator alloc_;
         std::string filepath_;

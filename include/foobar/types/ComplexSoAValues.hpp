@@ -20,7 +20,7 @@ namespace foobar {
             using Ptr = typename Data::Ptr;
             using Value = Complex<T>;
             using Ref = ComplexRef<T>;
-            using ConstRef = const Ref;
+            using ConstRef = const ComplexRef<T, true>;
             using Accessor = policies::ArrayAccessor<>;
 
             ComplexSoAValues(){}

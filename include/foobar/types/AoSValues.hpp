@@ -36,7 +36,7 @@ namespace detail {
         using Value = T;
         using Ptr = Value*;
         using Ref = Value&;
-        using ConstRef = const Ref;
+        using ConstRef = const Value&;
         using Data = std::conditional_t<
                         ownsPointer,
                         std::unique_ptr< Value[] >,
