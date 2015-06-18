@@ -15,7 +15,7 @@ namespace fftw {
     /**
      * Wrapper for the CUDA-Library that executes the FFT on GPU(s)
      *
-     * @param T_FFT_Properties Placeholder that will be replaced by a class containing the properties for this FFT
+     * \tparam T_FFT_Properties Placeholder that will be replaced by a class containing the properties for this FFT
      */
     template< class T_FFT_Properties = bmpl::_1 >
     class FFTW: private boost::noncopyable

@@ -43,8 +43,8 @@ namespace policies {
      * Simple stream accessor that writes the value into the stream via <<-operator
      * and reads via the >>-operator into a variable of the given ReturnType
      *
-     * @param T_ReturnType type returned by the read-operator [float]
-     * @param T_Delimiters Must provide a []-operator(dimension) method to return a delimiter separating values from that dimension
+     * \tparam T_ReturnType type returned by the read-operator [float]
+     * \tparam T_Delimiters Must provide a []-operator(dimension) method to return a delimiter separating values from that dimension
      *
      */
     template< typename T_ReturnType = float, class T_Delimiters = TextDelimiters >

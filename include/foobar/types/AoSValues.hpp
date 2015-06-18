@@ -22,8 +22,8 @@ namespace detail {
     /**
      * Wrapper to hold and manage an Array of Structs
      *
-     * @param T Type to hold
-     * @param T_ownsPointer Whether this class owns its pointer or not (memory is freed on destroy, when true)
+     * \tparam T Type to hold
+     * \tparam T_ownsPointer Whether this class owns its pointer or not (memory is freed on destroy, when true)
      */
     template< typename T, bool T_ownsPointer = true >
     class AoSValues

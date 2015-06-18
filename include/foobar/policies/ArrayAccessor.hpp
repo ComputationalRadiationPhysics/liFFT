@@ -6,7 +6,7 @@ namespace policies {
     /**
      * Accessor that access the data directly via the index
      *
-     * @param T_isFunctor When false, the array is accessed via []-operator, else via ()-operator
+     * \tparam T_isFunctor When false, the array is accessed via []-operator, else via ()-operator
      */
     template< bool T_isFunctor = false >
     struct ArrayAccessor

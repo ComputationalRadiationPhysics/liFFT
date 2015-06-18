@@ -3,8 +3,8 @@
 #include <fstream>
 #include <cmath>
 #include <fftw3.h>
-#include <foobar/types/AddDimsWrapper.hpp>
-#include <foobar/types/DimOffsetWrapper.hpp>
+#include "foobar/types/AddDimsWrapper.hpp"
+#include "foobar/types/DimOffsetWrapper.hpp"
 #include <libTiff/traitsAndPolicies.hpp>
 #include "foobar/c++14_types.hpp"
 #include "policyTest.hpp"

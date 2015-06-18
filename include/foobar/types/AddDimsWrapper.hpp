@@ -6,8 +6,8 @@ namespace types {
     /**
      * Wrapper used to add dimensionality Information to a class without using traits
      *
-     * @param T_Base Base class to wrap
-     * @param T_numDims number of dimensions this class should have
+     * \tparam T_Base Base class to wrap
+     * \tparam T_numDims number of dimensions this class should have
      */
     template< class T_Base, unsigned T_numDims >
     struct AddDimsWrapper: T_Base

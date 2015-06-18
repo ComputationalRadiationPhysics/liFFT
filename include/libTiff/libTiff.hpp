@@ -29,7 +29,7 @@ namespace libTiff
 
     /**
      * Wrapper for reading TIFF images from the file system
-     * @param T_Allocator Allocator(::malloc, ::free) used for managing the raw memory
+     * \tparam T_Allocator Allocator(::malloc, ::free) used for managing the raw memory
      */
     template< class T_Allocator = TiffAllocator >
     class TiffImage: private boost::noncopyable

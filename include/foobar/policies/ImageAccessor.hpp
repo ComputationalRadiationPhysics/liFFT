@@ -29,7 +29,7 @@ namespace policies {
 
     /**
      * Functor that selects only one of the 4 colors by taking 8 of the 32 bit from the input
-     * @param T_Color The Color-Enum Entry that defines which channel to choose
+     * \tparam T_Color The Color-Enum Entry that defines which channel to choose
      */
     template< Color T_Color >
     struct ColorSelectorRGBA
@@ -62,7 +62,7 @@ namespace policies {
 
     /**
      * Accessor functor that returns the value at the specified position in the image
-     * @param T_Image Image class to use, should provide an operator(x,y) to access the pixel value at x,y
+     * \tparam T_Image Image class to use, should provide an operator(x,y) to access the pixel value at x,y
      */
     struct ImageAccessor
     {

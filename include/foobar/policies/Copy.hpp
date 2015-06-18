@@ -141,8 +141,8 @@ namespace policies {
      *
      * Provides a ()-operator(source, destination)
      *
-     * @param T_SrcAccessor Accessor used to get an element from src: <type> operator(idx, src)
-     * @param T_DstAccessor Accessor used to set an element in dst  : operator(idx, dst, value)
+     * \tparam T_SrcAccessor Accessor used to get an element from src: <type> operator(idx, src)
+     * \tparam T_DstAccessor Accessor used to set an element in dst  : operator(idx, dst, value)
      * For Stream accessors:
      *          getDelimiters() -> array like type with delimiters for each dimension
      * For Stream-Read accessors:

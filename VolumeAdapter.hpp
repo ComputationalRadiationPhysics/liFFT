@@ -1,6 +1,6 @@
 #pragma once
 
-#include <foobar/types/DimOffsetWrapper.hpp>
+#include "foobar/types/DimOffsetWrapper.hpp"
 
 #include "Volume.hpp"
 #include "foobar/traits/NumDims.hpp"

@@ -12,7 +12,7 @@
 #include "foobar/c++14_types.hpp"
 
 #include <boost/mpl/apply.hpp>
-#include <foobar/policies/Copy.hpp>
+#include "foobar/policies/Copy.hpp"
 
 namespace bmpl = boost::mpl;
 
@@ -22,12 +22,12 @@ namespace foobar {
         /**
          * A container that can load a file to an internal (contiguous) memory
          *
-         * @param T_FileHandler File class. Must support open(string), isOpen(), close(), and a specialization for GetExtents
-         * @param T_FileAccessor Either an Array- or StreamAccessor that should provide an operator([index,] TFileHandler&) which
+         * \tparam T_FileHandler File class. Must support open(string), isOpen(), close(), and a specialization for GetExtents
+         * \tparam T_FileAccessor Either an Array- or StreamAccessor that should provide an operator([index,] TFileHandler&) which
          *          gets an element from the file
-         * @param T_Accuracy The internal datatype used (float or double) [float]
-         * @param T_isComplex Whether the values are complex [false]
-         * @param T_numDims number of dimensions [Number of dimensions supported by the FileHandler]
+         * \tparam T_Accuracy The internal datatype used (float or double) [float]
+         * \tparam T_isComplex Whether the values are complex [false]
+         * \tparam T_numDims number of dimensions [Number of dimensions supported by the FileHandler]
          */
         template<
             typename T_FileHandler,

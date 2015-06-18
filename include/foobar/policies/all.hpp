@@ -1,4 +1,4 @@
-#include <foobar/policies/CalcIntensity.hpp>
+#include "foobar/policies/CalcIntensity.hpp"
 #include "foobar/policies/GetExtents.hpp"
 #include "foobar/policies/GetExtentsRawPtr.hpp"
 #include "foobar/policies/GetNumElements.hpp"

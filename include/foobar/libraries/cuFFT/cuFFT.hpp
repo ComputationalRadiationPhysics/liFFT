@@ -14,10 +14,10 @@ namespace cuFFT {
      *
      * Note: Allocation and copy will only occur if the IsDeviceMemory trait returns false for the given container
      *
-     * @param T_AllocatorIn Policy to alloc/free memory for the input
-     * @param T_AllocatorOut Policy to alloc/free memory for the output (ignored for inplace transforms)
-     * @param T_Copier Policy to copy memory to and from the device (Functions H2D and D2H)
-     * @param T_FFT_Properties Placeholder that will be replaced by a class containing the properties for this FFT
+     * \tparam T_AllocatorIn Policy to alloc/free memory for the input
+     * \tparam T_AllocatorOut Policy to alloc/free memory for the output (ignored for inplace transforms)
+     * \tparam T_Copier Policy to copy memory to and from the device (Functions H2D and D2H)
+     * \tparam T_FFT_Properties Placeholder that will be replaced by a class containing the properties for this FFT
      */
     template<
         class T_AllocatorIn = policies::CudaAllocator,
