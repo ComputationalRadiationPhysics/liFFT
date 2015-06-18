@@ -3,6 +3,7 @@
 #include <type_traits>
 #include "foobar/traits/RemoveModifiers.hpp"
 #include "foobar/void_t.hpp"
+#include "foobar/c++14_types.hpp"
 
 namespace foobar {
 namespace traits {

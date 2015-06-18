@@ -59,3 +59,10 @@ namespace types {
 
 }  // namespace types
 }  // namespace foobar
+
+namespace std {
+
+    template< typename T >
+    struct is_lvalue_reference< foobar::types::ComplexRef<T> >: std::true_type{};
+
+}  // namespace std
