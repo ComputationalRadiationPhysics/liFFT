@@ -29,7 +29,8 @@ template< typename T = double >
 struct MyComplex{
 	T real, imag;
 	MyComplex(){}
-	MyComplex(T real): real(real), imag(0){}
+    MyComplex(T real): real(real), imag(0){}
+    MyComplex(T real, T imag): real(real), imag(imag){}
 };
 
 namespace foobar {
@@ -57,15 +58,6 @@ std::ostream& operator<< (std::ostream& stream, MyComplex<T> val){
 	return stream;
 }
 
-template<typename T> inline
-T absSqr(const MyComplex<T>& val){
-	return val.real*val.real + val.imag*val.imag;
-}
-
-double absSqr(const fftw_complex& val){
-	return val[0]*val[0] + val[1]*val[1];
-}
-
 template< class T_Accessor, typename T >
 void write2File(T& data, const std::string& name){
     using F = foobar::policies::Copy< T_Accessor, foobar::policies::StringStreamAccessor<> >;
@@ -87,23 +79,30 @@ void write2File(T& data, const std::string& name){
     inFile.close();
 }
 
-template<typename T, typename T2>
-void calcIntensities(const T& in, T2& out, size_t numX, size_t numY){
-    for(size_t y=0; y<numY; ++y){
-        for(size_t x=0; x<numX; ++x){
-            out(x,y) = absSqr(in(x,y));
-        }
-    }
-}
-
-template< typename T >
 struct CalcIntensityFunc
 {
+    template< typename T, typename = std::enable_if_t< foobar::traits::IsComplex<T>::value > >
     auto
     operator()(const T& val) const
     -> decltype(val.real*val.real + val.imag*val.imag)
     {
         return val.real*val.real + val.imag*val.imag;
+    }
+
+    template< typename T, typename = std::enable_if_t< foobar::traits::IsComplex<T>::value > >
+    auto
+    operator()(const T& val) const
+    -> decltype(val[0]*val[0] + val[1]*val[1])
+    {
+        return val[0]*val[0] + val[1]*val[1];
+    }
+
+    template< typename T, typename = std::enable_if_t< !foobar::traits::IsComplex<T>::value > >
+    auto
+    operator()(const T& val) const
+    -> decltype(val*val)
+    {
+        return val*val;
     }
 };
 
@@ -132,9 +131,17 @@ void testComplex()
 	//fftw_execute(plan);
 	//fftw_destroy_plan(plan);
 	fft(aperture, fftResult);
-	calcIntensities(aperture, intensity, aperture.xDim(), aperture.yDim());
+	using CopyIntensity = foobar::policies::Copy<
+	    foobar::policies::TransformAccessor<
+	        foobar::policies::VolumeAccessor,
+	        CalcIntensityFunc
+	    >,
+	    foobar::policies::VolumeAccessor
+	>;
+	CopyIntensity copy;
+	copy(aperture, intensity);
 	write2File<foobar::policies::VolumeAccessor>(intensity, "input.txt");
-	calcIntensities(fftResult, intensity, fftResult.xDim(), fftResult.yDim());
+	copy(fftResult, intensity);
 	auto adapter = makeTransposeAdapter(intensity);
 	write2File<foobar::policies::VolumeAccessor>(adapter, "output.txt");
 }
@@ -156,8 +163,16 @@ void testReal()
     //fftw_execute(plan);
     //fftw_destroy_plan(plan);
     fft(aperture, fftResult);
-    SymetricAdapter<fftw_complex> symAdapter(aperture.xDim(), fftResult);
-    calcIntensities(symAdapter, intensity, symAdapter.xDim(), symAdapter.yDim());
+    DimOffsetWrapper< SymetricAdapter<fftw_complex>, 1 > symAdapter(aperture.xDim(), fftResult);
+    using CopyIntensity = foobar::policies::Copy<
+        foobar::policies::TransformAccessor<
+            foobar::policies::VolumeAccessor,
+            CalcIntensityFunc
+        >,
+        foobar::policies::VolumeAccessor
+    >;
+    CopyIntensity copy;
+    copy(symAdapter, intensity);
     auto adapter = makeTransposeAdapter(intensity);
     write2File<foobar::policies::VolumeAccessor>(adapter, "output.txt");
 }
@@ -182,9 +197,7 @@ void testFile( T_File& file )
     using GetIntensityOfOutput =
         foobar::policies::TransformAccessor<
             foobar::policies::TransposeAccessor<>,
-            CalcIntensityFunc<
-                MyComplex<float>
-            >
+            CalcIntensityFunc
         >;
     write2File<foobar::policies::DataContainerAccessor>(file.getData(), "input.txt");
     write2File<GetIntensityOfOutput>(fullResult, "output.txt");
@@ -194,9 +207,9 @@ void testFile( T_File& file )
  *
  */
 int main(int argc, char** argv) {
-    //test();
-    //testIntensityCalculator();
-    //testComplex();
+    test();
+    testIntensityCalculator();
+    testComplex();
     using FileType = foobar::types::FileContainer<
         libTiff::TiffImage<>,
         foobar::policies::ImageAccessorGetColorAsFp<>,

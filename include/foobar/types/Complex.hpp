@@ -5,6 +5,9 @@
 namespace foobar {
 namespace types {
 
+    template< typename T=double, bool T_isConst = false >
+    struct ComplexRef;
+
     /**
      * Type used to store complex values (real and imaginary part)
      * Uses the template parameter to choose the memory type (precision)
@@ -18,9 +21,11 @@ namespace types {
 
         Complex(){}
         template< typename U, typename = std::enable_if_t< std::is_integral<U>::value > >
-        Complex(U&& real): real(std::forward<U>(real)), imag(0){}
+        Complex(U real): real(std::forward<U>(real)), imag(0){}
         template< typename U, typename V >
         Complex(U&& real, V&& imag): real(std::forward<U>(real)), imag(std::forward<V>(imag)){}
+        template< typename U, bool T_isConst >
+        Complex(const ComplexRef<U, T_isConst>& ref): real(ref.real), imag(ref.imag){}
 
         template< typename U >
         Complex&
@@ -35,12 +40,15 @@ namespace types {
     /**
      * Generic reference to a complex value
      * Can be used with either AoS or SoA
+     *
+     * \tparam T Base type to use (float, double) [double]
+     * \tparam T_isConst True if this is a const reference [false]
      */
-    template< typename T=double, bool T_isConst = false >
+    template< typename T, bool T_isConst >
     struct ComplexRef
     {
         using type = T;
-        static constexpr bool isConst = true;
+        static constexpr bool isConst = T_isConst;
         static constexpr bool isComplex = true;
         using Real_t = std::conditional_t< isConst, const Real<T>, Real<T> >;
         using Complex_t = std::conditional_t< isConst, const Complex<T>, Complex<T> >;
@@ -61,6 +69,18 @@ namespace types {
 
 }  // namespace types
 }  // namespace foobar
+
+template<typename T>
+std::ostream& operator<< (std::ostream& stream, foobar::types::Complex<T> val){
+    stream << val.real << " " << val.imag;
+    return stream;
+}
+
+template<typename T, bool T_isConst>
+std::ostream& operator<< (std::ostream& stream, foobar::types::ComplexRef<T, T_isConst> val){
+    stream << foobar::types::Complex<T>(val);
+    return stream;
+}
 
 namespace std {
 
