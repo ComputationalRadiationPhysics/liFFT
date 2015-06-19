@@ -17,13 +17,9 @@ namespace policies {
         Func func_;
     public:
 
-        template< class T, class U >
-        TransformAccessor(T&& baseAccessor, U&& func): acc_(std::forward<T>(baseAccessor)), func_(std::forward<U>(func)){}
-
-        template< class T >
-        TransformAccessor(T&& baseAccessor): acc_(std::forward<T>(baseAccessor)){}
-
         TransformAccessor(){}
+        template< class T, class U >
+        explicit TransformAccessor(T&& baseAccessor, U&& func = T_Func()): acc_(std::forward<T>(baseAccessor)), func_(std::forward<U>(func)){}
 
         template< class T_Index, class T_Data >
         auto

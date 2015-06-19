@@ -59,12 +59,11 @@ std::ostream& operator<< (std::ostream& stream, MyComplex<T> val){
 }
 
 template< class T_Accessor, typename T >
-void write2File(T& data, const std::string& name){
-    using F = foobar::policies::Copy< T_Accessor, foobar::policies::StringStreamAccessor<> >;
+void write2File(T& data, const std::string& name, T_Accessor acc = T_Accessor()){
+    auto copy = foobar::policies::makeCopy(acc, foobar::policies::StringStreamAccessor<>());
 
     foobar::types::AddDimsWrapper< std::ofstream, 2 > inFile(name.c_str());
-    static_assert(foobar::traits::IsStreamAccessor< foobar::policies::StringStreamAccessor<>, decltype(inFile)>::value, "bbb");
-    F()(data, inFile);
+    copy(data, inFile);
 //    foobar::policies::GetExtents< T, 2 > extents(data);
 //    foobar::types::Vec<2> idx;
 //    for(idx[0]=0; idx[0]<extents[0]; ++idx[0]){
@@ -119,8 +118,6 @@ void testComplex()
 {
     ComplexVol2D aperture(1024, 1024);
     ComplexVol2D fftResult(aperture.xDim(), aperture.yDim(), aperture.zDim());
-    RealVol2D intensity(aperture.xDim(), aperture.yDim(), aperture.zDim());
-    //fftw_plan plan = fftw_plan_dft_2d(aperture.yDim(), aperture.xDim(), reinterpret_cast<fftw_complex*>(aperture.data()), reinterpret_cast<fftw_complex*>(fftResult.data()), FFTW_FORWARD, FFTW_ESTIMATE);
     using FFTType = typename foobar::FFT<
                         foobar::libraries::cuFFT::CuFFT<>,
                         ComplexVol2D,
@@ -128,22 +125,14 @@ void testComplex()
                     >::type;
     FFTType fft(aperture, fftResult);
 	generateData(aperture, Rect<double>(20,20));
-	//fftw_execute(plan);
-	//fftw_destroy_plan(plan);
 	fft(aperture, fftResult);
-	using CopyIntensity = foobar::policies::Copy<
-	    foobar::policies::TransformAccessor<
-	        foobar::policies::VolumeAccessor,
-	        CalcIntensityFunc
-	    >,
-	    foobar::policies::VolumeAccessor
-	>;
-	CopyIntensity copy;
-	copy(aperture, intensity);
-	write2File<foobar::policies::VolumeAccessor>(intensity, "input.txt");
-	copy(fftResult, intensity);
-	auto adapter = makeTransposeAdapter(intensity);
-	write2File<foobar::policies::VolumeAccessor>(adapter, "output.txt");
+	using IntensityAcc =
+	        foobar::policies::TransformAccessor<
+                foobar::policies::VolumeAccessor,
+                CalcIntensityFunc
+            >;
+	write2File(aperture, "input.txt", IntensityAcc());
+	write2File(fftResult, "output.txt", foobar::policies::TransposeAccessor<IntensityAcc>());
 }
 
 void testReal()
@@ -151,7 +140,6 @@ void testReal()
     RealVol2D aperture(1024, 1024);
     ComplexVolFFTW2D fftResult(aperture.xDim()/2+1, aperture.yDim(), aperture.zDim());
     RealVol2D intensity(aperture.xDim(), aperture.yDim(), aperture.zDim());
-    //fftw_plan plan = fftw_plan_dft_r2c_2d(aperture.yDim(), aperture.xDim(), aperture.data(), reinterpret_cast<fftw_complex*>(fftResult.data()), FFTW_ESTIMATE);
     using FFTType = typename foobar::FFT<
                         foobar::libraries::fftw::FFTW<>,
                         RealVol,
@@ -160,8 +148,6 @@ void testReal()
     FFTType fft(aperture, fftResult);
     generateData(aperture, Rect<double>(20,20));
     write2File<foobar::policies::VolumeAccessor>(aperture, "input.txt");
-    //fftw_execute(plan);
-    //fftw_destroy_plan(plan);
     fft(aperture, fftResult);
     DimOffsetWrapper< SymetricAdapter<fftw_complex>, 1 > symAdapter(aperture.xDim(), fftResult);
     using CopyIntensity = foobar::policies::Copy<
@@ -184,7 +170,6 @@ void testFile( T_File& file )
     FFTResult_t fftResult(file.getExtents()[0]/2+1, file.getExtents()[1]);
     foobar::FFT_DataWrapper<FFTResult_t> myFFTResult(fftResult);
     DimOffsetWrapper< Volume< float >, 1 > intensity(file.getExtents()[0], file.getExtents()[1]);
-    //fftw_plan plan = fftw_plan_dft_r2c_2d(aperture.yDim(), aperture.xDim(), aperture.data(), reinterpret_cast<fftw_complex*>(fftResult.data()), FFTW_ESTIMATE);
     using FFTType = typename foobar::FFT<
                         foobar::libraries::fftw::FFTW<>,
                         T_File,

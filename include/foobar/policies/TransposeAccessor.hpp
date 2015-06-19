@@ -30,10 +30,9 @@ namespace policies {
         }
     public:
 
-        template< typename T >
-        TransposeAccessor(T&& baseAccessor): acc_(baseAccessor){}
-
         TransposeAccessor(){}
+        explicit TransposeAccessor(T_BaseAccessor baseAccessor): acc_(baseAccessor){}
+
 
         template< class T_Index, class T_Data >
         auto
