@@ -187,7 +187,11 @@ namespace policies {
         template< class T_Accessor, unsigned T_numDims >
         struct DelimiterDimOk< T_Accessor, T_numDims, true >
         {
-            static constexpr bool value = T_numDims <= traits::NumDims<decltype(accDst_.acc_.getDelimiters())>::value;
+            static constexpr bool value = T_numDims <= traits::NumDims<
+                    decltype(
+                            std::declval<T_Accessor>().getDelimiters()
+                            )
+                    >::value;
         };
     public:
         Copy(){}
@@ -212,6 +216,15 @@ namespace policies {
                     template loop< 0, numDims >(idx, GetExtents<T_Src>(src), src, accSrc_, dst, accDst_);
         }
     };
+
+    template< class T_SrcAccessor, class T_DstAccessor >
+    Copy< typename std::decay<T_SrcAccessor>::type, typename std::decay<T_DstAccessor>::type >
+    makeCopy(T_SrcAccessor&& accSrc, T_DstAccessor&& accDst){
+        return Copy<
+                typename std::decay<T_SrcAccessor>::type,
+                typename std::decay<T_DstAccessor>::type
+                >(std::forward<T_SrcAccessor>(accSrc), std::forward<T_DstAccessor>(accDst));
+    }
 
 }  // namespace policies
 }  // namespace foobar
