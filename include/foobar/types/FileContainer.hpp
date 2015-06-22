@@ -9,15 +9,28 @@
 #include "foobar/policies/GetRawPtr.hpp"
 #include "foobar/policies/GetExtents.hpp"
 #include "foobar/policies/DataContainerAccessor.hpp"
+#include "foobar/policies/Copy.hpp"
 #include "foobar/c++14_types.hpp"
 
 #include <boost/mpl/apply.hpp>
-#include "foobar/policies/Copy.hpp"
 
 namespace bmpl = boost::mpl;
 
 namespace foobar {
     namespace types {
+
+        struct FileContainerAccessor
+        {
+            policies::DataContainerAccessor acc_;
+
+            template< class T_Index, class T_Data >
+            auto
+            operator()(T_Index&& idx, T_Data& data) const
+            -> decltype(acc_(idx, data.data_))
+            {
+                return acc_(idx, data.data_);
+            }
+        };
 
         /**
          * A container that can load a file to an internal (contiguous) memory
@@ -40,12 +53,15 @@ namespace foobar {
         {
         public:
             using FileHandler = T_FileHandler;
-            using DataAccessor = policies::DataContainerAccessor;
             using FileAccessor = T_FileAccessor;
-            static constexpr unsigned numDims = T_numDims;
-            static constexpr bool isComplex = T_isComplex;
             using Accuracy = T_Accuracy;
+            static constexpr bool isComplex = T_isComplex;
+            static constexpr unsigned numDims = T_numDims;
+
+            using Accessor = FileContainerAccessor;
+            friend Accessor;
         private:
+            using DataAccessor = policies::DataContainerAccessor;
             using CopyPolicy = policies::Copy< FileAccessor, DataAccessor >;
             using ArrayType = std::conditional_t< isComplex, ComplexAoSValues<Accuracy>, RealValues<Accuracy> >;
             using ElementType = typename ArrayType::Value;
@@ -103,8 +119,10 @@ namespace foobar {
                 gotData_ = false;
                 if(!filePath.empty()){
                     fileHandler_.open(filePath);
-                    if(fileHandler_.isOpen())
+                    if(fileHandler_.isOpen()){
                         loadExtents();
+                        allocData();
+                    }
                 }
             }
 
@@ -138,7 +156,6 @@ namespace foobar {
                 allocData();
                 CopyPolicy()(fileHandler_, data_);
             }
-
         };
 
     }  // namespace types
@@ -199,7 +216,7 @@ namespace foobar {
                 return extents_[dim];
             }
         private:
-            const types::Vec<2>& extents_;
+            types::Vec<T_numDims> extents_;
         };
 
     }  // namespace policies
