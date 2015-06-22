@@ -12,6 +12,7 @@ namespace policies {
      */
     struct DataContainerAccessor
     {
+    protected:
         template< class T_Index, class T_Data >
         std::enable_if_t< std::is_integral<T_Index>::value, unsigned >
         getFlatIdx(const T_Index& idx, const T_Data& data) const
@@ -30,6 +31,7 @@ namespace policies {
                 flatIdx = flatIdx*extents[i] + idx[i];
             return flatIdx;
         }
+    public:
 
         template< class T_Index, class T_Data >
         auto
@@ -47,7 +49,7 @@ namespace policies {
         {
             auto flatIdx = getFlatIdx(idx, data);
             typename T_Data::Accessor acc;
-            acc(flatIdx, data.data, value);
+            acc(flatIdx, data.data, std::forward<T_Value>(value));
         }
     };
 
