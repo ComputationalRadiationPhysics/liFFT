@@ -1,7 +1,12 @@
 #pragma once
 
-#include "foobar/traits/all.hpp"
-#include "foobar/policies/all.hpp"
+#include "foobar/traits/IntegralType.hpp"
+#include "foobar/traits/NumDims.hpp"
+#include "foobar/traits/IsComplex.hpp"
+#include "foobar/traits/IsStrided.hpp"
+#include "foobar/traits/IsAoS.hpp"
+#include "foobar/policies/GetRawPtr.hpp"
+#include "foobar/policies/GetExtents.hpp"
 
 template< typename T = double >
 class Volume{

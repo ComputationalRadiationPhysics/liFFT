@@ -1,6 +1,7 @@
 #pragma once
 
-#include "foobar/traits/all.hpp"
+#include "foobar/traits/IsComplex.hpp"
+#include "foobar/traits/NumDims.hpp"
 #include "foobar/policies/GetRawPtr.hpp"
 #include "IntensityLibrary.hpp"
 #include <boost/array.hpp>

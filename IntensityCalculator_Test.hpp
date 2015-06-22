@@ -2,7 +2,6 @@
 
 #include "foobar/policies/IntensityCalculator.hpp"
 #include "foobar/policies/GetNumElements.hpp"
-#include "foobar/types/all.hpp"
 
 void testIntensityCalculator()
 {
