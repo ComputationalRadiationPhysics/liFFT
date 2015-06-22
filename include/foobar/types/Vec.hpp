@@ -15,6 +15,12 @@ namespace types{
     public:
         static constexpr unsigned numDims = T_numDims;
         using type = T;
+        using Ptr = T*;
+        using Ref = T&;
+        using ConstRef = const T&;
+        using Storage = std::array< T, numDims >;
+        using Iterator = typename Storage::iterator;
+        using ConstIterator = typename Storage::const_iterator;
 
         template<
            typename... TArgs,
@@ -34,27 +40,52 @@ namespace types{
             return res;
         }
 
-        T&
+        Ref
         operator[](unsigned dim)
         {
             assert(dim>=0 && dim<numDims);
             return values_[dim];
         }
 
-        const T
+        ConstRef
         operator[](unsigned dim) const
         {
             assert(dim>=0 && dim<numDims);
             return values_[dim];
         }
 
-        T*
-        data(){
-            return values_;
+        Ptr
+        data()
+        {
+            return values_.data();
+        }
+
+        Iterator
+        begin()
+        {
+            return values_.begin();
+        }
+
+        Iterator
+        end()
+        {
+            return values_.end();
+        }
+
+        ConstIterator
+        cbegin() const
+        {
+            return values_.cbegin();
+        }
+
+        ConstIterator
+        cend() const
+        {
+            return values_.cend();
         }
 
     private:
-        T values_[numDims];
+        Storage values_;
     };
 
     template< typename T, T T_val, unsigned T_numDims >
