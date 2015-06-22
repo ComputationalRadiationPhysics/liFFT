@@ -1,7 +1,5 @@
 #pragma once
 
-#include <type_traits>
-
 namespace std {
 
     template< bool B, class T = void >
@@ -12,5 +10,11 @@ namespace std {
 
     template< class T >
     using result_of_t = typename result_of<T>::type;
+
+    template< class T >
+    using decay_t = typename decay<T>::type;
+
+    template< class T >
+    using remove_pointer_t = typename remove_pointer<T>::type;
 
 }  // namespace std
