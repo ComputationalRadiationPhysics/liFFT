@@ -218,11 +218,11 @@ namespace policies {
     };
 
     template< class T_SrcAccessor, class T_DstAccessor >
-    Copy< typename std::decay<T_SrcAccessor>::type, typename std::decay<T_DstAccessor>::type >
+    Copy< std::decay_t<T_SrcAccessor>, std::decay_t<T_DstAccessor> >
     makeCopy(T_SrcAccessor&& accSrc, T_DstAccessor&& accDst){
         return Copy<
-                typename std::decay<T_SrcAccessor>::type,
-                typename std::decay<T_DstAccessor>::type
+                std::decay_t<T_SrcAccessor>,
+                std::decay_t<T_DstAccessor>
                 >(std::forward<T_SrcAccessor>(accSrc), std::forward<T_DstAccessor>(accDst));
     }
 
