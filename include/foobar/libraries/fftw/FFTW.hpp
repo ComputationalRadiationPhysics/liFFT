@@ -41,25 +41,30 @@ namespace fftw {
                 >;
         using Executer = policies::ExecutePlan< PrecisionType >;
         using PlanDestroyer = policies::FreePlan< PrecisionType >;
-        using PlanType = typename traits::Types< PrecisionType >::PlanType;
+        using PlanType = typename traits::LibTypes< PrecisionType >::PlanType;
+        using InPtr = std::result_of_t< decltype(&Input::getDataPtr)(Input) >;
+        using OutPtr = std::result_of_t< decltype(&Output::getDataPtr)(Output) >;
 
         PlanType plan_;
-        PrecisionType *InPtr, *OutPtr;
+        InPtr inPtr_;
+        OutPtr outPtr_;
 
     public:
-        explicit FFTW(Input& input, Output& output)
+        FFTW(Input& input, Output& output)
         {
             plan_ = Planner()(input, output);
-            InPtr = foobar::policies::GetRawPtr<Input>()(input);
-            OutPtr = foobar::policies::GetRawPtr<Output>()(output);
+            inPtr_ = input.getDataPtr();
+            outPtr_ = output.getDataPtr();
         }
 
         explicit FFTW(Input& inOut)
         {
             plan_ = Planner()(inOut);
-            InPtr = foobar::policies::GetRawPtr<Input>()(inOut);
-            OutPtr = nullptr;
+            inPtr_ = inOut.getDataPtr();
+            outPtr_ = nullptr;
         }
+
+        FFTW(FFTW&& obj): plan_(std::move(obj.plan_)), inPtr_(obj.inPtr_), outPtr_(obj.outPtr_){}
 
         ~FFTW()
         {
@@ -68,8 +73,7 @@ namespace fftw {
 
         void operator()(Input& input, Output& output)
         {
-            if(foobar::policies::GetRawPtr<Input>()(input) != InPtr ||
-                    foobar::policies::GetRawPtr<Output>()(output) != OutPtr)
+            if(input.getDataPtr() != inPtr_ || output.getDataPtr() != outPtr_)
                 throw std::runtime_error("Pointers to data must not be changed after initialization");
 
             Executer()(plan_);
@@ -77,7 +81,7 @@ namespace fftw {
 
         void operator()(Input& inOut)
         {
-            if(foobar::policies::GetRawPtr<Input>()(inOut) != InPtr)
+            if(inOut.getDataPtr() != inPtr_)
                 throw std::runtime_error("Pointer to data must not be changed after initialization");
             Executer()(plan_);
         }

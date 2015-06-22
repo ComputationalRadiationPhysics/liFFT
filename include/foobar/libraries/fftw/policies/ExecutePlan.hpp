@@ -1,7 +1,7 @@
 #pragma once
 
 #include <fftw3.h>
-#include "foobar/libraries/fftw/traits/Types.hpp"
+#include "foobar/libraries/fftw/traits/LibTypes.hpp"
 
 namespace foobar {
 namespace libraries {
@@ -17,7 +17,7 @@ namespace policies{
     template<>
     struct ExecutePlan<float>
     {
-        using PlanType = typename traits::Types<float>::PlanType;
+        using PlanType = typename traits::LibTypes<float>::PlanType;
 
         void
         operator()(PlanType& plan)
@@ -29,7 +29,7 @@ namespace policies{
     template<>
     struct ExecutePlan<double>
     {
-        using PlanType = typename traits::Types<double>::PlanType;
+        using PlanType = typename traits::LibTypes<double>::PlanType;
 
         void
         operator()(PlanType& plan)

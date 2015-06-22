@@ -1,7 +1,7 @@
 #pragma once
 
 #include <fftw3.h>
-#include "foobar/libraries/fftw/traits/Types.hpp"
+#include "foobar/libraries/fftw/traits/LibTypes.hpp"
 
 namespace foobar {
 namespace libraries {
@@ -17,8 +17,8 @@ namespace policies{
     template<>
     struct CreatePlan<float>
     {
-        using PlanType = typename traits::Types<float>::PlanType;
-        using ComplexType = typename traits::Types<float>::ComplexType;
+        using PlanType = typename traits::LibTypes<float>::PlanType;
+        using ComplexType = typename traits::LibTypes<float>::ComplexType;
         using RealType = float;
 
         static_assert(!std::is_same<RealType, ComplexType>::value, "Need different types for Real/Complex");
@@ -47,8 +47,8 @@ namespace policies{
     template<>
     struct CreatePlan<double>
     {
-        using PlanType = typename traits::Types<double>::PlanType;
-        using ComplexType = typename traits::Types<double>::ComplexType;
+        using PlanType = typename traits::LibTypes<double>::PlanType;
+        using ComplexType = typename traits::LibTypes<double>::ComplexType;
         using RealType = double;
 
         static_assert(!std::is_same<RealType, ComplexType>::value, "Need different types for Real/Complex");

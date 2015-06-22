@@ -1,10 +1,8 @@
 #pragma once
 
+#include <foobar/policies/SafePtrCast.hpp>
 #include <cassert>
 #include "foobar/types/TypePair.hpp"
-#include "foobar/policies/GetExtentsRawPtr.hpp"
-#include "foobar/policies/GetRawPtr.hpp"
-#include "foobar/policies/Ptr2Ptr.hpp"
 #include "foobar/libraries/fftw/traits/Sign.hpp"
 #include "foobar/libraries/fftw/policies/CreatePlan.hpp"
 #include "foobar/c++14_types.hpp"
@@ -44,37 +42,34 @@ namespace policies {
         static constexpr bool isInplace    = T_isInplace;
         static constexpr bool isComplexIn  = T_isComplexIn;
         static constexpr bool isComplexOut = T_isComplexOut;
-        using ExtentsIn = foobar::policies::GetExtentsRawPtr< Input >;
-        using ExtentsOut = foobar::policies::GetExtentsRawPtr< Output >;
-        using RawPtrIn = foobar::policies::GetRawPtr< Input >;
-        using RawPtrOut = foobar::policies::GetRawPtr< Output >;
-        using ComplexType = typename traits::Types< Precision >::ComplexType;
-        using PtrConverterIn = std::conditional_t<
+        using ComplexType = typename traits::LibTypes< Precision >::ComplexType;
+        using LibInType = std::conditional_t<
                                     isComplexIn,
-                                    foobar::policies::Ptr2Ptr<Precision, ComplexType>,
-                                    foobar::policies::Ptr2Ptr<Precision>
-                                >;
-        using PtrConverterOut = std::conditional_t<
+                                    ComplexType,
+                                    Precision
+                                >*;
+        using LibOutType = std::conditional_t<
                                     isComplexOut,
-                                    foobar::policies::Ptr2Ptr<Precision, ComplexType>,
-                                    foobar::policies::Ptr2Ptr<Precision>
-                                >;
+                                    ComplexType,
+                                    Precision
+                                >*;
         static_assert(isComplexIn || isComplexOut, "Real2Real transform not supported");
         static_assert(isComplexIn || isFwd, "Real2Complex is always a forward transform");
         static_assert(isComplexOut || !isFwd, "Complex2Real is always a backward transform");
 
     public:
-        using PlanType = typename traits::Types<T_Precision>::PlanType;
+        using PlanType = typename traits::LibTypes<T_Precision>::PlanType;
 
         PlanType
         operator()(Input& input, Output& output, const unsigned flags = FFTW_ESTIMATE)
         {
+            using foobar::policies::safe_ptr_cast;
             static_assert(!isInplace, "Cannot be used for inplace transforms!");
-            ExtentsIn extents(input);
-            ExtentsOut extentsOut(output);
+            auto extents(input.getExtents());
+            auto extentsOut(output.getExtents());
             for(unsigned i=0; i<numDims; ++i){
-                unsigned eIn = extents()[i];
-                unsigned eOut = extentsOut()[i];
+                unsigned eIn = extents[i];
+                unsigned eOut = extentsOut[i];
                 // Same extents in all dimensions unless we have a C2R or R2C and compare the last dimension
                 assert(eIn == eOut || (i+1 == numDims && !(isComplexIn && isComplexOut)));
                 // Half input size for first dimension of R2C
@@ -84,9 +79,9 @@ namespace policies {
             }
             return policies::CreatePlan<Precision>().Create(
                     numDims,
-                    reinterpret_cast<const int*>(extents()),
-                    PtrConverterIn()(RawPtrIn()(input)),
-                    PtrConverterOut()(RawPtrOut()(output)),
+                    reinterpret_cast<const int*>(input.getExtentsPtr()),
+                    safe_ptr_cast<LibInType>(input.getDataPtr()),
+                    safe_ptr_cast<LibOutType>(output.getDataPtr()),
                     traits::Sign<isFwd>::value,
                     flags
                     );
@@ -95,14 +90,13 @@ namespace policies {
         PlanType
         operator()(Input& inOut, const unsigned flags = FFTW_ESTIMATE)
         {
+            using foobar::policies::safe_ptr_cast;
             static_assert(isInplace, "Must be used for inplace transforms!");
-            ExtentsIn extents(inOut);
-            RawPtrIn inPtr;
             return policies::CreatePlan<Precision>().Create(
                     numDims,
-                    reinterpret_cast<const int*>(extents()),
-                    PtrConverterIn()(inPtr(inOut)),
-                    PtrConverterOut()(inPtr(inOut)),
+                    reinterpret_cast<const int*>(inOut.getExtentsPtr()),
+                    safe_ptr_cast<LibInType>(inOut.getDataPtr()),
+                    safe_ptr_cast<LibOutType>(inOut.getDataPtr()),
                     traits::Sign<isFwd>::value,
                     flags
                     );

@@ -73,6 +73,13 @@ namespace cuFFT {
             plan_ = Planner()(inOut, allocIn_, allocOut_);
         }
 
+        CuFFT(CuFFT&& obj):
+            plan_(std::move(obj.plan_)),
+            allocIn_(std::move(obj.allocIn_)),
+            allocOut_(std::move(obj.allocOut_)),
+            copy_(std::move(obj.copy_)){}
+
+
         ~CuFFT()
         {
             cufftDestroy(plan_.plan);

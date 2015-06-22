@@ -40,6 +40,9 @@ namespace foobar {
         struct IsComplex< MyComplex<T> >: std::true_type{};
 
         template<typename T>
+        struct IsBinaryCompatibleImpl< MyComplex<T>, foobar::types::Complex<T> >: std::true_type{};
+
+        template<typename T>
         struct IntegralType< MyComplex<T> >
         {
             using type = T; // or define this in MyComplex itself
@@ -118,14 +121,12 @@ void testComplex()
 {
     ComplexVol2D aperture(1024, 1024);
     ComplexVol2D fftResult(aperture.xDim(), aperture.yDim(), aperture.zDim());
-    using FFTType = typename foobar::FFT<
-                        foobar::libraries::cuFFT::CuFFT<>,
-                        ComplexVol2D,
-                        ComplexVol2D
-                    >::type;
-    FFTType fft(aperture, fftResult);
+    using FFT_Type = foobar::FFT_2D_C2C_D;
+    auto input = foobar::wrapFFT_Input(FFT_Type(), aperture, foobar::policies::VolumeAccessor());
+    auto output = foobar::wrapFFT_Output(FFT_Type(), fftResult, foobar::policies::VolumeAccessor());
+    auto fft = foobar::makeFFT<foobar::libraries::fftw::FFTW<>>(input, output);
 	generateData(aperture, Rect<double>(20,20));
-	fft(aperture, fftResult);
+	fft(input, output);
 	using IntensityAcc =
 	        foobar::policies::TransformAccessor<
                 foobar::policies::VolumeAccessor,
@@ -140,15 +141,13 @@ void testReal()
     RealVol2D aperture(1024, 1024);
     ComplexVolFFTW2D fftResult(aperture.xDim()/2+1, aperture.yDim(), aperture.zDim());
     RealVol2D intensity(aperture.xDim(), aperture.yDim(), aperture.zDim());
-    using FFTType = typename foobar::FFT<
-                        foobar::libraries::fftw::FFTW<>,
-                        RealVol,
-                        ComplexVolFFTW
-                    >::type;
-    FFTType fft(aperture, fftResult);
+    using FFT_Type = foobar::FFT_2D_R2C_D;
+    auto input = foobar::wrapFFT_Input(FFT_Type(), aperture, foobar::policies::VolumeAccessor());
+    auto output = foobar::wrapFFT_Output(FFT_Type(), fftResult, foobar::policies::VolumeAccessor());
+    auto fft = foobar::makeFFT<foobar::libraries::fftw::FFTW<>>(input, output);
     generateData(aperture, Rect<double>(20,20));
     write2File<foobar::policies::VolumeAccessor>(aperture, "input.txt");
-    fft(aperture, fftResult);
+    fft(input, output);
     DimOffsetWrapper< SymetricAdapter<fftw_complex>, 1 > symAdapter(aperture.xDim(), fftResult);
     using CopyIntensity = foobar::policies::Copy<
         foobar::policies::TransformAccessor<
@@ -168,40 +167,36 @@ void testFile( T_File& file )
 {
     using FFTResult_t = DimOffsetWrapper< Volume< MyComplex<float> >, 1 >;
     FFTResult_t fftResult(file.getExtents()[0]/2+1, file.getExtents()[1]);
-    foobar::FFT_DataWrapper<FFTResult_t> myFFTResult(fftResult);
-    DimOffsetWrapper< Volume< float >, 1 > intensity(file.getExtents()[0], file.getExtents()[1]);
-    using FFTType = typename foobar::FFT<
-                        foobar::libraries::fftw::FFTW<>,
-                        T_File,
-                        FFTResult_t
-                    >::type;
-    FFTType fft(file, fftResult);
+    using FFT_Type = foobar::FFT_2D_R2C_F;
+    auto input = foobar::wrapFFT_Input(FFT_Type(), file);
+    auto output = foobar::wrapFFT_Output(FFT_Type(), fftResult, foobar::policies::VolumeAccessor());
+    auto fft = foobar::makeFFT<foobar::libraries::cuFFT::CuFFT<>>(input, output);
     file.loadData(true);
-    fft(file, fftResult);
+    fft(input, output);
     foobar::types::SymmetricWrapper< decltype(fftResult), foobar::policies::VolumeAccessor > fullResult(fftResult, file.getExtents()[0]);
-    using GetIntensityOfOutput =
+    using IntensityAcc =
         foobar::policies::TransformAccessor<
             foobar::policies::TransposeAccessor<>,
             CalcIntensityFunc
         >;
     write2File<foobar::policies::DataContainerAccessor>(file.getData(), "input.txt");
-    write2File<GetIntensityOfOutput>(fullResult, "output.txt");
+    write2File<IntensityAcc>(fullResult, "output.txt");
 }
 
 /*
  *
  */
 int main(int argc, char** argv) {
-    test();
-    testIntensityCalculator();
-    testComplex();
+    //test();
+    //testIntensityCalculator();
+    //testReal();
+    //testComplex();
     using FileType = foobar::types::FileContainer<
         libTiff::TiffImage<>,
         foobar::policies::ImageAccessorGetColorAsFp<>,
         float,
         false
         >;
-    testReal();
     FileType myFile("/home/grund59/Rect.tif");
     testFile(myFile);
     if(std::system("python writeData.py -i input.txt -o input.pdf"))

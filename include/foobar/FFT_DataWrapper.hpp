@@ -1,104 +1,94 @@
 #pragma once
 
-#include "foobar/c++14_types.hpp"
 #include "foobar/AutoDetect.hpp"
 #include "foobar/traits/NumDims.hpp"
 #include "foobar/traits/IsComplex.hpp"
 #include "foobar/traits/IsAoS.hpp"
 #include "foobar/traits/IsStrided.hpp"
 #include "foobar/policies/GetExtents.hpp"
-#include "foobar/policies/GetRawPtr.hpp"
 #include "foobar/policies/GetStrides.hpp"
 #include "foobar/types/RealValues.hpp"
 #include "foobar/types/ComplexAoSValues.hpp"
 #include "foobar/types/ComplexSoAValues.hpp"
+#include "foobar/traits/DefaultAccessor.hpp"
+#include "foobar/c++14_types.hpp"
+#include "foobar/FFT_Memory.hpp"
+#include <type_traits>
+#include <functional>
 
 namespace foobar {
 
-    namespace detail {
-
-        template<bool T_isAoS>
-        struct SetPointer
-        {
-            template< typename T_Memory, typename T_Ptr >
-            static void
-            setPointer(T_Memory*& memory, T_Ptr* ptr)
-            {
-                memory = reinterpret_cast<T_Memory*>(ptr);
-            }
-        };
-
-        template<>
-        struct SetPointer<false>
-        {
-            template< typename T_Memory, typename T_Ptr >
-            static void
-            setPointer(T_Memory& memory, T_Ptr ptr)
-            {
-                memory.real = reinterpret_cast<decltype(memory.real)>(ptr.first);
-                memory.imag = reinterpret_cast<decltype(memory.imag)>(ptr.second);
-            }
-        };
-
-    }  // namespace detail
-
-    template< typename T_Base >
+    /**
+     * Wrapper for the data
+     */
+    template< class T_FFT_Def, class T_IsInput, typename T_Base, typename T_BaseAccessor = traits::DefaultAccessor_t<T_Base> >
     class FFT_DataWrapper
     {
     public:
-        static constexpr unsigned numDims = traits::NumDims< T_Base >::value;
-        static constexpr bool isComplex = traits::IsComplex< T_Base >::value;
-        static constexpr bool isAoS = traits::IsAoS< T_Base >::value;
-        static constexpr bool isStrided = traits::IsStrided< T_Base >::value;
+        using FFT_Def =  T_FFT_Def;
+        static constexpr bool isInput = T_IsInput::value;
+        using Base = T_Base;
+        using BaseAccessor = T_BaseAccessor;
 
-        using RawPtr = policies::GetRawPtr< T_Base >;
-        using RawPtrType = std::result_of_t<RawPtr(T_Base&)>; // Type returned by RawPtr(base)
-        using Extents = policies::GetExtents< T_Base >;
-        using Strides = policies::GetStrides< T_Base >;
+        static constexpr unsigned numDims = traits::NumDims< Base >::value;
+        static_assert(numDims == FFT_Def::numDims, "Wrong number of dimensions");
+        using IdxType = types::Vec<numDims>;
+        using AccRefType = std::result_of_t<BaseAccessor(const IdxType&, Base&)>;
+        using AccType = typename std::remove_reference<AccRefType>::type;
+        static constexpr bool isComplex = traits::IsComplex< AccType >::value;
+        static_assert( (isInput && isComplex == FFT_Def::isComplexInput) ||
+                       (!isInput && isComplex == FFT_Def::isComplexOutput),
+                       "Wrong element type (complex/real) for this FFT" );
+
+        using Extents = std::array<unsigned, numDims>;
         // Precision (double, float...) is the base type of RawPtrType (which is a pointer)
         // For Complex-SoA values RawPtrType is a std::pair of pointers
-        using Precision = typename std::remove_pointer<
-                              typename std::conditional_t<
-                                  isAoS,
-                                  std::pair<RawPtrType, RawPtrType>,
-                                  RawPtrType
-                              >::first_type
-                          >::type;
+        using PrecisionType = typename traits::IntegralType<AccType>::type;
+        static_assert(std::is_same<PrecisionType, typename FFT_Def::PrecisionType>::value, "Wrong precision type");
 
-        using Memory = std::conditional_t<
+        static constexpr bool needOwnMemoryPtr = !std::is_reference<AccRefType>::value || std::is_const<AccRefType>::value;
+        //static constexpr bool needOwnMemory = needOwnMemoryPtr && !FFT_Def::isInplace;
+        static constexpr bool isAoS = needOwnMemoryPtr || traits::IsAoS< Base >::value;
+        static constexpr bool isStrided = !needOwnMemoryPtr && traits::IsStrided< Base >::value;
+
+        using Memory_t = std::conditional_t<
                            isComplex,
                            std::conditional_t<
                                isAoS,
-                               types::ComplexAoSValues<Precision>,
-                               types::ComplexSoAValues<Precision>
+                               types::ComplexAoSValues<PrecisionType, needOwnMemoryPtr>,
+                               types::ComplexSoAValues<PrecisionType, needOwnMemoryPtr>
                            >,
-                           types::RealValues<Precision>
+                           types::RealValues<PrecisionType, needOwnMemoryPtr>
                        >;
+        using Memory = detail::FFT_Memory< Memory_t, needOwnMemoryPtr >;
 
     private:
-        T_Base& base_;
-        std::array<unsigned, numDims> extents_;
-
+        Base& base_;
+        BaseAccessor acc_;
+        Extents extents_;
+        Memory memory_;
     public:
 
-        FFT_DataWrapper(T_Base& data): base_(data){
-            Extents extents(base_);
+        FFT_DataWrapper(Base& data): FFT_DataWrapper(data, BaseAccessor()){}
+
+        FFT_DataWrapper(Base& data, BaseAccessor acc): base_(data), acc_(std::move(acc)){
+            policies::GetExtents<Base> extents(base_);
             for(unsigned i=0; i<numDims; ++i)
                 extents_[i] = extents[i];
+            memory_.init(extents_);
         }
 
-        Memory
-        getData()
+        auto
+        getDataPtr()
+        -> decltype(memory_.getPtr(base_, acc_))
         {
-            Memory ptr;
-            detail::SetPointer<isAoS>::setPointer(ptr, RawPtr()(base_));
-            return ptr;
+            return memory_.getPtr(base_, acc_);
         }
 
-        Extents
+        const Extents&
         getExtents()
         {
-            return Extents(base_);
+            return extents_;
         }
 
         unsigned*
@@ -106,6 +96,46 @@ namespace foobar {
         {
             return extents_.data();
         }
+
+        unsigned
+        getNumElements() const
+        {
+            return std::accumulate(std::begin(extents_), std::end(extents_), 1u, std::multiplies<unsigned>());
+        }
+
+        void
+        preProcess()
+        {
+            if(isInput)
+                memory_.copyFrom(base_, acc_);
+        }
+
+        void
+        postProcess()
+        {
+            if(!isInput)
+                memory_.copyTo(base_, acc_);
+        }
     };
+
+    template< class T_FFT_Def, typename T_Base, typename T_BaseAccessor = traits::DefaultAccessor_t<T_Base> >
+    using FFT_InputDataWrapper = FFT_DataWrapper< T_FFT_Def, std::true_type, T_Base, T_BaseAccessor >;
+
+    template< class T_FFT_Def, typename T_Base, typename T_BaseAccessor = traits::DefaultAccessor_t<T_Base> >
+    using FFT_OutputDataWrapper = FFT_DataWrapper< T_FFT_Def, std::false_type, T_Base, T_BaseAccessor >;
+
+    template< class T_FFT_Def, typename T_Base, typename T_BaseAccessor = traits::DefaultAccessor_t<T_Base> >
+    FFT_InputDataWrapper< T_FFT_Def, T_Base, T_BaseAccessor >
+    wrapFFT_Input(T_FFT_Def&&, T_Base& base, T_BaseAccessor&& acc= T_BaseAccessor())
+    {
+        return FFT_InputDataWrapper< T_FFT_Def, T_Base, T_BaseAccessor >(base, std::forward<T_BaseAccessor>(acc));
+    }
+
+    template< class T_FFT_Def, typename T_Base, typename T_BaseAccessor = traits::DefaultAccessor_t<T_Base> >
+    FFT_OutputDataWrapper< T_FFT_Def, T_Base, T_BaseAccessor >
+    wrapFFT_Output(T_FFT_Def&&, T_Base& base, T_BaseAccessor&& acc= T_BaseAccessor())
+    {
+        return FFT_OutputDataWrapper< T_FFT_Def, T_Base, T_BaseAccessor >(base, std::forward<T_BaseAccessor>(acc));
+    }
 
 }  // namespace foobar

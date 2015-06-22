@@ -29,4 +29,16 @@ namespace traits{
 }  // namespace traits
 }  // namespace cuFFT
 }  // namespace libraries
+
+namespace traits {
+
+    template< typename T >
+    struct IsBinaryCompatible< types::Real<T>, typename libraries::cuFFT::traits::Types<T>::RealType >
+        :std::true_type{};
+
+    template< typename T >
+    struct IsBinaryCompatible< types::Complex<T>, typename libraries::cuFFT::traits::Types<T>::ComplexType >
+        :std::true_type{};
+
+}  // namespace traits
 }  // namespace foobar

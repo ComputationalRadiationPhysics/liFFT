@@ -110,8 +110,8 @@ namespace policies {
 
         using RawPtrIn = foobar::policies::GetRawPtr< Input >;
         using RawPtrOut = foobar::policies::GetRawPtr< Output >;
-        using PtrConverterIn = foobar::policies::Ptr2Ptr< Precision, LibInType >;
-        using PtrConverterOut = foobar::policies::Ptr2Ptr< Precision, LibOutType >;
+        using PtrConverterIn = foobar::policies::Ptr2Ptr< Precision*, LibInType* >;
+        using PtrConverterOut = foobar::policies::Ptr2Ptr< Precision*, LibOutType* >;
         using Executer = detail::ExecutePlan< Precision, isComplexIn, isComplexOut, isFwd >;
 
     public:

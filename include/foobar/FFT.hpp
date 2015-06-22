@@ -1,15 +1,16 @@
 #pragma once
 
 #include "foobar/FFT_Properties.hpp"
-#include "foobar/AutoDetect.hpp"
-#include "foobar/types/InplaceType.hpp"
-#include "foobar/FFT_Properties.hpp"
 #include "foobar/FFT_Impl.hpp"
+
+// Included for convenience, so only one include is required from user code
+#include "foobar/FFT_Definition.hpp"
+#include "foobar/FFT_DataWrapper.hpp"
 
 namespace foobar {
 
     /**
-     * Assembles an FFT class that can be queried with the type member
+     * Assembles an FFT
      *
      * Usage:
      *      1) The constructor takes the container(s) and may modify the memory returned by the GetRawPtr policy
@@ -19,26 +20,66 @@ namespace foobar {
      *
      * Parameters:
      * \tparam T_Library FFT Library to use
-     * \tparam T_Input   Input container type
-     * \tparam T_Output  Output container type (Can be an InplaceType for in-place transforms)
-     * \tparam T_IsFwd   Whether to use forward or backward transform (should have a bool ::value member) or AutoDetect (True for C2C or R2C, False for C2R)
+     * \tparam T_InputWrapper   Input wrapped in a FFT_DataWrapper
+     * \tparam T_OutputWrapper  Output wrapped in a FFT_DataWrapper
      */
     template<
             class T_Library,
-            typename T_Input,
-            typename T_Output = types::InplaceType<>,
-            typename T_IsFwd = AutoDetect
+            typename T_InputWrapper,
+            typename T_OutputWrapper = T_InputWrapper
             >
-    struct FFT
+    class FFT
     {
         using Library = T_Library;
-        using Input = T_Input;
-        using Output = T_Output;
-        using IsFwd = T_IsFwd;
+        using Input = T_InputWrapper;
+        using Output = T_OutputWrapper;
 
-        using FFT_Properties = detail::FFT_Properties< Input, Output, IsFwd >;
+        using FFT_Def = typename Input::FFT_Def;
+        static_assert(std::is_same< FFT_Def, typename Output::FFT_Def>::value, "FFT types of input and output differs");
+        using FFT_Properties = detail::FFT_Properties< FFT_Def, Input, Output >;
+        using ActLibrary = typename bmpl::apply< Library, FFT_Properties >::type;
+        static constexpr bool isInplace = FFT_Properties::isInplace;
 
-        using type = detail::FFT_Impl< Library, FFT_Properties >;
+        ActLibrary lib_;
+    public:
+        explicit FFT(Input& input, Output& output): lib_(input, output)
+        {
+            static_assert(!isInplace, "Must not be called for inplace transforms");
+        }
+
+        explicit FFT(Input& inOut): lib_(inOut)
+        {
+            static_assert(isInplace, "Must not be called for out-of-place transforms");
+        }
+
+        FFT(FFT&& obj): lib_(std::move(obj.lib_)){}
+
+        void operator()(Input& input, Output& output)
+        {
+            static_assert(!isInplace, "Must not be called for inplace transforms");
+            input.preProcess();
+            lib_(input, output);
+            output.postProcess();
+        }
+
+        void operator()(Input& inout)
+        {
+            static_assert(isInplace, "Must not be called for out-of-place transforms");
+            inout.preProcess();
+            lib_(inout);
+            inout.postProcess();
+        }
     };
+
+    template<
+        class T_Library,
+        typename T_InputWrapper,
+        typename T_OutputWrapper
+        >
+    FFT< T_Library, std::decay_t<T_InputWrapper>, std::decay_t<T_OutputWrapper> >
+    makeFFT(T_InputWrapper&& input, T_OutputWrapper&& output)
+    {
+        return FFT< T_Library, std::decay_t<T_InputWrapper>, std::decay_t<T_OutputWrapper> >(input, output);
+    }
 
 }  // namespace foobar

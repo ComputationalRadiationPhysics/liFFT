@@ -1,61 +1,35 @@
 #pragma once
 
-#include "foobar/c++14_types.hpp"
-#include "foobar/AutoDetect.hpp"
-#include "foobar/types/InplaceType.hpp"
-#include "foobar/traits/IntegralType.hpp"
-#include "foobar/traits/NumDims.hpp"
-#include "foobar/traits/IsComplex.hpp"
-#include "foobar/traits/IsAoS.hpp"
-#include "foobar/traits/IsStrided.hpp"
-#include "foobar/util.hpp"
-
 namespace foobar {
 namespace detail {
 
     /**
      * Type that is passed to FFT-Implementations to define some properties common for all FFTs
-     * Parameters are the same as for FFT itself minus the Library
+     *
+     * \tparam T_FFT_Def Specialized FFT_Definition used in CRTP to make its definitions available
+     * \tparam T_Input Input wrapper
+     * \tparam T_Output Output wrapper
      */
     template<
+        typename T_FFT_Def,
         typename T_Input,
-        typename T_Output,
-        typename T_IsFwd
+        typename T_Output
         >
-    struct FFT_Properties
+    struct FFT_Properties: public T_FFT_Def
     {
     public:
         using Input = T_Input;
-        static constexpr bool isInplace = traits::IsInplace<T_Output>::value;
-        using Output = std::conditional_t< isInplace, Input, T_Output >;
-    private:
-        static constexpr bool autoDetectIsFwd = std::is_same< T_IsFwd, AutoDetect >::value;
-        static_assert(autoDetectIsFwd || std::is_same< decltype(T_IsFwd::value), bool >::value, "Wrong argument type for IsFwd");
+        using Output = T_Output;
+        static constexpr bool isComplexIn = Input::isComplex;
+        static constexpr bool isAoSIn = Input::isAoS;
+        static constexpr bool isStridedIn = Input::isStrided;
 
-        using PrecisionTypeIn = typename traits::IntegralType<Input>::type;
-        using NumDimsIn = traits::NumDims<Input>;
-        using PrecisionTypeOut = typename traits::IntegralType<Output>::type;
-        using NumDimsOut = traits::NumDims<Output>;
+        static constexpr bool isComplexOut = Output::isComplex;
+        static constexpr bool isAoSOut = Output::isAoS;
+        static constexpr bool isStridedOut = Output::isStrided;
 
-        static_assert( AssertValue< std::is_same< PrecisionTypeIn, PrecisionTypeOut > >::value, "Need same precision on In/Out");
-        static_assert(NumDimsIn::value >= 1, "Need >= 1 dimension");
-        static_assert(NumDimsOut::value >= 1, "Need >= 1 dimension");
-        static_assert(NumDimsIn::value == NumDimsOut::value, "Dimension mismatch");
-    public:
-        static constexpr bool isComplexIn = traits::IsComplex<Input>::value;
-        static constexpr bool isAoSIn = traits::IsAoS<Input>::value;
-        static constexpr bool isStridedIn = traits::IsStrided<Input>::value;
-
-        static constexpr bool isComplexOut = traits::IsComplex< std::conditional_t< isInplace, T_Output, Output > >::value;
-        static constexpr bool isAoSOut = traits::IsAoS<Output>::value;
-        static constexpr bool isStridedOut = traits::IsStrided<Output>::value;
-
-        using PrecisionType = PrecisionTypeIn;
         static constexpr bool isAoS = isAoSIn || isAoSOut;
         static constexpr bool isStrided = isStridedIn || isStridedOut;
-
-        static constexpr unsigned numDims = NumDimsIn::value;
-        static constexpr bool isFwd = (autoDetectIsFwd && isComplexOut) || (!autoDetectIsFwd && T_IsFwd::value);
     };
 
 }  // namespace detail

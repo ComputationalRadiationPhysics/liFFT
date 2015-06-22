@@ -1,5 +1,6 @@
 #pragma once
 
+#include "foobar/traits/IsBinaryCompatible.hpp"
 #include "foobar/types/Real.hpp"
 
 namespace foobar {
@@ -68,6 +69,13 @@ namespace types {
     };
 
 }  // namespace types
+
+namespace traits {
+
+    template< typename T >
+    struct IsBinaryCompatibleImpl< types::Complex<T>, T >: std::true_type{};
+
+}  // namespace policies
 }  // namespace foobar
 
 template<typename T>

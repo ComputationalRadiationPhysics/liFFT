@@ -3,9 +3,6 @@
 #include <cassert>
 #include <cufft.h>
 #include "foobar/types/TypePair.hpp"
-#include "foobar/policies/GetExtents.hpp"
-#include "foobar/policies/GetNumElements.hpp"
-#include "foobar/policies/GetRawPtr.hpp"
 #include "foobar/libraries/cuFFT/Plan.hpp"
 #include "foobar/libraries/cuFFT/traits/FFTType.hpp"
 #include "foobar/libraries/cuFFT/traits/Sign.hpp"
@@ -57,8 +54,6 @@ namespace policies {
         static constexpr bool isComplexIn  = T_isComplexIn;
         static constexpr bool isComplexOut = T_isComplexOut;
 
-        using ExtentsIn = foobar::policies::GetExtents< Input >;
-        using ExtentsOut = foobar::policies::GetExtents< Output >;
         using LibTypes = traits::LibTypes< Precision, isComplexIn, isComplexOut >;
         using LibInType = typename LibTypes::InType;
         using LibOutType = typename LibTypes::OutType;
@@ -94,8 +89,8 @@ namespace policies {
         operator()(Input& input, Output& output, T_AllocatorIn allocIn, T_AllocatorOut allocOut)
         {
             static_assert(!isInplace, "Cannot be used for inplace transforms!");
-            ExtentsIn extents(input);
-            ExtentsOut extentsOut(output);
+            auto extents(input.getExtents());
+            auto extentsOut(output.getExtents());
             for(unsigned i=0; i<numDims; ++i){
                 unsigned eIn = extents[i];
                 unsigned eOut = extentsOut[i];
@@ -108,7 +103,7 @@ namespace policies {
             }
             PlanType plan;
             createPlan(plan, extents);
-            unsigned numElements = foobar::policies::GetNumElements< Input >()(input);
+            unsigned numElements = input.getNumElements();
             allocIn.malloc(plan.InDevicePtr, numElements * sizeof(LibInType));
             allocOut.malloc(plan.OutDevicePtr, numElements * sizeof(LibOutType));
             return plan;
@@ -119,10 +114,10 @@ namespace policies {
         operator()(Input& inOut, T_Allocator alloc)
         {
             static_assert(isInplace, "Must be used for inplace transforms!");
-            ExtentsIn extents(inOut);
+            auto extents(inOut.getExtents());
             PlanType plan;
             createPlan(plan, extents);
-            unsigned numElements = foobar::policies::GetNumElements< ExtentsIn >()(extents);
+            unsigned numElements = inOut.getNumElements();
             alloc.malloc(plan.InDevicePtr, numElements * std::max(sizeof(LibInType), sizeof(LibOutType)));
             plan.OutDevicePtr = nullptr;
             return plan;

@@ -4,7 +4,6 @@
 #include <type_traits>
 #include <cufft.h>
 #include "foobar/types/TypePair.hpp"
-#include "foobar/policies/GetRawPtr.hpp"
 #include "foobar/libraries/cuFFT/Plan.hpp"
 #include "foobar/libraries/cuFFT/traits/FFTType.hpp"
 #include "foobar/libraries/cuFFT/traits/Sign.hpp"
@@ -111,10 +110,6 @@ namespace policies {
         using LibInType = typename LibTypes::InType;
         using LibOutType = typename LibTypes::OutType;
 
-        using RawPtrIn = foobar::policies::GetRawPtr< Input >;
-        using RawPtrOut = foobar::policies::GetRawPtr< Output >;
-        using PtrConverterIn = foobar::policies::Ptr2Ptr< Precision, LibInType >;
-        using PtrConverterOut = foobar::policies::Ptr2Ptr< Precision, LibOutType >;
         using Executer = detail::ExecutePlan< Precision, isComplexIn, isComplexOut, isFwd >;
 
     public:
@@ -124,26 +119,25 @@ namespace policies {
         void
         operator()(PlanType& plan, Input& input, Output& output, T_Copier& copy)
         {
+            using foobar::policies::safe_ptr_cast;
             static_assert(!isInplace, "Cannot be used for inplace transforms!");
 
-            RawPtrIn ptrIn;
-            RawPtrOut ptrOut;
-            auto pIn = PtrConverterIn()(ptrIn(input));
+            auto pIn = safe_ptr_cast<LibInType*>(input.getDataPtr());
             if( plan.InDevicePtr != nullptr)
             {
-                unsigned numElements = foobar::policies::GetNumElements< Input >()(input);
-                copy.H2D( plan.InDevicePtr, pIn, numElements * sizeof(LibInType));
+                unsigned numElements = input.getNumElements();
+                copy.H2D(plan.InDevicePtr, pIn, numElements * sizeof(LibInType));
                 pIn = plan.InDevicePtr;
             }
-            auto pOut = (plan.OutDevicePtr) ? plan.OutDevicePtr : PtrConverterOut()(ptrOut(output));
+            auto pOut = (plan.OutDevicePtr) ? plan.OutDevicePtr : safe_ptr_cast<LibOutType*>(output.getDataPtr());
             cufftResult result = Executer()(plan.plan, pIn, pOut);
             if(result != CUFFT_SUCCESS)
                 throw std::runtime_error("Error executing plan: " + std::to_string(result));
             if( plan.OutDevicePtr != nullptr)
             {
-                unsigned numElements = foobar::policies::GetNumElements< Output >()(output);
-                pOut = PtrConverterOut()(ptrOut(output));
-                copy.D2H(pOut, plan.OutDevicePtr, numElements * sizeof(LibInType));
+                unsigned numElements = output.getNumElements();
+                pOut = safe_ptr_cast<LibOutType*>(output.getDataPtr());
+                copy.D2H(pOut, plan.OutDevicePtr, numElements * sizeof(LibOutType));
             }
         }
 
@@ -151,14 +145,14 @@ namespace policies {
         void
         operator()(PlanType& plan, Input& inOut, T_Copier& copy)
         {
+            using foobar::policies::safe_ptr_cast;
             static_assert(isInplace, "Must be used for inplace transforms!");
 
-            RawPtrIn ptrIn;
-            auto pIn = PtrConverterIn()(ptrIn(inOut));
+            auto pIn = safe_ptr_cast<LibInType*>(inOut.getDataPtr());
             if( plan.InDevicePtr != nullptr)
             {
-                unsigned numElements = foobar::policies::GetNumElements< Input >()(inOut);
-                copy.H2D( plan.InDevicePtr, pIn, numElements * sizeof(LibInType));
+                unsigned numElements = inOut.getNumElements();
+                copy.H2D(plan.InDevicePtr, pIn, numElements * sizeof(LibInType));
                 pIn = plan.InDevicePtr;
             }
             cufftResult result = Executer()(plan.plan, pIn, pIn);
@@ -166,9 +160,9 @@ namespace policies {
                 throw std::runtime_error("Error executing plan: " + std::to_string(result));
             if( plan.InDevicePtr != nullptr)
             {
-                unsigned numElements = foobar::policies::GetNumElements< Output >()(inOut);
-                pIn = PtrConverterOut()(ptrIn(inOut));
-                copy.H2D(pIn, plan.InDevicePtr, numElements * sizeof(LibInType));
+                unsigned numElements = inOut.getNumElements();
+                auto pOut = safe_ptr_cast<LibOutType*>(inOut.getDataPtr());
+                copy.D2H(pOut, plan.InDevicePtr, numElements * sizeof(LibOutType));
             }
         }
     };

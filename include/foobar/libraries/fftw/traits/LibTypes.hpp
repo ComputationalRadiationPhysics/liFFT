@@ -10,17 +10,17 @@ namespace traits{
      * PlanType, ComplexType
      */
     template< typename T_Precision >
-    struct Types;
+    struct LibTypes;
 
     template<>
-    struct Types<float>
+    struct LibTypes<float>
     {
         using PlanType = fftwf_plan;
         using ComplexType = fftwf_complex;
     };
 
     template<>
-    struct Types<double>
+    struct LibTypes<double>
     {
         using PlanType = fftw_plan;
         using ComplexType = fftw_complex;
@@ -29,4 +29,20 @@ namespace traits{
 }  // namespace traits
 }  // namespace fftw
 }  // namespace libraries
+
+namespace policies {
+
+    template< typename T >
+    struct SafePtrCast_Impl< typename libraries::fftw::traits::LibTypes<T>::ComplexType*, T* >
+        :Ptr2Ptr< typename libraries::fftw::traits::LibTypes<T>::ComplexType*, T* >{};
+
+}  // namespace policies
+
+namespace traits {
+
+    template< typename T >
+    struct IsBinaryCompatible< types::Complex<T>, typename libraries::fftw::traits::LibTypes<T>::ComplexType >
+        :std::true_type{};
+
+}  // namespace traits
 }  // namespace foobar
