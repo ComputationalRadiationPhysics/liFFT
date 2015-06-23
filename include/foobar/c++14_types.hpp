@@ -17,4 +17,13 @@ namespace std {
     template< class T >
     using remove_pointer_t = typename remove_pointer<T>::type;
 
+    template< class T >
+    using make_unsigned_t = typename make_unsigned<T>::type;
+
+    template< typename T >
+    struct integral_type
+    {
+        using type = T;
+    };
+
 }  // namespace std
