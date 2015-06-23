@@ -4,6 +4,7 @@
 #include <cassert>
 #include <tiffio.h>
 #include <boost/utility.hpp>
+#include "libTiff/FormatTraits.hpp"
 
 namespace libTiff
 {
@@ -14,9 +15,9 @@ namespace libTiff
     {
         template< typename T >
         void
-        malloc(T*& ptr, size_t size)
+        malloc(T*& p, size_t size)
         {
-            ptr = static_cast<T*>(_TIFFmalloc(size));
+            p = static_cast<T*>(_TIFFmalloc(size));
         }
 
         template< typename T >
@@ -31,11 +32,13 @@ namespace libTiff
      * Wrapper for reading TIFF images from the file system
      * \tparam T_Allocator Allocator(::malloc, ::free) used for managing the raw memory
      */
-    template< class T_Allocator = TiffAllocator >
+    template< class T_Allocator = TiffAllocator, ImageFormat T_imgFormat = ImageFormat::ARGB >
     class TiffImage: private boost::noncopyable
     {
         using Allocator = T_Allocator;
-        using DataType = uint32;
+        static constexpr ImageFormat imgFormat = T_imgFormat;
+
+        using DataType = typename PixelType<imgFormat>::type;
         using Ref = DataType&;
         using ConstRef = const DataType&;
 
