@@ -39,6 +39,7 @@ namespace libTiff
         static constexpr ImageFormat imgFormat = T_imgFormat;
 
         using DataType = typename PixelType<imgFormat>::type;
+        using ChannelType = typename PixelType<imgFormat>::ChannelType;
         using Ref = DataType&;
         using ConstRef = const DataType&;
 
@@ -47,9 +48,14 @@ namespace libTiff
         TIFF* handle_;
         unsigned width_, height_;
         DataType* data_;
+        uint16 samplesPerPixel, bitsPerSample, tiffSampleFormat, photometric;
 
         void
         loadData();
+
+        template< uint16_t T_numChannels, bool T_minIsBlack >
+        void
+        convert(char* tmp);
 
     public:
 

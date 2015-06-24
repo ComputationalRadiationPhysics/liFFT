@@ -26,4 +26,10 @@ namespace std {
         using type = T;
     };
 
+    template< class T >
+    constexpr const T& cmin( const T& a, const T& b )
+    {
+        return (b < a) ? b : a;
+    }
+
 }  // namespace std

@@ -29,6 +29,7 @@ namespace libTiff {
     struct PixelType< ImageFormat::ARGB >
     {
         using type = uint32;
+        using ChannelType = uint8_t;
         static constexpr uint16 tiffType = SAMPLEFORMAT_UINT;
     };
 
@@ -36,6 +37,7 @@ namespace libTiff {
     struct PixelType< ImageFormat::Float >
     {
         using type = float;
+        using ChannelType = float;
         static constexpr uint16 tiffType = SAMPLEFORMAT_IEEEFP;
     };
 
@@ -43,6 +45,7 @@ namespace libTiff {
     struct PixelType< ImageFormat::Double >
     {
         using type = double;
+        using ChannelType = double;
         static constexpr uint16 tiffType = SAMPLEFORMAT_IEEEFP;
     };
 

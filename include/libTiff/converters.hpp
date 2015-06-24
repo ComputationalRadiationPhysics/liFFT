@@ -2,9 +2,20 @@
 
 #include <type_traits>
 #include <limits>
+#include <algorithm>
 #include "foobar/c++14_types.hpp"
 
 namespace libTiff {
+
+    /**
+     * Gets the maximum value (in an image) of the given type
+     * Evaluates to numeric_limits::max() for integral types and 1 for floats
+     */
+    template< typename T, bool T_isFloat = std::is_floating_point<T>::value >
+    struct GetMaxVal: std::integral_constant< T, std::numeric_limits<T>::max() >{};
+
+    template< typename T>
+    struct GetMaxVal< T, true >: std::integral_constant< int, 1 >{};
 
     /**
      * Converts a single channel
@@ -13,54 +24,62 @@ namespace libTiff {
     template<
         typename T_Src,
         typename T_Dest,
+        bool T_minIsBlack,
         bool T_srcIsFloat = std::is_floating_point<T_Src>::value,
         bool T_destIsFloat = std::is_floating_point<T_Dest>::value
     >
     struct ConvertChannel
     {
-        static_assert(std::is_floating_point<T_Src>::value, "Invalid src type");
-        static_assert(std::is_floating_point<T_Dest>::value, "Invalid dst type");
-
         using Src = T_Src;
+        using Dest = T_Dest;
+        static constexpr bool minIsBlack = T_minIsBlack;
 
-        T_Dest
-        operator()(T_Src src)
+        static_assert(std::is_floating_point<Src>::value, "Invalid src type");
+        static_assert(std::is_floating_point<Dest>::value, "Invalid dst type");
+
+        Dest
+        operator()(Src src)
         {
-            return src;
+            return (minIsBlack) ? src : GetMaxVal<Src>::value - src;
         }
     };
 
     /**
      * Integral -> FP: normalize to [0, 1]
      */
-    template< typename T_Src, typename T_Dest >
-    struct ConvertChannel< T_Src, T_Dest, false, true >
+    template< typename T_Src, typename T_Dest, bool T_minIsBlack >
+    struct ConvertChannel< T_Src, T_Dest, T_minIsBlack, false, true >
     {
-        static_assert(std::is_integral<T_Src>::value, "Invalid src type");
-        static_assert(std::is_floating_point<T_Dest>::value, "Invalid dst type");
-
         using Src = T_Src;
+        using Dest = T_Dest;
+        static constexpr bool minIsBlack = T_minIsBlack;
 
-        static constexpr T_Dest divisor = T_Dest(std::numeric_limits<T_Src>::max()) - std::numeric_limits<T_Src>::min();
-        static constexpr T_Dest factor = 1/divisor;
+        static_assert(std::is_integral<Src>::value, "Invalid src type");
+        static_assert(std::is_floating_point<Dest>::value, "Invalid dst type");
 
-        static constexpr T_Dest min = std::numeric_limits<T_Src>::min();
 
-        T_Dest
-        operator()(T_Src src)
+        static constexpr Dest divisor = Dest(std::numeric_limits<Src>::max()) - std::numeric_limits<Src>::min();
+        static constexpr Dest factor = 1/divisor;
+
+        static constexpr Dest min = std::numeric_limits<Src>::min();
+
+        Dest
+        operator()(Src src)
         {
-            return (src - min) * factor;
+            Dest res = (src - min) * factor;
+            return (minIsBlack) ? res : GetMaxVal<Src>::value - res;
         }
     };
 
     /**
      * Integral -> Integral: Extent from one range to another
      */
-    template< typename T_Src, typename T_Dest >
-    struct ConvertChannel< T_Src, T_Dest, false, false >
+    template< typename T_Src, typename T_Dest, bool T_minIsBlack >
+    struct ConvertChannel< T_Src, T_Dest, T_minIsBlack, false, false >
     {
         using Src = T_Src;
         using Dest = T_Dest;
+        static constexpr bool minIsBlack = T_minIsBlack;
 
         static_assert(std::is_integral<Src>::value, "Invalid src type");
         static_assert(std::is_integral<Dest>::value, "Invalid dst type");
@@ -74,18 +93,24 @@ namespace libTiff {
         Dest
         operator()(Src src)
         {
-            return static_cast<Dest>(src * max / divisor - min);
+            Dest res;
+            if(sizeof(Dest) > sizeof(Src))
+                res = static_cast<Dest>(src * (max / divisor) - min);
+            else
+                res = static_cast<Dest>(src / (divisor/max) - min);
+            return (minIsBlack) ? res : GetMaxVal<Src>::value - res;
         }
     };
 
     /**
      * FP -> Integral: Assume normalized FP [0,1] and scale accordingly
      */
-    template< typename T_Src, typename T_Dest >
-    struct ConvertChannel< T_Src, T_Dest, true, false >
+    template< typename T_Src, typename T_Dest, bool T_minIsBlack >
+    struct ConvertChannel< T_Src, T_Dest, T_minIsBlack, true, false >
     {
         using Src = T_Src;
         using Dest = T_Dest;
+        static constexpr bool minIsBlack = T_minIsBlack;
 
         static_assert(std::is_floating_point<Src>::value, "Invalid src type");
         static_assert(std::is_integral<Dest>::value, "Invalid dst type");
@@ -96,14 +121,23 @@ namespace libTiff {
         Dest
         operator()(Src src)
         {
-            return static_cast<Dest>(src * max - min);
+            Dest res = static_cast<Dest>(src * max - min);
+            return (minIsBlack) ? res : GetMaxVal<Src>::value - res;
         }
     };
 
-    template< typename T_Src, typename T_Dest >
+    /**
+     * Converts an (A)RGB value to mono using the weighted sum method
+     */
+    template< typename T_Src, uint16_t T_numChannels, typename T_Dest, bool T_minIsBlack >
     struct ConvertARGBToMono
     {
         using Src = T_Src;
+        static constexpr uint16_t numChannels = T_numChannels;
+        static constexpr bool minIsBlack = T_minIsBlack;
+
+        static_assert(numChannels == 3 || numChannels == 4, "Only works for (A)RGB");
+        using Array = std::array<Src, numChannels>;
 
         using FloatType =
                 std::conditional_t<
@@ -117,61 +151,103 @@ namespace libTiff {
         static constexpr FloatType bWeight = 0.114;
 
         T_Dest
-        operator()(T_Src a, T_Src r, T_Src g, T_Src b)
+        operator()(const Array& channels)
         {
-            return static_cast<T_Dest>(rWeight * r + gWeight * g + bWeight * b);
+            // Respect endianess: If Red is the lowest Byte it has the lowest offset
+            T_Dest res = static_cast<T_Dest>(rWeight * channels[0] + gWeight * channels[1] + bWeight * channels[2]);
+            return (minIsBlack) ? res : GetMaxVal<T_Dest>::value - res;
         }
     };
 
-    template< typename T_El, class T_Func >
-    struct AccessARGB
+    /**
+     * Converts a reference to a composite element into an array of its elements and passes it to the function
+     */
+    template< typename T_El, uint16_t T_numElSrc, class T_Func, uint16_t T_numElDest = T_numElSrc >
+    struct AccessChannels
     {
-        T_Func func_;
+        using El = T_El;
+        static constexpr uint16_t numElSrc = T_numElSrc;
+        static constexpr uint16_t numElDest = T_numElDest;
+        using Func = T_Func;
+
+        static_assert( numElSrc == numElDest ||
+                        (numElSrc == 4 && numElDest == 3) ||
+                        (numElSrc == 3 && numElDest == 4),
+                        "Can only copy or convert from (A)RGB to (A)RGB");
+
+        Func func_;
+        using Dest = typename Func::Src;
+        using Array = std::array<Dest, numElDest>;
 
         template< typename T_Src >
         auto
         operator()(const T_Src& src)
-        -> std::result_of_t<T_Func(T_El, T_El, T_El, T_El)>
+        -> std::result_of_t<Func(Array)>
         {
-            const T_El* els = reinterpret_cast<const T_El*>(&src);
-            return func_(els[0], els[1], els[2], els[3]);
+            static constexpr uint16_t numCopy = std::cmin(numElSrc, numElDest);
+
+            const El* els = reinterpret_cast<const El*>(&src);
+            Array tmp;
+            std::copy_n(els, numCopy, tmp.begin());
+            if(numCopy < numElDest)
+            {
+                // Set alpha value to max
+                tmp[numCopy] = GetMaxVal<Dest>::value;
+            }
+            return func_(tmp);
         }
     };
 
-    template< typename T_Src, class T_Func >
+    /**
+     * Applies a function to all channels
+     */
+    template< typename T_Src, uint16_t T_numChannels, class T_Func >
     struct ConvertAllChannels
     {
         using Src = T_Src;
+        static constexpr uint16_t numChannels = T_numChannels;
 
         using Dest = std::result_of_t<T_Func(T_Src)>;
-        using Result = std::array<Dest, 4>;
+        using Channels = std::array<Src, numChannels>;
+        using Result = std::array<Dest, numChannels>;
         T_Func func_;
 
         Result
-        operator()(T_Src a, T_Src r, T_Src g, T_Src b)
+        operator()(const Channels& channels)
         {
             Result res;
-            res[0] = func_(a);
-            res[1] = func_(r);
-            res[2] = func_(g);
-            res[3] = func_(b);
+            std::transform(channels.begin(), channels.end(), res.begin(), func_);
             return res;
         }
     };
 
-    template< typename T_Src, typename T_Dest, bool T_fromARGB, bool T_toARGB >
-    struct Convert;
-
-    template< typename T_Src, typename T_Dest >
-    struct Convert< T_Src, T_Dest, false, false >: ConvertChannel<T_Src, T_Dest>{};
-
-    template< typename T_Src, typename T_Dest >
-    struct Convert< T_Src, T_Dest, false, true >
+    template< typename T_Src, typename T_Dest, uint16_t T_numChannelsSrc, uint16_t T_numChannelsDest, bool T_minIsBlack >
+    struct Convert:
+        AccessChannels<
+            T_Src,
+            T_numChannelsSrc,
+            ConvertAllChannels<
+                T_Src,
+                T_numChannelsDest,
+                ConvertChannel<T_Src, T_Dest, T_minIsBlack>
+            >,
+            T_numChannelsDest
+        >
     {
         using Src = T_Src;
         using Dest = T_Dest;
-        using Result = std::array<Dest, 4>;
-        ConvertChannel<Src, Dest> conv_;
+    };
+
+    template< typename T_Src, typename T_Dest, bool T_minIsBlack >
+    struct Convert< T_Src, T_Dest, 1, 1, T_minIsBlack >: ConvertChannel<T_Src, T_Dest, T_minIsBlack>{};
+
+    template< typename T_Src, typename T_Dest, uint16_t T_numChannelsDest, bool T_minIsBlack >
+    struct Convert< T_Src, T_Dest, 1, T_numChannelsDest, T_minIsBlack >
+    {
+        using Src = T_Src;
+        using Dest = T_Dest;
+        using Result = std::array<Dest, T_numChannelsDest>;
+        ConvertChannel<Src, Dest, T_minIsBlack> conv_;
 
         Result
         operator()(Src src)
@@ -182,25 +258,12 @@ namespace libTiff {
         }
     };
 
-    template< typename T_Src, typename T_Dest >
-    struct Convert< T_Src, T_Dest, true, false >:
-        AccessARGB<
+    template< typename T_Src, typename T_Dest, uint16_t T_numChannelsSrc, bool T_minIsBlack >
+    struct Convert< T_Src, T_Dest, T_numChannelsSrc, 1, T_minIsBlack >:
+        AccessChannels<
             T_Src,
-            ConvertARGBToMono< T_Src, T_Dest >
-        >
-    {
-        using Src = T_Src;
-        using Dest = T_Dest;
-    };
-
-    template< typename T_Src, typename T_Dest >
-    struct Convert< T_Src, T_Dest, true, true >:
-        AccessARGB<
-            T_Src,
-            ConvertAllChannels<
-                T_Src,
-                ConvertChannel<T_Src, T_Dest>
-            >
+            T_numChannelsSrc,
+            ConvertARGBToMono< T_Src, T_numChannelsSrc, T_Dest, T_minIsBlack >
         >
     {
         using Src = T_Src;
