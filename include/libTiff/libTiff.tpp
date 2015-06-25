@@ -6,28 +6,65 @@ namespace libTiff {
 
     template< class T_Allocator, ImageFormat T_imgFormat >
     void
-    TiffImage< T_Allocator, T_imgFormat >::open(const std::string& filePath)
+    TiffImage< T_Allocator, T_imgFormat >::openHandle(const std::string& filePath, const char* mode)
     {
-        handle_ = TIFFOpen(filePath.c_str(), "r");
+        closeHandle();
+        handle_ = TIFFOpen(filePath.c_str(), mode);
+        if(!handle_)
+            throw std::runtime_error("Could not open "+filePath);
         filepath_ = filePath;
+    }
+
+    template< class T_Allocator, ImageFormat T_imgFormat >
+    void
+    TiffImage< T_Allocator, T_imgFormat >::closeHandle()
+    {
+        if(handle_){
+            TIFFClose(handle_);
+            handle_ = nullptr;
+            isReadable_ = false;
+            isWriteable_ = false;
+            dataWritten_ = false;
+        }
+    }
+
+    template< class T_Allocator, ImageFormat T_imgFormat >
+    void
+    TiffImage< T_Allocator, T_imgFormat >::open(const std::string& filePath, bool loadData)
+    {
+        close();
+        openHandle(filePath, "r");
+        isReadable_ = true;
         uint32 w, h;
         if(!TIFFGetField(handle_, TIFFTAG_IMAGEWIDTH, &w))
             throw InfoMissingException("Width");
         if(!TIFFGetField(handle_, TIFFTAG_IMAGELENGTH, &h))
             throw InfoMissingException("Height");
         width_ = w; height_ = h;
-        loadData();
+        if(loadData)
+            this->loadData();
+        else
+            allocData();
+    }
+
+    template< class T_Allocator, ImageFormat T_imgFormat >
+    void
+    TiffImage< T_Allocator, T_imgFormat >::open(const std::string& filePath, unsigned w, unsigned h)
+    {
+        close();
+        openHandle(filePath, "w");
+        isWriteable_ = true;
+        width_ = w; height_ = h;
+        allocData();
     }
 
     template< class T_Allocator, ImageFormat T_imgFormat >
     void
     TiffImage< T_Allocator, T_imgFormat >::close()
     {
-        if(!handle_)
-            return;
-        TIFFClose(handle_);
+        closeHandle();
         alloc_.free(data_);
-        handle_ = nullptr;
+        data_ = nullptr;
     }
 
     template< typename T_Data, uint16_t T_inStride = 1, uint16_t T_outStride = 1 >
@@ -62,7 +99,7 @@ namespace libTiff {
             using SrcType = typename T_Func::Src;
             SrcType* srcChannels = reinterpret_cast<SrcType*>(tmp_);
             for (unsigned y = 0; y < height_; y++) {
-                if(TIFFReadScanline(handle_, tmp_, y) != 1)
+                if(!TIFFReadScanline(handle_, tmp_, y))
                     throw std::runtime_error("Failed reading scanline\n");
                 for (unsigned x = 0; x < width_; x++) {
                     assign(data_[(y*width_ + x)*outStride], func(srcChannels[x*inStride]));
@@ -103,13 +140,112 @@ namespace libTiff {
 
     template< class T_Allocator, ImageFormat T_imgFormat >
     void
-    TiffImage< T_Allocator, T_imgFormat >::loadData()
+    TiffImage< T_Allocator, T_imgFormat >::allocData()
     {
         if(data_)
             return;
         alloc_.malloc(data_, getDataSize());
         if(!data_)
             throw std::runtime_error("Out of memory");
+    }
+
+    template< class T_Allocator, ImageFormat T_imgFormat >
+    void
+    TiffImage< T_Allocator, T_imgFormat >::load()
+    {
+        if(!isReadable_)
+            throw std::runtime_error("Cannot load file that is not opened for reading");
+        loadData();
+    }
+
+    template< class T_Allocator, ImageFormat T_imgFormat >
+    template< typename T>
+    void
+    TiffImage< T_Allocator, T_imgFormat >::checkedWrite(uint16 tag, T value){
+        if(!TIFFSetField(handle_, tag, value))
+            throw InfoWriteException(std::to_string(tag));
+    }
+
+
+    template< class T_Allocator, ImageFormat T_imgFormat >
+    void
+    TiffImage< T_Allocator, T_imgFormat >::saveTo(const std::string& filePath, bool compress, bool saveAsARGB)
+    {
+        openHandle(filePath, "w");
+        isWriteable_ = true;
+        save(compress, saveAsARGB);
+    }
+
+    template< class T_Allocator, ImageFormat T_imgFormat >
+    void
+    TiffImage< T_Allocator, T_imgFormat >::save(bool compress, bool saveAsARGB)
+    {
+        if(!isWriteable_)
+            throw std::runtime_error("Cannot save to a file that is not opened for writing");
+        // If we already wrote to the image we need to reopen it to be able to modify the tags
+        if(dataWritten_){
+            openHandle(filepath_, "w");
+            isWriteable_ = true;
+        }
+        if(imgFormat == ImageFormat::ARGB && !saveAsARGB)
+            checkedWrite(TIFFTAG_SAMPLESPERPIXEL, 3); // Write as RGB
+        else
+            checkedWrite(TIFFTAG_SAMPLESPERPIXEL, SamplesPerPixel<imgFormat>::value);
+        checkedWrite(TIFFTAG_BITSPERSAMPLE, BitsPerSample<imgFormat>::value);
+        checkedWrite(TIFFTAG_SAMPLEFORMAT, PixelType<imgFormat>::tiffType);
+        checkedWrite(TIFFTAG_IMAGEWIDTH, width_);
+        checkedWrite(TIFFTAG_IMAGELENGTH, height_);
+        if(imgFormat == ImageFormat::ARGB)
+            checkedWrite(TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
+        else
+            checkedWrite(TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_MINISBLACK);
+        checkedWrite(TIFFTAG_ROWSPERSTRIP, 1);
+        checkedWrite(TIFFTAG_XRESOLUTION, 1.);
+        checkedWrite(TIFFTAG_YRESOLUTION, 1.);
+        checkedWrite(TIFFTAG_RESOLUTIONUNIT, 1);
+        if(compress)
+            checkedWrite(TIFFTAG_COMPRESSION, COMPRESSION_LZW);
+        else
+            checkedWrite(TIFFTAG_COMPRESSION, COMPRESSION_NONE);
+        checkedWrite(TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
+        checkedWrite(TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
+        if(imgFormat == ImageFormat::ARGB && !saveAsARGB){
+            // Convert from ARGB to RGB
+            using ChannelType = typename PixelType<imgFormat>::ChannelType;
+            if(width_ * sizeof(ChannelType) * 3 != TIFFScanlineSize(handle_))
+                throw FormatException("Scanline size is unexpected");
+            ChannelType* tmpLine;
+            alloc_.malloc(tmpLine, TIFFScanlineSize(handle_));
+            for (unsigned y = 0; y < height_; y++)
+            {
+                auto* lineData = &data_[y*width_];
+                for(unsigned x = 0; x < width_; x++)
+                {
+                    tmpLine[x*3] = static_cast<ChannelType>(TIFFGetR(lineData[x]));
+                    tmpLine[x*3+1] = static_cast<ChannelType>(TIFFGetG(lineData[x]));
+                    tmpLine[x*3+2] = static_cast<ChannelType>(TIFFGetB(lineData[x]));
+                }
+                if(!TIFFWriteScanline(handle_, tmpLine, y))
+                    throw std::runtime_error("Failed writing scanline");
+            }
+            alloc_.free(tmpLine);
+        }else{
+            if(getDataSize() != TIFFScanlineSize(handle_)*height_)
+                throw FormatException("Scanline size is unexpected");
+            for (unsigned y = 0; y < height_; y++)
+            {
+                if(!TIFFWriteScanline(handle_, &data_[y*width_], y))
+                    throw std::runtime_error("Failed writing scanline");
+            }
+        }
+        dataWritten_ = true;
+    }
+
+    template< class T_Allocator, ImageFormat T_imgFormat >
+    void
+    TiffImage< T_Allocator, T_imgFormat >::loadData()
+    {
+        allocData();
         if(!TIFFGetField(handle_, TIFFTAG_SAMPLESPERPIXEL, &samplesPerPixel))
             throw InfoMissingException("Samples per pixel");
         if(!TIFFGetField(handle_, TIFFTAG_BITSPERSAMPLE, &bitsPerSample))
@@ -119,7 +255,7 @@ namespace libTiff {
             tiffSampleFormat = SAMPLEFORMAT_UINT;
         }
         uint16 planarConfig;
-        if(!TIFFGetField(handle_, TIFFTAG_PLANARCONFIG, &planarConfig) || planarConfig!=1){
+        if(!TIFFGetField(handle_, TIFFTAG_PLANARCONFIG, &planarConfig) || planarConfig!=PLANARCONFIG_CONTIG){
             throw FormatException("PlanarConfig missing or not 1");
         }
         if(!TIFFGetField(handle_, TIFFTAG_PHOTOMETRIC, &photometric))

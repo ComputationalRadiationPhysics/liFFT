@@ -14,4 +14,9 @@ namespace libTiff {
         InfoMissingException(std::string s): std::runtime_error("Info missing: "+s){}
     };
 
+    struct InfoWriteException : public std::runtime_error
+    {
+        InfoWriteException(std::string s): std::runtime_error("Could not write "+s){}
+    };
+
 }  // namespace libTiff
