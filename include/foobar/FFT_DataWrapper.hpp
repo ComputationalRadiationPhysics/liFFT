@@ -21,7 +21,12 @@ namespace foobar {
     /**
      * Wrapper for the data
      */
-    template< class T_FFT_Def, class T_IsInput, typename T_Base, typename T_BaseAccessor = traits::DefaultAccessor_t<T_Base> >
+    template<
+        class T_FFT_Def,
+        class T_IsInput,
+        typename T_Base,
+        typename T_BaseAccessor = traits::DefaultAccessor_t<T_Base>
+    >
     class FFT_DataWrapper
     {
     public:
