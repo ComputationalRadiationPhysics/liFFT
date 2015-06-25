@@ -58,18 +58,20 @@ namespace foobar {
         struct GetRawPtr< types::DataContainer< U, T_Memory, T_Accessor, false > >: GetRawPtr<T_Memory>{
             using GetRawPtrInt = GetRawPtr<T_Memory>;
             using Data = types::DataContainer< U, T_Memory, T_Accessor, false >;
-            using type = typename GetRawPtrInt::type;
+            GetRawPtrInt rawPtr_;
 
-            type
+            auto
             operator()(Data& data)
+            -> decltype(rawPtr_(data.data))
             {
-                return GetRawPtrInt::operator()(data.data);
+                return rawPtr_(data.data);
             }
 
-            const type
+            auto
             operator()(const Data& data)
+            -> decltype(rawPtr_(data.data))
             {
-                return GetRawPtrInt::operator()(data.data);
+                return rawPtr_(data.data);
             }
         };
 

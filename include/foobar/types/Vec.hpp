@@ -43,14 +43,14 @@ namespace types{
         Ref
         operator[](unsigned dim)
         {
-            assert(dim>=0 && dim<numDims);
+            assert(dim<numDims);
             return values_[dim];
         }
 
         ConstRef
         operator[](unsigned dim) const
         {
-            assert(dim>=0 && dim<numDims);
+            assert(dim<numDims);
             return values_[dim];
         }
 
@@ -97,7 +97,7 @@ namespace types{
         constexpr T
         operator[](unsigned dim)
         {
-            return (dim>=0 && dim<numDims) ? T_val : throw std::logic_error("Out of range");
+            return (dim<numDims) ? T_val : throw std::logic_error("Out of range");
         }
     };
 

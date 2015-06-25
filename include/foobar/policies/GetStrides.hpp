@@ -25,7 +25,7 @@ namespace policies {
             unsigned operator[](unsigned dimIdx) const
             {
                 unsigned result = 1;
-                for(unsigned i=dimIdx; i<numDims-1; ++i)
+                for(unsigned i=dimIdx; i+1<numDims; ++i)
                     result *= extents_[i+1];
                 return result;
             }

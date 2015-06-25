@@ -25,14 +25,15 @@ namespace foobar {
         struct GetRawPtr< types::ComplexAoSValues<T> >
         {
             using Data = types::ComplexAoSValues<T>;
-            using type = T*;
+            using Ptr = T*;
+            using ConstPtr = const T*;
 
-            type
+            Ptr
             operator()(Data& data){
                 return &data[0].real.value;
             };
 
-            const type
+            ConstPtr
             operator()(const Data& data){
                 return &data[0].real.value;
             };

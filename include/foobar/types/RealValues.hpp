@@ -24,14 +24,15 @@ namespace foobar {
         struct GetRawPtr< types::RealValues<T> >
         {
             using Data = types::RealValues<T>;
-            using type = T*;
+            using Ptr = T*;
+            using ConstPtr = const T*;
 
-            type
+            Ptr
             operator()(Data& data){
                 return &data[0].value;
             }
 
-            const type
+            ConstPtr
             operator()(const Data& data){
                 return &data[0].value;
             }
