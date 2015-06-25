@@ -41,7 +41,7 @@ set( CMAKE_FIND_LIBRARY_SUFFIXES_SAV ${CMAKE_FIND_LIBRARY_SUFFIXES} )
 if( FFTW_ROOT )
 
   #find libs
-  find_library(9set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+  find_library(
     FFTW_LIB
     NAMES "fftw3"
     PATHS ${FFTW_ROOT}
