@@ -61,6 +61,14 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1619994799.91844777" name="main.cpp" rcbsApplicability="disable" resourcePath="main.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.base.1528739441.495548396">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.1528739441.495548396" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base.1528739441">
+							<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.667725002" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<sourceEntries>
+						<entry excluding="main.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+					</sourceEntries>
 				</configuration>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
@@ -129,6 +137,12 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.release.1434648450.1014887750" name="main.cpp" rcbsApplicability="disable" resourcePath="main.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.base.1661542750.1418914163">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.1661542750.1418914163" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base.1661542750"/>
+					</fileInfo>
+					<sourceEntries>
+						<entry excluding="main.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+					</sourceEntries>
 				</configuration>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>

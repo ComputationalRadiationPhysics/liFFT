@@ -2,7 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
-#include <fftw3.h>
+#include "foobar/libraries/fftw/fftw3Include.h"
 #include "foobar/types/AddDimsWrapper.hpp"
 #include "foobar/types/DimOffsetWrapper.hpp"
 #include <libTiff/traitsAndPolicies.hpp>

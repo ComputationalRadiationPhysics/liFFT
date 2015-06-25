@@ -1,6 +1,6 @@
 #pragma once
 
-#include <fftw3.h>
+#include "foobar/libraries/fftw/fftw3Include.h"
 
 namespace foobar {
 namespace libraries {
