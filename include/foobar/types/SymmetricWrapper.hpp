@@ -9,11 +9,11 @@ namespace foobar {
         /**
          * Wrapper class to access types that are symmetric in the last dimension
          */
-        template< class T_Base, class T_Accessor >
+        template< class T_Base, class T_BaseAccessor >
         struct SymmetricWrapper
         {
             using Base = T_Base;
-            using Accessor = T_Accessor;
+            using BaseAccessor = T_BaseAccessor;
 
             static constexpr unsigned numDims = traits::NumDims<Base>::value;
 
@@ -22,7 +22,7 @@ namespace foobar {
             template< typename T_Index >
             auto
             operator()(const T_Index& idx) const
-            -> std::result_of_t< Accessor(const T_Index&, const Base&) >
+            -> std::result_of_t< BaseAccessor(const T_Index&, const Base&) >
             {
                 static constexpr unsigned lastDim = numDims - 1;
                 // If this instance is const, the base type (and therefore the returned type)
@@ -40,7 +40,7 @@ namespace foobar {
             template< typename T_Index >
             auto
             operator()(const T_Index& idx)
-            -> std::result_of_t< Accessor(const T_Index&, Base&) >
+            -> std::result_of_t< BaseAccessor(const T_Index&, Base&) >
             {
                 static constexpr unsigned lastDim = numDims - 1;
                 policies::GetExtents<Base> extents(base_);
@@ -53,7 +53,7 @@ namespace foobar {
             }
         private:
             Base& base_;
-            Accessor acc_;
+            BaseAccessor acc_;
             unsigned realSize_;
             friend struct policies::GetExtents<SymmetricWrapper>;
         };
