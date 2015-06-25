@@ -84,8 +84,9 @@ namespace libTiff {
         static_assert(std::is_integral<Src>::value, "Invalid src type");
         static_assert(std::is_integral<Dest>::value, "Invalid dst type");
 
-        using Divisior = std::make_unsigned_t<Src>;
-        static constexpr Divisior divisor = Divisior(std::numeric_limits<Src>::max()) - std::numeric_limits<Src>::min();
+        using USrc = std::make_unsigned_t<Src>;
+        // Equivalent to: std::numeric_limits<Src>::max() - std::numeric_limits<Src>::min()
+        static constexpr USrc divisor = std::numeric_limits<USrc>::max();
 
         static constexpr Dest max = std::numeric_limits<Dest>::max();
         static constexpr Dest min = std::numeric_limits<Dest>::min();
@@ -184,7 +185,7 @@ namespace libTiff {
         operator()(const T_Src& src)
         -> std::result_of_t<Func(Array)>
         {
-            static constexpr uint16_t numCopy = std::cmin(numElSrc, numElDest);
+            static constexpr uint16_t numCopy = (numElSrc < numElDest) ? numElSrc : numElDest; //std::cmin(numElSrc, numElDest);
 
             const El* els = reinterpret_cast<const El*>(&src);
             Array tmp;
