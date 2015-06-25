@@ -1,12 +1,10 @@
 #include <cstdlib>
 #include <iostream>
 #include <fstream>
-#include <cmath>
 #include "foobar/libraries/fftw/fftw3Include.h"
 #include "foobar/types/AddDimsWrapper.hpp"
 #include "foobar/types/DimOffsetWrapper.hpp"
 #include <libTiff/traitsAndPolicies.hpp>
-#include "foobar/c++14_types.hpp"
 #include "policyTest.hpp"
 #include "Volume.hpp"
 #include "VolumeAdapter.hpp"
@@ -24,6 +22,9 @@
 #include "foobar/policies/TransformAccessor.hpp"
 #include "foobar/types/SymmetricWrapper.hpp"
 #include "foobar/FFT_DataWrapper.hpp"
+#include <cmath>
+#include <type_traits>
+#include "foobar/c++14_types.hpp"
 
 template< typename T = double >
 struct MyComplex{
