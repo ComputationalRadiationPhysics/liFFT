@@ -22,7 +22,7 @@ namespace libTiff {
     template< ImageFormat T_imgFormat >
     struct BitsPerSample: std::integral_constant<
         uint16_t,
-        sizeof(typename PixelType< T_imgFormat >::type)/SamplesPerPixel< T_imgFormat >::value
+        sizeof(typename PixelType< T_imgFormat >::type)/SamplesPerPixel< T_imgFormat >::value * 8
     >{};
 
     template<>
