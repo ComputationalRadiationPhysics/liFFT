@@ -129,18 +129,4 @@ namespace foobar {
     template< class T_FFT_Def, typename T_Base, typename T_BaseAccessor = traits::DefaultAccessor_t<T_Base> >
     using FFT_OutputDataWrapper = FFT_DataWrapper< T_FFT_Def, std::false_type, T_Base, T_BaseAccessor >;
 
-    template< class T_FFT_Def, typename T_Base, typename T_BaseAccessor = traits::DefaultAccessor_t<T_Base> >
-    FFT_InputDataWrapper< T_FFT_Def, T_Base, T_BaseAccessor >
-    wrapFFT_Input(T_FFT_Def&&, T_Base& base, T_BaseAccessor&& acc= T_BaseAccessor())
-    {
-        return FFT_InputDataWrapper< T_FFT_Def, T_Base, T_BaseAccessor >(base, std::forward<T_BaseAccessor>(acc));
-    }
-
-    template< class T_FFT_Def, typename T_Base, typename T_BaseAccessor = traits::DefaultAccessor_t<T_Base> >
-    FFT_OutputDataWrapper< T_FFT_Def, T_Base, T_BaseAccessor >
-    wrapFFT_Output(T_FFT_Def&&, T_Base& base, T_BaseAccessor&& acc= T_BaseAccessor())
-    {
-        return FFT_OutputDataWrapper< T_FFT_Def, T_Base, T_BaseAccessor >(base, std::forward<T_BaseAccessor>(acc));
-    }
-
 }  // namespace foobar

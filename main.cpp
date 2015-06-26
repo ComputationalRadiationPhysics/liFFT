@@ -125,8 +125,8 @@ void testComplex()
     ComplexVol2D aperture(1024, 1024);
     ComplexVol2D fftResult(aperture.xDim(), aperture.yDim(), aperture.zDim());
     using FFT_Type = foobar::FFT_2D_C2C_D;
-    auto input = foobar::wrapFFT_Input(FFT_Type(), aperture, foobar::policies::VolumeAccessor());
-    auto output = foobar::wrapFFT_Output(FFT_Type(), fftResult, foobar::policies::VolumeAccessor());
+    auto input = FFT_Type::wrapFFT_Input(aperture, foobar::policies::VolumeAccessor());
+    auto output = FFT_Type::wrapFFT_Output(fftResult, foobar::policies::VolumeAccessor());
     auto fft = foobar::makeFFT<foobar::libraries::fftw::FFTW<>>(input, output);
 	generateData(aperture, Rect<double>(20,20));
 	fft(input, output);
@@ -145,8 +145,8 @@ void testReal()
     ComplexVolFFTW2D fftResult(aperture.xDim()/2+1, aperture.yDim(), aperture.zDim());
     RealVol2D intensity(aperture.xDim(), aperture.yDim(), aperture.zDim());
     using FFT_Type = foobar::FFT_2D_R2C_D;
-    auto input = foobar::wrapFFT_Input(FFT_Type(), aperture, foobar::policies::VolumeAccessor());
-    auto output = foobar::wrapFFT_Output(FFT_Type(), fftResult, foobar::policies::VolumeAccessor());
+    auto input = FFT_Type::wrapFFT_Input(aperture, foobar::policies::VolumeAccessor());
+    auto output = FFT_Type::wrapFFT_Output(fftResult, foobar::policies::VolumeAccessor());
     auto fft = foobar::makeFFT<foobar::libraries::fftw::FFTW<>>(input, output);
     generateData(aperture, Rect<double>(20,20));
     write2File<foobar::policies::VolumeAccessor>(aperture, "input.txt");
@@ -171,8 +171,8 @@ void testFile( T_File& file )
     using FFTResult_t = DimOffsetWrapper< Volume< MyComplex<float> >, 1 >;
     FFTResult_t fftResult(file.getExtents()[0]/2+1, file.getExtents()[1]);
     using FFT_Type = foobar::FFT_2D_R2C_F;
-    auto input = foobar::wrapFFT_Input(FFT_Type(), file);
-    auto output = foobar::wrapFFT_Output(FFT_Type(), fftResult, foobar::policies::VolumeAccessor());
+    auto input = FFT_Type::wrapFFT_Input(file);
+    auto output = FFT_Type::wrapFFT_Output(fftResult, foobar::policies::VolumeAccessor());
 #ifdef WITH_CUDA
     using Library = foobar::libraries::cuFFT::CuFFT<>;
 #else

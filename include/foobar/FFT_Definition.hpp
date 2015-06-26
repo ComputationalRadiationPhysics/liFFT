@@ -3,6 +3,7 @@
 #include "foobar/FFT_Kind.hpp"
 #include "foobar/AutoDetect.hpp"
 #include "foobar/c++14_types.hpp"
+#include "foobar/FFT_DataWrapper.hpp"
 
 namespace foobar {
 
@@ -39,6 +40,40 @@ namespace foobar {
         static constexpr bool isComplexInput = traits::IsComplexInput<kind>::value;
         static constexpr bool isComplexOutput = traits::IsComplexOutput<kind>::value;
         static constexpr bool isFwd = (autoDetectIsFwd && isComplexOutput) || (!autoDetectIsFwd && IsFwd::value);
+
+        /**
+         * Factory method to create a DataWrapper that can then be used as input for a FFT
+         * If the accessor returns a non-const reference, the underlying data is assumed
+         * to be continuous and directly used in the FFT
+         * Otherwise temporary memory is created to which the data is copied before each FFT-invocation
+         *
+         * @param base Container holding the data
+         * @param acc Accessor used to access the elements in the container via ()-operator(index, base)
+         * @return DataWrapper that can then be used as input for a FFT and provides a default Accessor to access the underlying data
+         */
+        template<typename T_Base, typename T_BaseAccessor = traits::DefaultAccessor_t<T_Base> >
+        static FFT_InputDataWrapper< FFT_Definition, T_Base, T_BaseAccessor >
+        wrapFFT_Input(T_Base& base, T_BaseAccessor&& acc = T_BaseAccessor())
+        {
+            return FFT_InputDataWrapper< FFT_Definition, T_Base, T_BaseAccessor >(base, std::forward<T_BaseAccessor>(acc));
+        }
+
+        /**
+         * Factory method to create a DataWrapper that can then be used as output of a FFT
+         * If the accessor returns a non-const reference, the underlying data is assumed
+         * to be continuous and overwritten in the FFT
+         * Otherwise temporary memory is created from which the data is copied after each FFT-invocation
+         *
+         * @param base Container holding the data
+         * @param acc Accessor used to access the elements in the container via ()-operator(index, base)
+         * @return DataWrapper that can then be used as input for a FFT and provides a default Accessor to access the underlying data
+         */
+        template< typename T_Base, typename T_BaseAccessor = traits::DefaultAccessor_t<T_Base> >
+        static FFT_OutputDataWrapper< FFT_Definition, T_Base, T_BaseAccessor >
+        wrapFFT_Output(T_Base& base, T_BaseAccessor&& acc = T_BaseAccessor())
+        {
+            return FFT_OutputDataWrapper< FFT_Definition, T_Base, T_BaseAccessor >(base, std::forward<T_BaseAccessor>(acc));
+        }
     };
 
     // Some definitions for commonly used FFT types
