@@ -3,6 +3,7 @@
 #include <type_traits>
 #include <limits>
 #include <algorithm>
+#include <array>
 #include "foobar/c++14_types.hpp"
 
 namespace libTiff {

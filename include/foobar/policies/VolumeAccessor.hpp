@@ -14,7 +14,7 @@ namespace policies {
             class T_Index,
             class T_Data,
             typename T_SFINAE = std::enable_if_t<
-                (traits::NumDims<T_Data>::value == 1)
+                (traits::NumDims<std::decay_t<T_Data>>::value == 1)
             >*
         >
         auto
@@ -28,7 +28,7 @@ namespace policies {
             class T_Index,
             class T_Data,
             typename T_SFINAE = std::enable_if_t<
-                (traits::NumDims<T_Data>::value == 2)
+                (traits::NumDims<std::decay_t<T_Data>>::value == 2)
             >*
         >
         auto
@@ -42,7 +42,7 @@ namespace policies {
             class T_Index,
             class T_Data,
             typename T_SFINAE = std::enable_if_t<
-                (traits::NumDims<T_Data>::value == 3)
+                (traits::NumDims<std::decay_t<T_Data>>::value == 3)
             >*
         >
         auto

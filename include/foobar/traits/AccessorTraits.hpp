@@ -2,7 +2,9 @@
 
 #include "foobar/void_t.hpp"
 #include "foobar/traits/NumDims.hpp"
+#include "foobar/types/Vec.hpp"
 #include "foobar/c++14_types.hpp"
+#include <type_traits>
 
 namespace foobar {
 namespace traits {

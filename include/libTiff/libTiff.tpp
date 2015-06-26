@@ -3,6 +3,7 @@
 #include "libTiff/converters.hpp"
 #include "foobar/AllocatorWrapper.hpp"
 #include "uvector.hpp"
+#include <iostream>
 
 namespace libTiff {
 
