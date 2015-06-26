@@ -58,7 +58,10 @@ else()
 	add_executable(haLT_Test main.cpp)
 endif()
 
+add_executable(tiff2PDF tiff2pdf.cpp)
+
 target_link_libraries(haLT_Test ${LIBS})
+target_link_libraries(tiff2PDF ${TIFF_LIBRARIES})
 
 add_custom_command(
     TARGET haLT_Test
