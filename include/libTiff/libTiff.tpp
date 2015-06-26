@@ -252,8 +252,18 @@ namespace libTiff {
     Image< T_imgFormat, T_Allocator >::loadData()
     {
         allocData();
-        if(!TIFFGetField(handle_, TIFFTAG_SAMPLESPERPIXEL, &samplesPerPixel))
-            throw InfoMissingException("Samples per pixel");
+
+        if(!TIFFGetField(handle_, TIFFTAG_PHOTOMETRIC, &photometric))
+            throw InfoMissingException("Photometric");
+        if(photometric != PHOTOMETRIC_RGB && photometric != PHOTOMETRIC_MINISBLACK && photometric != PHOTOMETRIC_MINISWHITE)
+            throw FormatException("Photometric is not supported: " + std::to_string(photometric));
+
+        if(!TIFFGetField(handle_, TIFFTAG_SAMPLESPERPIXEL, &samplesPerPixel)){
+            if(photometric == PHOTOMETRIC_MINISBLACK ||photometric == PHOTOMETRIC_MINISWHITE)
+                samplesPerPixel = 1;
+            else
+                throw InfoMissingException("Samples per pixel");
+        }
         if(!TIFFGetField(handle_, TIFFTAG_BITSPERSAMPLE, &bitsPerSample))
             throw InfoMissingException("Bits per sample");
         if(!TIFFGetField(handle_, TIFFTAG_SAMPLEFORMAT, &tiffSampleFormat)){
@@ -264,10 +274,6 @@ namespace libTiff {
         if(!TIFFGetField(handle_, TIFFTAG_PLANARCONFIG, &planarConfig) || planarConfig!=PLANARCONFIG_CONTIG){
             throw FormatException("PlanarConfig missing or not 1");
         }
-        if(!TIFFGetField(handle_, TIFFTAG_PHOTOMETRIC, &photometric))
-            throw InfoMissingException("Photometric");
-        if(photometric != PHOTOMETRIC_RGB && photometric != PHOTOMETRIC_MINISBLACK && photometric != PHOTOMETRIC_MINISWHITE)
-            throw FormatException("Photometric is not supported: " + std::to_string(photometric));
 
         if(needConversion<T_imgFormat>(tiffSampleFormat, samplesPerPixel, bitsPerSample))
         {
