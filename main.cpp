@@ -205,7 +205,7 @@ int main(int argc, char** argv) {
         float,
         false
         >;
-    FileType myFile("/home/grund59/Rect.tif");
+    FileType myFile("rect.tif");
     testFile(myFile);
     if(std::system("python writeData.py -i input.txt -o input.pdf"))
         std::cout << "Error converting input\n";

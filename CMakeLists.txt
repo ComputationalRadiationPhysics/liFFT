@@ -81,3 +81,10 @@ add_custom_command(
     "${PROJECT_SOURCE_DIR}/helpModule.py"
     $<TARGET_FILE_DIR:haLT_Test>
 )
+add_custom_command(
+    TARGET haLT_Test
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    "${PROJECT_SOURCE_DIR}/rect.tif"
+    $<TARGET_FILE_DIR:haLT_Test>
+)
