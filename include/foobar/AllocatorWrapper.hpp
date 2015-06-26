@@ -16,7 +16,7 @@ namespace foobar {
 
         Allocator alloc_;
 
-        AllocatorWrapper(Allocator alloc = Allocator()): alloc_(std::move(alloc)) {}
+        AllocatorWrapper(Allocator alloc = Allocator()): alloc_(alloc) {}
 
         pointer
         allocate(size_type n, const void* = 0)

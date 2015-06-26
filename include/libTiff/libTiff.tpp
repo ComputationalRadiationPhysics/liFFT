@@ -1,6 +1,8 @@
 #include "libTiff.hpp"
 #include "libTiff/exceptions.hpp"
 #include "libTiff/converters.hpp"
+#include "foobar/AllocatorWrapper.hpp"
+#include "uvector.hpp"
 
 namespace libTiff {
 
@@ -214,8 +216,11 @@ namespace libTiff {
             using ChannelType = typename PixelType<imgFormat>::ChannelType;
             if(width_ * sizeof(ChannelType) * 3 != TIFFScanlineSize(handle_))
                 throw FormatException("Scanline size is unexpected");
-            ChannelType* tmpLine;
-            alloc_.malloc(tmpLine, TIFFScanlineSize(handle_));
+
+            // Make sure memory is freed even in case of exceptions
+            foobar::AllocatorWrapper<ChannelType, Allocator&> tmpAlloc(alloc_);
+            ao::uvector< ChannelType, decltype(tmpAlloc) > tmpLine(TIFFScanlineSize(handle_) / sizeof(ChannelType), tmpAlloc);
+
             for (unsigned y = 0; y < height_; y++)
             {
                 auto* lineData = &data_[y*width_];
@@ -225,10 +230,10 @@ namespace libTiff {
                     tmpLine[x*3+1] = static_cast<ChannelType>(TIFFGetG(lineData[x]));
                     tmpLine[x*3+2] = static_cast<ChannelType>(TIFFGetB(lineData[x]));
                 }
-                if(!TIFFWriteScanline(handle_, tmpLine, y))
+                if(!TIFFWriteScanline(handle_, tmpLine.data(), y))
                     throw std::runtime_error("Failed writing scanline");
             }
-            alloc_.free(tmpLine);
+
         }else{
             if(getDataSize() != TIFFScanlineSize(handle_)*height_)
                 throw FormatException("Scanline size is unexpected");
@@ -265,31 +270,33 @@ namespace libTiff {
 
         if(needConversion<T_imgFormat>(tiffSampleFormat, samplesPerPixel, bitsPerSample))
         {
-            char* tmp;
             size_t numBytes = samplesPerPixel*bitsPerSample/8*width_;
             if(numBytes != static_cast<size_t>(TIFFScanlineSize(handle_)))
                 throw FormatException("Scanline size is unexpected: "+std::to_string(numBytes)+":"+std::to_string(TIFFScanlineSize(handle_)));
             if(samplesPerPixel != 1 && samplesPerPixel != 3 && samplesPerPixel != 4)
                 throw FormatException("Unsupported sample count");
-            alloc_.malloc(tmp, numBytes);
+
+            // Use a vector here to safely delete the memory
+            foobar::AllocatorWrapper<char, Allocator&> tmpAlloc(alloc_);
+            ao::uvector< char, decltype(tmpAlloc) > tmp(numBytes, tmpAlloc);
+
             if(samplesPerPixel == 1)
             {
                 if(photometric == PHOTOMETRIC_MINISWHITE)
-                    convert<1, false>(tmp);
+                    convert<1, false>(tmp.data());
                 else
-                    convert<1, true>(tmp);
+                    convert<1, true>(tmp.data());
             }else if(samplesPerPixel == 3){
                 if(photometric == PHOTOMETRIC_MINISWHITE)
-                    convert<3, false>(tmp);
+                    convert<3, false>(tmp.data());
                 else
-                    convert<3, true>(tmp);
+                    convert<3, true>(tmp.data());
             }else{
                 if(photometric == PHOTOMETRIC_MINISWHITE)
-                    convert<4, false>(tmp);
+                    convert<4, false>(tmp.data());
                 else
-                    convert<4, true>(tmp);
+                    convert<4, true>(tmp.data());
             }
-            alloc_.free(tmp);
         }else{
             if(getDataSize() != static_cast<size_t>(TIFFScanlineSize(handle_))*height_)
                 throw FormatException("Scanline size is unexpected");
