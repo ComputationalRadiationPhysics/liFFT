@@ -3,15 +3,9 @@
 #include <tiffio.h>
 #include <stdint.h>
 #include "libTiff/exceptions.hpp"
+#include "libTiff/ImageFormat.hpp"
 
 namespace libTiff {
-
-    enum class ImageFormat
-    {
-        ARGB, // 32bit unsigned value per pixel -> 8bit per channel
-        Float, // Monochrome, 32bit FP
-        Double // Monochrome, 64bit FP
-    };
 
     template< ImageFormat T_imgFormat >
     struct PixelType;

@@ -2,23 +2,31 @@
 
 #include "libTiff/libTiff.hpp"
 #include "foobar/traits/NumDims.hpp"
+#include "foobar/traits/DefaultAccessor.hpp"
+#include "foobar/policies/ArrayAccessor.hpp"
 #include "foobar/policies/GetExtents.hpp"
 #include "foobar/types/Vec.hpp"
 
 namespace foobar {
 namespace traits {
 
-    template<class T_Allocator>
-    struct NumDims< libTiff::TiffImage<T_Allocator> >: std::integral_constant<unsigned, 2>{};
+    template< libTiff::ImageFormat T_imgFormat, class T_Allocator >
+    struct NumDims< libTiff::Image< T_imgFormat, T_Allocator > >: std::integral_constant<unsigned, 2>{};
+
+    template< libTiff::ImageFormat T_imgFormat, class T_Allocator >
+    struct DefaultAccessor< libTiff::Image< T_imgFormat, T_Allocator > >
+    {
+        using type = policies::ArrayAccessor<true>;
+    };
 
 }  // namespace traits
 
 namespace policies {
 
-    template<class T_Allocator>
-    struct GetExtents< libTiff::TiffImage<T_Allocator> >
+    template< libTiff::ImageFormat T_imgFormat, class T_Allocator >
+    struct GetExtents< libTiff::Image< T_imgFormat, T_Allocator > >
     {
-        using type = libTiff::TiffImage<T_Allocator>;
+        using type = libTiff::Image< T_imgFormat, T_Allocator >;
 
         GetExtents(const type& data): extents_(data.getHeight(), data.getWidth()){}
 

@@ -200,7 +200,7 @@ int main(int argc, char** argv) {
     //testReal();
     //testComplex();
     using FileType = foobar::types::FileContainer<
-        libTiff::TiffImage<>,
+        libTiff::Image<>,
         foobar::policies::ImageAccessorGetColorAsFp<>,
         float,
         false

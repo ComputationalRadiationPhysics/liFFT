@@ -4,9 +4,9 @@
 
 namespace libTiff {
 
-    template< class T_Allocator, ImageFormat T_imgFormat >
+    template< ImageFormat T_imgFormat, class T_Allocator >
     void
-    TiffImage< T_Allocator, T_imgFormat >::openHandle(const std::string& filePath, const char* mode)
+    Image< T_imgFormat, T_Allocator >::openHandle(const std::string& filePath, const char* mode)
     {
         closeHandle();
         handle_ = TIFFOpen(filePath.c_str(), mode);
@@ -15,9 +15,9 @@ namespace libTiff {
         filepath_ = filePath;
     }
 
-    template< class T_Allocator, ImageFormat T_imgFormat >
+    template< ImageFormat T_imgFormat, class T_Allocator >
     void
-    TiffImage< T_Allocator, T_imgFormat >::closeHandle()
+    Image< T_imgFormat, T_Allocator >::closeHandle()
     {
         if(handle_){
             TIFFClose(handle_);
@@ -28,9 +28,9 @@ namespace libTiff {
         }
     }
 
-    template< class T_Allocator, ImageFormat T_imgFormat >
+    template< ImageFormat T_imgFormat, class T_Allocator >
     void
-    TiffImage< T_Allocator, T_imgFormat >::open(const std::string& filePath, bool loadData)
+    Image< T_imgFormat, T_Allocator >::open(const std::string& filePath, bool loadData)
     {
         close();
         openHandle(filePath, "r");
@@ -47,9 +47,9 @@ namespace libTiff {
             allocData();
     }
 
-    template< class T_Allocator, ImageFormat T_imgFormat >
+    template< ImageFormat T_imgFormat, class T_Allocator >
     void
-    TiffImage< T_Allocator, T_imgFormat >::open(const std::string& filePath, unsigned w, unsigned h)
+    Image< T_imgFormat, T_Allocator >::open(const std::string& filePath, unsigned w, unsigned h)
     {
         close();
         openHandle(filePath, "w");
@@ -58,9 +58,9 @@ namespace libTiff {
         allocData();
     }
 
-    template< class T_Allocator, ImageFormat T_imgFormat >
+    template< ImageFormat T_imgFormat, class T_Allocator >
     void
-    TiffImage< T_Allocator, T_imgFormat >::close()
+    Image< T_imgFormat, T_Allocator >::close()
     {
         closeHandle();
         alloc_.free(data_);
@@ -108,10 +108,10 @@ namespace libTiff {
         }
     };
 
-    template< class T_Allocator, ImageFormat T_imgFormat >
+    template< ImageFormat T_imgFormat, class T_Allocator >
     template< uint16_t T_numChannels, bool T_minIsBlack >
     void
-    TiffImage< T_Allocator, T_imgFormat >::convert(char* tmp)
+    Image< T_imgFormat, T_Allocator >::convert(char* tmp)
     {
         static constexpr uint16_t numChannelsSrc = T_numChannels;
         static constexpr uint16_t numChannelsDest = SamplesPerPixel<T_imgFormat>::value;
@@ -138,9 +138,9 @@ namespace libTiff {
             throw FormatException("Unimplemented format");
     }
 
-    template< class T_Allocator, ImageFormat T_imgFormat >
+    template< ImageFormat T_imgFormat, class T_Allocator >
     void
-    TiffImage< T_Allocator, T_imgFormat >::allocData()
+    Image< T_imgFormat, T_Allocator >::allocData()
     {
         if(data_)
             return;
@@ -149,36 +149,36 @@ namespace libTiff {
             throw std::runtime_error("Out of memory");
     }
 
-    template< class T_Allocator, ImageFormat T_imgFormat >
+    template< ImageFormat T_imgFormat, class T_Allocator >
     void
-    TiffImage< T_Allocator, T_imgFormat >::load()
+    Image< T_imgFormat, T_Allocator >::load()
     {
         if(!isReadable_)
             throw std::runtime_error("Cannot load file that is not opened for reading");
         loadData();
     }
 
-    template< class T_Allocator, ImageFormat T_imgFormat >
+    template< ImageFormat T_imgFormat, class T_Allocator >
     template< typename T>
     void
-    TiffImage< T_Allocator, T_imgFormat >::checkedWrite(uint16 tag, T value){
+    Image< T_imgFormat, T_Allocator >::checkedWrite(uint16 tag, T value){
         if(!TIFFSetField(handle_, tag, value))
             throw InfoWriteException(std::to_string(tag));
     }
 
 
-    template< class T_Allocator, ImageFormat T_imgFormat >
+    template< ImageFormat T_imgFormat, class T_Allocator >
     void
-    TiffImage< T_Allocator, T_imgFormat >::saveTo(const std::string& filePath, bool compress, bool saveAsARGB)
+    Image< T_imgFormat, T_Allocator >::saveTo(const std::string& filePath, bool compress, bool saveAsARGB)
     {
         openHandle(filePath, "w");
         isWriteable_ = true;
         save(compress, saveAsARGB);
     }
 
-    template< class T_Allocator, ImageFormat T_imgFormat >
+    template< ImageFormat T_imgFormat, class T_Allocator >
     void
-    TiffImage< T_Allocator, T_imgFormat >::save(bool compress, bool saveAsARGB)
+    Image< T_imgFormat, T_Allocator >::save(bool compress, bool saveAsARGB)
     {
         if(!isWriteable_)
             throw std::runtime_error("Cannot save to a file that is not opened for writing");
@@ -241,9 +241,9 @@ namespace libTiff {
         dataWritten_ = true;
     }
 
-    template< class T_Allocator, ImageFormat T_imgFormat >
+    template< ImageFormat T_imgFormat, class T_Allocator >
     void
-    TiffImage< T_Allocator, T_imgFormat >::loadData()
+    Image< T_imgFormat, T_Allocator >::loadData()
     {
         allocData();
         if(!TIFFGetField(handle_, TIFFTAG_SAMPLESPERPIXEL, &samplesPerPixel))

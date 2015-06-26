@@ -4,6 +4,7 @@
 #include <cassert>
 #include <tiffio.h>
 #include <boost/utility.hpp>
+#include "libTiff/ImageFormat.hpp"
 #include "libTiff/FormatTraits.hpp"
 
 namespace libTiff
@@ -32,8 +33,8 @@ namespace libTiff
      * Wrapper for reading TIFF images from the file system
      * \tparam T_Allocator Allocator(::malloc, ::free) used for managing the raw memory
      */
-    template< class T_Allocator = TiffAllocator, ImageFormat T_imgFormat = ImageFormat::ARGB >
-    class TiffImage: private boost::noncopyable
+    template< ImageFormat T_imgFormat = ImageFormat::ARGB, class T_Allocator = TiffAllocator >
+    class Image: private boost::noncopyable
     {
         using Allocator = T_Allocator;
         static constexpr ImageFormat imgFormat = T_imgFormat;
@@ -68,7 +69,7 @@ namespace libTiff
          * Creates an invalid image using the standard allocator.
          * Before accessing it you need to call \ref open(..)
          */
-        TiffImage(): TiffImage(Allocator()){}
+        Image(): Image(Allocator()){}
 
         /**
          * Creates an invalid image using the provided allocator.
@@ -76,7 +77,7 @@ namespace libTiff
          *
          * @param alloc Allocator to use
          */
-        TiffImage(const Allocator& alloc):
+        Image(const Allocator& alloc):
             alloc_(alloc),
             filepath_(""),
             handle_(nullptr),
@@ -92,7 +93,7 @@ namespace libTiff
          * @param filePath Path to the image to load
          * @param loadData True if the image data should be loaded or only its memory allocated. The data can be (re)loaded with \ref load()
          */
-        TiffImage(const std::string& filePath, bool loadData = true): TiffImage(Allocator())
+        Image(const std::string& filePath, bool loadData = true): Image(Allocator())
         {
             open(filePath, loadData);
         }
@@ -105,12 +106,12 @@ namespace libTiff
          * @param w Width of the new image
          * @param h Height of the new image
          */
-        TiffImage(const std::string& filePath, unsigned w, unsigned h): TiffImage(Allocator())
+        Image(const std::string& filePath, unsigned w, unsigned h): Image(Allocator())
         {
             open(filePath, w, h);
         }
 
-        ~TiffImage()
+        ~Image()
         {
             close();
         }
@@ -222,6 +223,20 @@ namespace libTiff
             return data_[(height_ - 1 - y) * width_ + x];
         }
     };
+
+    /**
+     * Monochrome image where each pixel is represented by 1 float value
+     * (A)RGB images will be converted and scaled to [0,1]
+     */
+    template< class T_Allocator = TiffAllocator >
+    using FloatImage = Image< ImageFormat::Float, T_Allocator >;
+
+    /**
+     * Monochrome image where each pixel is represented by 1 double value
+     * (A)RGB images will be converted and scaled to [0,1]
+     */
+    template< class T_Allocator = TiffAllocator >
+    using DoubleImage = Image< ImageFormat::Double, T_Allocator >;
 
 }  // namespace libTiff
 
