@@ -267,7 +267,7 @@ namespace libTiff {
         {
             char* tmp;
             size_t numBytes = samplesPerPixel*bitsPerSample/8*width_;
-            if(numBytes != TIFFScanlineSize(handle_))
+            if(numBytes != static_cast<size_t>(TIFFScanlineSize(handle_)))
                 throw FormatException("Scanline size is unexpected: "+std::to_string(numBytes)+":"+std::to_string(TIFFScanlineSize(handle_)));
             if(samplesPerPixel != 1 && samplesPerPixel != 3 && samplesPerPixel != 4)
                 throw FormatException("Unsupported sample count");
@@ -291,7 +291,7 @@ namespace libTiff {
             }
             alloc_.free(tmp);
         }else{
-            if(getDataSize() != TIFFScanlineSize(handle_)*height_)
+            if(getDataSize() != static_cast<size_t>(TIFFScanlineSize(handle_))*height_)
                 throw FormatException("Scanline size is unexpected");
             for (unsigned y = 0; y < height_; y++) {
                 if(TIFFReadScanline(handle_, &data_[y*width_], y) != 1)

@@ -46,9 +46,9 @@ namespace libTiff
         Allocator alloc_;
         std::string filepath_;
         TIFF* handle_;
-        bool isWriteable_, isReadable_, dataWritten_;
-        unsigned width_, height_;
         DataType* data_;
+        bool isReadable_, isWriteable_, dataWritten_;
+        unsigned width_, height_;
         uint16 samplesPerPixel, bitsPerSample, tiffSampleFormat, photometric;
 
         void openHandle(const std::string& filePath, const char* mode);
