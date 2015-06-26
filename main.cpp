@@ -12,7 +12,9 @@
 #include "IntensityCalculator_Test.hpp"
 #include "foobar/FFT.hpp"
 #include "foobar/libraries/fftw/FFTW.hpp"
+#ifdef WITH_CUDA
 #include "foobar/libraries/cuFFT/cuFFT.hpp"
+#endif
 #include "libTiff/libTiff.hpp"
 #include "foobar/policies/ImageAccessor.hpp"
 #include "foobar/types/FileContainer.hpp"
@@ -171,7 +173,12 @@ void testFile( T_File& file )
     using FFT_Type = foobar::FFT_2D_R2C_F;
     auto input = foobar::wrapFFT_Input(FFT_Type(), file);
     auto output = foobar::wrapFFT_Output(FFT_Type(), fftResult, foobar::policies::VolumeAccessor());
-    auto fft = foobar::makeFFT<foobar::libraries::cuFFT::CuFFT<>>(input, output);
+#ifdef WITH_CUDA
+    using Library = foobar::libraries::cuFFT::CuFFT<>;
+#else
+    using Library = foobar::libraries::fftw::FFTW<>;
+#endif
+    auto fft = foobar::makeFFT<Library>(input, output);
     file.loadData(true);
     fft(input, output);
     foobar::types::SymmetricWrapper< decltype(fftResult), foobar::policies::VolumeAccessor > fullResult(fftResult, file.getExtents()[0]);

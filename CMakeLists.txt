@@ -6,7 +6,7 @@ if (${CMAKE_EXTRA_GENERATOR} MATCHES "Eclipse CDT4")
 endif ()
 
 project(haLT)
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 2.8.0)
 
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} $ENV{HOME}/Software/tiff $ENV{HOME}/Software/FFTW)
 if(NOT CMAKE_BUILD_TYPE)
@@ -31,7 +31,7 @@ include_directories(${FFTW_INCLUDES})
 ###############################################################################
 # CUDA
 ###############################################################################
-find_package(CUDA REQUIRED)
+find_package(CUDA)
 
 ###############################################################################
 # Boost
@@ -50,8 +50,14 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11")
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-cuda_add_executable(haLT_Test main.cu)
-CUDA_ADD_CUFFT_TO_TARGET(haLT_Test)
+if(CUDA_FOUND)
+    list(APPEND CUDA_NVCC_FLAGS "-DWITH_CUDA")
+	cuda_add_executable(haLT_Test main.cu)
+	CUDA_ADD_CUFFT_TO_TARGET(haLT_Test)
+else()
+	add_executable(haLT_Test main.cpp)
+endif()
+
 target_link_libraries(haLT_Test ${LIBS})
 
 add_custom_command(
