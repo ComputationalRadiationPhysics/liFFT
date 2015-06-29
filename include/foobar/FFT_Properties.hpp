@@ -13,13 +13,16 @@ namespace detail {
     template<
         typename T_FFT_Def,
         typename T_Input,
-        typename T_Output
+        typename T_Output,
+        bool T_constructWithReadOnly
         >
     struct FFT_Properties: public T_FFT_Def
     {
     public:
         using Input = T_Input;
         using Output = T_Output;
+        static constexpr bool constructWithReadOnly = T_constructWithReadOnly;
+
         static constexpr bool isComplexIn = Input::isComplex;
         static constexpr bool isAoSIn = Input::isAoS;
         static constexpr bool isStridedIn = Input::isStrided;

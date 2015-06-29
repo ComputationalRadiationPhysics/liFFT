@@ -22,21 +22,24 @@ namespace foobar {
      * \tparam T_Library FFT Library to use
      * \tparam T_InputWrapper   Input wrapped in a FFT_DataWrapper
      * \tparam T_OutputWrapper  Output wrapped in a FFT_DataWrapper
+     * \tparam T_constructWithReadOnly If true, the data passed in the constructor is not overwritten. Use false for better performance
      */
     template<
             class T_Library,
             typename T_InputWrapper,
-            typename T_OutputWrapper = T_InputWrapper
+            typename T_OutputWrapper,
+            bool T_constructWithReadOnly = true
             >
     class FFT
     {
         using Library = T_Library;
         using Input = T_InputWrapper;
         using Output = T_OutputWrapper;
+        static constexpr bool constructWithReadOnly = T_constructWithReadOnly;
 
         using FFT_Def = typename Input::FFT_Def;
         static_assert(std::is_same< FFT_Def, typename Output::FFT_Def>::value, "FFT types of input and output differs");
-        using FFT_Properties = detail::FFT_Properties< FFT_Def, Input, Output >;
+        using FFT_Properties = detail::FFT_Properties< FFT_Def, Input, Output, constructWithReadOnly >;
         using ActLibrary = typename bmpl::apply< Library, FFT_Properties >::type;
         static constexpr bool isInplace = FFT_Properties::isInplace;
 
@@ -73,13 +76,14 @@ namespace foobar {
 
     template<
         class T_Library,
+        bool T_constructWithReadOnly = true,
         typename T_InputWrapper,
         typename T_OutputWrapper
         >
-    FFT< T_Library, std::decay_t<T_InputWrapper>, std::decay_t<T_OutputWrapper> >
+    FFT< T_Library, std::decay_t<T_InputWrapper>, std::decay_t<T_OutputWrapper>, T_constructWithReadOnly >
     makeFFT(T_InputWrapper&& input, T_OutputWrapper&& output)
     {
-        return FFT< T_Library, std::decay_t<T_InputWrapper>, std::decay_t<T_OutputWrapper> >(input, output);
+        return FFT< T_Library, std::decay_t<T_InputWrapper>, std::decay_t<T_OutputWrapper>, T_constructWithReadOnly >(input, output);
     }
 
 }  // namespace foobar

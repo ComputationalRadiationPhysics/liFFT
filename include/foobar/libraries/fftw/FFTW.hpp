@@ -45,6 +45,8 @@ namespace fftw {
         using InPtr = std::result_of_t< decltype(&Input::getDataPtr)(Input) >;
         using OutPtr = std::result_of_t< decltype(&Output::getDataPtr)(Output) >;
 
+        static constexpr unsigned flags = FFT::constructWithReadOnly ? FFTW_ESTIMATE : FFTW_MEASURE;
+
         PlanType plan_;
         InPtr inPtr_;
         OutPtr outPtr_;
@@ -52,14 +54,14 @@ namespace fftw {
     public:
         FFTW(Input& input, Output& output)
         {
-            plan_ = Planner()(input, output);
+            plan_ = Planner()(input, output, flags);
             inPtr_ = input.getDataPtr();
             outPtr_ = output.getDataPtr();
         }
 
         explicit FFTW(Input& inOut)
         {
-            plan_ = Planner()(inOut);
+            plan_ = Planner()(inOut, flags);
             inPtr_ = inOut.getDataPtr();
             outPtr_ = nullptr;
         }
