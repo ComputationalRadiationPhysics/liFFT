@@ -32,7 +32,7 @@ include_directories(${FFTW_INCLUDES})
 # CUDA
 ###############################################################################
 find_package(CUDA)
-
+set(ENABLE_CUDA ${CUDA_FOUND} CACHE BOOL "Use CUDA")
 ###############################################################################
 # Boost
 ###############################################################################
@@ -50,7 +50,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11")
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if(CUDA_FOUND)
+if(CUDA_FOUND AND ENABLE_CUDA)
     list(APPEND CUDA_NVCC_FLAGS "-DWITH_CUDA")
 	cuda_add_executable(haLT_Test main.cu)
 	CUDA_ADD_CUFFT_TO_TARGET(haLT_Test)
