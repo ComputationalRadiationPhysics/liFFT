@@ -20,6 +20,15 @@ namespace std {
     template< class T >
     using make_unsigned_t = typename make_unsigned<T>::type;
 
+    template< class T >
+    using add_cv_t       = typename add_cv<T>::type;
+
+    template< class T >
+    using add_const_t    = typename add_const<T>::type;
+
+    template< class T >
+    using add_volatile_t = typename add_volatile<T>::type;
+
     template< typename T >
     struct integral_type
     {

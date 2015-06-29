@@ -2,7 +2,6 @@
 
 #include <memory>
 #include "foobar/types/Complex.hpp"
-#include "foobar/policies/GetRawPtr.hpp"
 #include "foobar/types/AoSValues.hpp"
 
 namespace foobar {
@@ -19,25 +18,4 @@ namespace foobar {
 
     }  // namespace types
 
-    namespace policies {
-
-        template< typename T >
-        struct GetRawPtr< types::ComplexAoSValues<T> >
-        {
-            using Data = types::ComplexAoSValues<T>;
-            using Ptr = T*;
-            using ConstPtr = const T*;
-
-            Ptr
-            operator()(Data& data){
-                return &data[0].real.value;
-            };
-
-            ConstPtr
-            operator()(const Data& data){
-                return &data[0].real.value;
-            };
-        };
-
-    }  // namespace policies
 }  // namespace foobar

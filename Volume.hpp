@@ -5,7 +5,6 @@
 #include "foobar/traits/IsComplex.hpp"
 #include "foobar/traits/IsStrided.hpp"
 #include "foobar/traits/IsAoS.hpp"
-#include "foobar/policies/GetRawPtr.hpp"
 #include "foobar/policies/GetExtents.hpp"
 
 template< typename T = double >
@@ -69,18 +68,6 @@ namespace foobar {
     }  // namespace traits
 
     namespace policies {
-
-        template<typename T>
-        struct GetRawPtr< Volume<T> >
-        {
-            using Data = Volume<T>;
-            using type = typename traits::IntegralType<T>::type*;
-
-            type
-            operator()(Data& data){
-                return reinterpret_cast<type>(data.data());
-            }
-        };
 
         template< class T_Data >
         struct GetVolumeExtents: boost::noncopyable

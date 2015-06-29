@@ -31,16 +31,21 @@ namespace policies {
                 flatIdx = flatIdx*extents[i] + idx[i];
             return flatIdx;
         }
+
     public:
 
         template< class T_Index, class T_Data >
         auto
         operator()(T_Index&& idx, T_Data& data) const
-        -> decltype(std::declval< typename T_Data::Accessor >()(0, data.data))
+        -> decltype(
+                std::declval< typename T_Data::BaseAccessor >()(
+                        0, getConstCorrect<T_Data>(data.data)
+                )
+           )
         {
             auto flatIdx = getFlatIdx(idx, data);
-            typename T_Data::Accessor acc;
-            return acc(flatIdx, data.data);
+            typename T_Data::BaseAccessor acc;
+            return acc(flatIdx, getConstCorrect<T_Data>(data.data));
         }
 
         template< class T_Index, class T_Data, typename T_Value >
@@ -48,8 +53,8 @@ namespace policies {
         operator()(T_Index&& idx, T_Data& data, T_Value&& value) const
         {
             auto flatIdx = getFlatIdx(idx, data);
-            typename T_Data::Accessor acc;
-            acc(flatIdx, data.data, std::forward<T_Value>(value));
+            typename T_Data::BaseAccessor acc;
+            acc(flatIdx, getConstCorrect<T_Data>(data.data), std::forward<T_Value>(value));
         }
     };
 

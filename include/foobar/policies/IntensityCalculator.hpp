@@ -2,20 +2,20 @@
 
 #include "foobar/traits/IsComplex.hpp"
 #include "foobar/traits/NumDims.hpp"
-#include "foobar/policies/GetRawPtr.hpp"
+#include "foobar/types/Vec.hpp"
+#include "foobar/policies/SafePtrCast.hpp"
 #include "IntensityLibrary.hpp"
 #include <boost/array.hpp>
 
 namespace foobar {
 namespace policies {
 
-    template< class T_Input >
+    template< class T_Input, class T_Accessor = typename T_Input::Accessor >
     class IntensityCalculator
     {
     public:
         using Input = T_Input;
         using Output = typename traits::IntegralType<Input>::type*;
-        using RawPtr = GetRawPtr<Input>;
         using Extents = GetExtents<Input>;
         using ExtentsPtr = GetExtentsRawPtr<Input>;
         static constexpr bool isComplex = traits::IsComplex<Input>::value;
@@ -31,8 +31,12 @@ namespace policies {
         template< bool T_isAoS >
         struct ExecutionPolicy< 1, false, T_isAoS >
         {
+            T_Accessor acc_;
             void operator()(Input& input, Output output){
-                LibFoo::calculateR1D(RawPtr()(input), output, Extents(input)[0]);
+                LibFoo::calculateR1D(
+                        safe_ptr_cast<Output>(&acc_(foobar::types::Vec<1>::all(0), input)),
+                        output,
+                        Extents(input)[0]);
             }
         };
 
@@ -40,9 +44,11 @@ namespace policies {
         template< unsigned T_numDims, bool T_isAoS >
         struct ExecutionPolicy< T_numDims, false, T_isAoS >
         {
+            T_Accessor acc_;
             void operator()(Input& input, Output output){
                 ExtentsPtr extents(input);
-                LibFoo::calculateRND(RawPtr()(input), output, T_numDims, extents());
+                LibFoo::calculateRND(safe_ptr_cast<Output>(&acc_(foobar::types::Vec<T_numDims>::all(0), input)),
+                        output, T_numDims, extents());
             }
         };
 
@@ -50,8 +56,12 @@ namespace policies {
         template< class DUMMY >
         struct ExecutionPolicy< 1, true, true, DUMMY >
         {
+            T_Accessor acc_;
             void operator()(Input& input, Output output){
-                LibFoo::calculateC1D(RawPtr()(input), output, Extents(input)[0]);
+                LibFoo::calculateC1D(
+                        safe_ptr_cast<Output>(&acc_(foobar::types::Vec<1>::all(0), input)),
+                        output,
+                        Extents(input)[0]);
             }
         };
 
@@ -59,9 +69,11 @@ namespace policies {
         template< unsigned T_numDims, class DUMMY >
         struct ExecutionPolicy< T_numDims, true, true, DUMMY >
         {
+            T_Accessor acc_;
             void operator()(Input& input, Output output){
                 ExtentsPtr extents(input);
-                LibFoo::calculateCND(RawPtr()(input), output, T_numDims, extents());
+                LibFoo::calculateCND(safe_ptr_cast<Output>(&acc_(foobar::types::Vec<T_numDims>::all(0), input)),
+                        output, T_numDims, extents());
             }
         };
 
@@ -69,9 +81,13 @@ namespace policies {
         template< class DUMMY >
         struct ExecutionPolicy< 1, true, false, DUMMY >
         {
+            T_Accessor acc_;
             void operator()(Input& input, Output output){
-                auto ptr = RawPtr()(input);
-                LibFoo::calculateC1D(ptr.first, ptr.second, output, Extents(input)[0]);
+                auto ptr = acc_(foobar::types::Vec<1>::all(0), input);
+                LibFoo::calculateC1D(safe_ptr_cast<Output>(&ptr.real),
+                        safe_ptr_cast<Output>(&ptr.imag),
+                        output,
+                        Extents(input)[0]);
             }
         };
 
@@ -79,10 +95,15 @@ namespace policies {
         template< unsigned T_numDims, class DUMMY >
         struct ExecutionPolicy< T_numDims, true, false, DUMMY >
         {
+            T_Accessor acc_;
             void operator()(Input& input, Output output){
                 ExtentsPtr extents(input);
-                auto ptr = RawPtr()(input);
-                LibFoo::calculateCND(ptr.first, ptr.second, output, T_numDims, extents());
+                auto ptr = acc_(foobar::types::Vec<T_numDims>::all(0), input);
+                LibFoo::calculateCND(safe_ptr_cast<Output>(&ptr.real),
+                        safe_ptr_cast<Output>(&ptr.imag),
+                        output,
+                        T_numDims,
+                        extents());
             }
         };
 

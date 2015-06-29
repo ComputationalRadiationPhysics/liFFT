@@ -3,8 +3,8 @@
 #include "foobar/traits/IntegralType.hpp"
 #include "foobar/traits/IsComplex.hpp"
 #include "foobar/traits/IsAoS.hpp"
-#include "foobar/policies/GetRawPtr.hpp"
 #include "foobar/types/Vec.hpp"
+#include "foobar/policies/DataContainerAccessor.hpp"
 
 namespace foobar {
 
@@ -13,25 +13,27 @@ namespace foobar {
         /**
          * Container used to store data with its meta-data
          */
-        template< unsigned T_numDims, class T_Memory, class T_Accessor = typename T_Memory::Accessor, bool T_isStrided=false >
+        template< unsigned T_numDims, class T_Memory, class T_BaseAccessor = typename T_Memory::Accessor, bool T_isStrided=false >
         struct DataContainer
         {
             static constexpr unsigned numDims = T_numDims;
             using Memory = T_Memory;
-            using Accessor = T_Accessor;
+            using BaseAccessor = T_BaseAccessor;
             static constexpr bool isStrided = T_isStrided;
+
+            using Accessor = policies::DataContainerAccessor;
 
             Vec< numDims > extents;
 
             Memory data;
         };
 
-        template< unsigned T_numDims, class T_Memory, class T_Accessor >
-        struct DataContainer< T_numDims, T_Memory, T_Accessor, true >: DataContainer< T_numDims, T_Memory, T_Accessor, false >
+        template< unsigned T_numDims, class T_Memory, class T_BaseAccessor >
+        struct DataContainer< T_numDims, T_Memory, T_BaseAccessor, true >: DataContainer< T_numDims, T_Memory, T_BaseAccessor, false >
         {
             static constexpr unsigned numDims = T_numDims;
             using Memory = T_Memory;
-            using Accessor = T_Accessor;
+            using BaseAccessor = T_BaseAccessor;
             static constexpr bool isStrided = true;
 
             Vec< numDims > strides;
@@ -52,28 +54,4 @@ namespace foobar {
 
     }  // namespace traits
 
-    namespace policies {
-
-        template< unsigned U, class T_Memory, class T_Accessor >
-        struct GetRawPtr< types::DataContainer< U, T_Memory, T_Accessor, false > >: GetRawPtr<T_Memory>{
-            using GetRawPtrInt = GetRawPtr<T_Memory>;
-            using Data = types::DataContainer< U, T_Memory, T_Accessor, false >;
-            GetRawPtrInt rawPtr_;
-
-            auto
-            operator()(Data& data)
-            -> decltype(rawPtr_(data.data))
-            {
-                return rawPtr_(data.data);
-            }
-
-            auto
-            operator()(const Data& data)
-            -> decltype(rawPtr_(data.data))
-            {
-                return rawPtr_(data.data);
-            }
-        };
-
-    }  // namespace policies
 }  // namespace foobar

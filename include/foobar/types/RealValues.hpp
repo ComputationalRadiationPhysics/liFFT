@@ -1,7 +1,6 @@
 #pragma once
 
 #include "foobar/types/Real.hpp"
-#include "foobar/policies/GetRawPtr.hpp"
 #include "foobar/types/AoSValues.hpp"
 
 namespace foobar {
@@ -18,25 +17,4 @@ namespace foobar {
 
     }  // namespace types
 
-    namespace policies {
-
-        template< typename T >
-        struct GetRawPtr< types::RealValues<T> >
-        {
-            using Data = types::RealValues<T>;
-            using Ptr = T*;
-            using ConstPtr = const T*;
-
-            Ptr
-            operator()(Data& data){
-                return &data[0].value;
-            }
-
-            ConstPtr
-            operator()(const Data& data){
-                return &data[0].value;
-            }
-        };
-
-    }  // namespace policies
 }  // namespace foobar

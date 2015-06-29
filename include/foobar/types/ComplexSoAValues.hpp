@@ -2,7 +2,6 @@
 
 #include "foobar/types/RealValues.hpp"
 #include "foobar/types/Complex.hpp"
-#include "foobar/policies/GetRawPtr.hpp"
 #include "foobar/policies/ArrayAccessor.hpp"
 
 namespace foobar {
@@ -90,25 +89,4 @@ namespace foobar {
 
     }  // namespace types
 
-    namespace policies {
-
-        template< typename T, bool T_ownsPointer >
-        struct GetRawPtr< types::ComplexSoAValues<T, T_ownsPointer> >
-        {
-            using Data = types::ComplexSoAValues<T, T_ownsPointer>;
-            using type = std::pair< T*, T* >;
-
-            type
-            operator()(Data& data){
-                return std::make_pair(&data.getRealData().getData()->value, &data.getImagData().getData()->value);
-            }
-
-            const type
-            operator()(const Data& data){
-                return std::make_pair(&data.getRealData().getData()->value, &data.getImagData().getData()->value);
-            }
-        };
-
-
-    }  // namespace policies
 }  // namespace foobar

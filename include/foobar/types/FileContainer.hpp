@@ -6,9 +6,9 @@
 #include "foobar/traits/IsStrided.hpp"
 #include "foobar/traits/IntegralType.hpp"
 #include "foobar/policies/LoopNDims.hpp"
-#include "foobar/policies/GetRawPtr.hpp"
 #include "foobar/policies/GetExtents.hpp"
 #include "foobar/policies/DataContainerAccessor.hpp"
+#include "foobar/policies/GetNumElements.hpp"
 #include "foobar/policies/Copy.hpp"
 #include "foobar/c++14_types.hpp"
 
@@ -178,24 +178,6 @@ namespace foobar {
     }  // namespace traits
 
     namespace policies {
-
-        template<
-            typename T_FileHandler,
-            typename T_FileReaderPolicy,
-            typename T_Accuracy,
-            bool T_isComplex,
-            unsigned T_numDims
-        >
-        struct GetRawPtr< types::FileContainer< T_FileHandler, T_FileReaderPolicy, T_Accuracy, T_isComplex, T_numDims > >
-        {
-            using type = types::FileContainer< T_FileHandler, T_FileReaderPolicy, T_Accuracy, T_isComplex, T_numDims >;
-
-            T_Accuracy*
-            operator()(type& data)
-            {
-                return reinterpret_cast<T_Accuracy*>(data.getAllocatedMemory());
-            }
-        };
 
         template<
             typename T_FileHandler,

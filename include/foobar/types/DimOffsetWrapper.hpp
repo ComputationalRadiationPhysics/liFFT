@@ -5,7 +5,6 @@
 #include "foobar/traits/IsComplex.hpp"
 #include "foobar/traits/IsStrided.hpp"
 #include "foobar/traits/IsAoS.hpp"
-#include "foobar/policies/GetRawPtr.hpp"
 #include "foobar/policies/GetExtents.hpp"
 #include "foobar/policies/GetExtentsRawPtr.hpp"
 
@@ -50,9 +49,6 @@ namespace foobar {
     }  // namespace traits
 
     namespace policies {
-
-        template< class T_Base, unsigned T_dimOffset >
-        struct GetRawPtr< types::DimOffsetWrapper< T_Base, T_dimOffset > >: GetRawPtr<T_Base>{};
 
         template< class T_Base, unsigned T_dimOffset >
         struct GetExtents< types::DimOffsetWrapper< T_Base, T_dimOffset > >: GetExtents< T_Base >

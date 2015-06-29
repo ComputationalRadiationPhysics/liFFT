@@ -13,10 +13,11 @@ namespace foobar {
      * Assembles an FFT
      *
      * Usage:
-     *      1) The constructor takes the container(s) and may modify the memory returned by the GetRawPtr policy
+     *      1) The constructor takes the container(s) and may modify the memory
      *         Note: An implementation may not need the memory at all
-     *      2) Execute the FFT with <fftInstance>(input, output), which calls the ReadData<Input> policy, than performs the transform
-     *         from the memories returned by the GetRawPtr policies and calls the WriteData<Output> policy afterwards
+     *      2) Execute the FFT with <fftInstance>(input, output), which performs the transform
+     *         from the memories in the wrappers. If the base accessors of the wrappers do not return a reference type
+     *         internal memory is allocated and data is copied before/after the FFT
      *
      * Parameters:
      * \tparam T_Library FFT Library to use

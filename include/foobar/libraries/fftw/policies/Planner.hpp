@@ -71,11 +71,13 @@ namespace policies {
                 unsigned eIn = extents[i];
                 unsigned eOut = extentsOut[i];
                 // Same extents in all dimensions unless we have a C2R or R2C and compare the last dimension
-                assert(eIn == eOut || (i+1 == numDims && !(isComplexIn && isComplexOut)));
+                bool dimOk = (eIn == eOut || (i+1 == numDims && !(isComplexIn && isComplexOut)));
                 // Half input size for first dimension of R2C
-                assert(isComplexIn || i+1 != numDims || eIn/2+1 == eOut);
+                dimOk &= (isComplexIn || i+1 != numDims || eIn/2+1 == eOut);
                 // Half output size for first dimension of C2R
-                assert(isComplexOut || i+1 != numDims || eIn == eOut/2+1);
+                dimOk &= (isComplexOut || i+1 != numDims || eIn == eOut/2+1);
+                if(!dimOk)
+                    throw std::runtime_error("Dimension " + std::to_string(i) + ": Extents mismatch");
             }
             return policies::CreatePlan<Precision>().Create(
                     numDims,
