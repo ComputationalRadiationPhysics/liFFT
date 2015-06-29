@@ -17,8 +17,12 @@
 #
 
 #If environment variable FFTWDIR is specified, it has same effect as FFTW_ROOT
-if( NOT FFTW_ROOT AND ENV{FFTWDIR} )
+if( NOT FFTW_ROOT AND (DEFINED ENV{FFTWDIR}) )
   set( FFTW_ROOT $ENV{FFTWDIR} )
+endif()
+
+if( NOT FFTW_ROOT AND (DEFINED ENV{FFTW_ROOT}) )
+  set( FFTW_ROOT $ENV{FFTW_ROOT} )
 endif()
 
 # Check if we can use PkgConfig
@@ -46,7 +50,6 @@ if( FFTW_ROOT )
     NAMES "fftw3"
     PATHS ${FFTW_ROOT}
     PATH_SUFFIXES "lib" "lib64"
-    NO_DEFAULT_PATH
   )
 
   find_library(
@@ -54,7 +57,6 @@ if( FFTW_ROOT )
     NAMES "fftw3f"
     PATHS ${FFTW_ROOT}
     PATH_SUFFIXES "lib" "lib64"
-    NO_DEFAULT_PATH
   )
 
   find_library(
@@ -62,7 +64,6 @@ if( FFTW_ROOT )
     NAMES "fftw3l"
     PATHS ${FFTW_ROOT}
     PATH_SUFFIXES "lib" "lib64"
-    NO_DEFAULT_PATH
   )
 
   #find includes
@@ -71,7 +72,6 @@ if( FFTW_ROOT )
     NAMES "fftw3.h"
     PATHS ${FFTW_ROOT}
     PATH_SUFFIXES "include"
-    NO_DEFAULT_PATH
   )
 
 else()
