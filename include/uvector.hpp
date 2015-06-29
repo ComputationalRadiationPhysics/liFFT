@@ -75,7 +75,7 @@ namespace ao {
 template<typename Tp, typename Alloc = std::allocator<Tp> >
 class uvector : private Alloc
 {
-    static_assert(std::is_standard_layout<Tp>(), "A uvector can only hold classes with standard layout");
+    static_assert(std::is_standard_layout<Tp>::value, "A uvector can only hold classes with standard layout");
 public:
     /// Element type
     typedef Tp value_type;
@@ -542,7 +542,7 @@ public:
         if(_end == _endOfStorage)
         {
             size_t index = position - _begin;
-            enlarge_for_insert(enlarge_size(), index, 1);
+            enlarge_for_insert(enlarge_size(1), index, 1);
             position = _begin + index;
         }
         else {
