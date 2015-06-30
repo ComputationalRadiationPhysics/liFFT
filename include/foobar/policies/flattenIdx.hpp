@@ -4,6 +4,7 @@
 #include "foobar/policies/GetStrides.hpp"
 #include "foobar/traits/NumDims.hpp"
 #include "foobar/traits/IsStrided.hpp"
+#include "foobar/c++14_types.hpp"
 
 namespace foobar {
 namespace policies {
@@ -15,14 +16,14 @@ namespace policies {
     struct FlattenIdx
     {
         template< class T_Index >
-        std::enable_if_t< std::is_integral<T_Index>::value, unsigned >
+        std::enable_if_t< std::is_integral<std::remove_reference_t<T_Index>>::value, unsigned >
         operator()(T_Index&& idx, const T_Data& data) const
         {
             return idx;
         }
 
         template< class T_Index >
-        std::enable_if_t< !std::is_integral<T_Index>::value, unsigned >
+        std::enable_if_t< !std::is_integral<std::remove_reference_t<T_Index>>::value, unsigned >
         operator()(T_Index&& idx, const T_Data& data) const
         {
             static constexpr unsigned numDims = traits::NumDims<T_Data>::value;
