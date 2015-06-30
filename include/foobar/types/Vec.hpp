@@ -101,5 +101,18 @@ namespace types{
         }
     };
 
+    /**
+     * Index type for 1D
+     */
+    using Idx1D = Vec<1>;
+    /**
+     * Index type for 2D
+     */
+    using Idx2D = Vec<2>;
+    /**
+     * Index type for 3D
+     */
+    using Idx3D = Vec<3>;
+
 }  // namespace types
 }  // namespace foobar
