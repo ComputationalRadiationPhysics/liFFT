@@ -30,9 +30,7 @@ namespace policies {
         }
     public:
 
-        TransposeAccessor(){}
-        explicit TransposeAccessor(T_BaseAccessor baseAccessor): acc_(baseAccessor){}
-
+        explicit TransposeAccessor(BaseAccessor acc = BaseAccessor()): acc_(acc){}
 
         template< class T_Index, class T_Data >
         auto
@@ -53,6 +51,33 @@ namespace policies {
             acc_(transposedIdx, data, std::forward<T_Value>(value));
         }
     };
+
+    /**
+     * Creates a transpose accessor for the given accessor
+     * This transposes all accesses such that the 2nd half comes before the first
+     *
+     * @param acc Base accessor
+     * @return TransposeAccessor
+     */
+    template< class T_BaseAccessor >
+    TransposeAccessor< T_BaseAccessor >
+    makeTransposeAccessor(T_BaseAccessor&& acc)
+    {
+        return TransposeAccessor< T_BaseAccessor >(std::forward<T_BaseAccessor>(acc));
+    }
+
+    /**
+     * Creates a transpose accessor for the given container using its default accessor
+     *
+     * @param Container instance
+     * @return TransposeAccessor
+     */
+    template< class T>
+    TransposeAccessor< traits::DefaultAccessor_t<T> >
+    makeTransposeAccessorFor(const T& = T())
+    {
+        return TransposeAccessor< traits::DefaultAccessor_t<T> >();
+    }
 
 }  // namespace policies
 }  // namespace foobar
