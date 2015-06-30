@@ -5,6 +5,12 @@
 
 namespace foobar {
 
+    template< unsigned T_value >
+    using UnsignedConst = std::integral_constant<unsigned, T_value>;
+
+    template< bool T_value >
+    using BoolConst = std::integral_constant<bool, T_value>;
+
     template <typename Assertion>
     struct AssertValue
     {
