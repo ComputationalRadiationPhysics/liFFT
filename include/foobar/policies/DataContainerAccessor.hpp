@@ -22,7 +22,7 @@ namespace policies {
                 )
            )
         {
-            auto flatIdx = getFlatIdx(idx, data);
+            auto flatIdx = flattenIdx(idx, data);
             typename T_Data::BaseAccessor acc;
             return acc(flatIdx, getConstCorrect<T_Data>(data.data));
         }
@@ -31,7 +31,7 @@ namespace policies {
         void
         operator()(T_Index&& idx, T_Data& data, T_Value&& value) const
         {
-            auto flatIdx = getFlatIdx(idx, data);
+            auto flatIdx = flattenIdx(idx, data);
             typename T_Data::BaseAccessor acc;
             acc(flatIdx, getConstCorrect<T_Data>(data.data), std::forward<T_Value>(value));
         }
