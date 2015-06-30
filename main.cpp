@@ -17,7 +17,7 @@
 #endif
 #include "libTiff/libTiff.hpp"
 #include "foobar/policies/ImageAccessor.hpp"
-#include "foobar/types/FileContainer.hpp"
+#include "foobar/mem/FileContainer.hpp"
 #include "foobar/policies/VolumeAccessor.hpp"
 #include "foobar/policies/StreamAccessor.hpp"
 #include "foobar/policies/TransposeAccessor.hpp"
@@ -199,7 +199,7 @@ int main(int argc, char** argv) {
     //testIntensityCalculator();
     //testReal();
     //testComplex();
-    using FileType = foobar::types::FileContainer<
+    using FileType = foobar::mem::FileContainer<
         libTiff::Image<>,
         foobar::policies::ImageAccessorGetColorAsFp<>,
         float,

@@ -6,7 +6,7 @@
 #include "foobar/policies/ArrayAccessor.hpp"
 
 namespace foobar {
-namespace types {
+namespace mem {
 namespace detail {
 
     /**

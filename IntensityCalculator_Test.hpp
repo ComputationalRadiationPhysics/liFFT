@@ -6,6 +6,7 @@
 void testIntensityCalculator()
 {
     using namespace foobar::types;
+    using namespace foobar::mem;
     using foobar::policies::getNumElements;
     using foobar::policies::useIntensityCalculator;
     DataContainer< 1, RealValues<double>> real;

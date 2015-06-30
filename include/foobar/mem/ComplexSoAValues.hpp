@@ -1,11 +1,11 @@
 #pragma once
 
-#include "foobar/types/RealValues.hpp"
+#include "foobar/mem/RealValues.hpp"
 #include "foobar/types/Complex.hpp"
 #include "foobar/policies/ArrayAccessor.hpp"
 
 namespace foobar {
-    namespace types {
+    namespace mem {
 
         template< typename T, bool T_ownsPointer = true >
         class ComplexSoAValues
@@ -17,9 +17,9 @@ namespace foobar {
             static constexpr bool ownsPointer = T_ownsPointer;
             using Data = RealValues<T, ownsPointer>;
             using Ptr = typename Data::Ptr;
-            using Value = Complex<T>;
-            using Ref = ComplexRef<T>;
-            using ConstRef = const ComplexRef<T, true>;
+            using Value = types::Complex<T>;
+            using Ref = types::ComplexRef<T>;
+            using ConstRef = const types::ComplexRef<T, true>;
             using Accessor = policies::ArrayAccessor<>;
 
             ComplexSoAValues(){}

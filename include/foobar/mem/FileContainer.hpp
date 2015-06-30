@@ -1,8 +1,8 @@
 #pragma once
 
-#include "foobar/types/RealValues.hpp"
-#include "foobar/types/ComplexAoSValues.hpp"
-#include "foobar/types/DataContainer.hpp"
+#include "foobar/mem/RealValues.hpp"
+#include "foobar/mem/ComplexAoSValues.hpp"
+#include "foobar/mem/DataContainer.hpp"
 #include "foobar/traits/IsStrided.hpp"
 #include "foobar/traits/IntegralType.hpp"
 #include "foobar/policies/LoopNDims.hpp"
@@ -17,7 +17,7 @@
 namespace bmpl = boost::mpl;
 
 namespace foobar {
-    namespace types {
+    namespace mem {
 
         struct FileContainerAccessor
         {
@@ -172,7 +172,7 @@ namespace foobar {
             bool T_isComplex,
             unsigned T_numDims
         >
-        struct IsStrided< types::FileContainer< T_FileHandler, T_FileReaderPolicy, T_Accuracy, T_isComplex, T_numDims > >
+        struct IsStrided< mem::FileContainer< T_FileHandler, T_FileReaderPolicy, T_Accuracy, T_isComplex, T_numDims > >
         : std::integral_constant< bool, false>{};
 
     }  // namespace traits
@@ -186,9 +186,9 @@ namespace foobar {
             bool T_isComplex,
             unsigned T_numDims
         >
-        struct GetExtents< types::FileContainer< T_FileHandler, T_FileReaderPolicy, T_Accuracy, T_isComplex, T_numDims > >
+        struct GetExtents< mem::FileContainer< T_FileHandler, T_FileReaderPolicy, T_Accuracy, T_isComplex, T_numDims > >
         {
-            using type = types::FileContainer< T_FileHandler, T_FileReaderPolicy, T_Accuracy, T_isComplex, T_numDims >;
+            using type = mem::FileContainer< T_FileHandler, T_FileReaderPolicy, T_Accuracy, T_isComplex, T_numDims >;
 
             GetExtents(const type& data): extents_(data.getExtents()){}
 

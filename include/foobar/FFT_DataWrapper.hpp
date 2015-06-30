@@ -7,9 +7,9 @@
 #include "foobar/traits/IsStrided.hpp"
 #include "foobar/policies/GetExtents.hpp"
 #include "foobar/policies/GetStrides.hpp"
-#include "foobar/types/RealValues.hpp"
-#include "foobar/types/ComplexAoSValues.hpp"
-#include "foobar/types/ComplexSoAValues.hpp"
+#include "foobar/mem/RealValues.hpp"
+#include "foobar/mem/ComplexAoSValues.hpp"
+#include "foobar/mem/ComplexSoAValues.hpp"
 #include "foobar/traits/DefaultAccessor.hpp"
 #include "foobar/c++14_types.hpp"
 #include "foobar/FFT_Memory.hpp"
@@ -60,10 +60,10 @@ namespace foobar {
                            isComplex,
                            std::conditional_t<
                                isAoS,
-                               types::ComplexAoSValues<PrecisionType, needOwnMemoryPtr>,
-                               types::ComplexSoAValues<PrecisionType, needOwnMemoryPtr>
+                               mem::ComplexAoSValues<PrecisionType, needOwnMemoryPtr>,
+                               mem::ComplexSoAValues<PrecisionType, needOwnMemoryPtr>
                            >,
-                           types::RealValues<PrecisionType, needOwnMemoryPtr>
+                           mem::RealValues<PrecisionType, needOwnMemoryPtr>
                        >;
         using Memory = detail::FFT_Memory< Memory_t, needOwnMemoryPtr >;
 

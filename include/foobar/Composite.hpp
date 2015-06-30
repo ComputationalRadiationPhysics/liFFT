@@ -2,6 +2,10 @@
 
 namespace foobar {
 
+    /**
+     * Functor that is composed of multiple functors
+     * The last functor is applied first, then the next is applied to the result and so on
+     */
     template < class... T_Funcs >
     struct Composite;
 

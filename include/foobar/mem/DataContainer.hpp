@@ -8,7 +8,7 @@
 
 namespace foobar {
 
-    namespace types {
+    namespace mem {
 
         /**
          * Container used to store data with its meta-data
@@ -23,7 +23,7 @@ namespace foobar {
 
             using Accessor = policies::DataContainerAccessor;
 
-            Vec< numDims > extents;
+            types::Vec< numDims > extents;
 
             Memory data;
         };
@@ -36,7 +36,7 @@ namespace foobar {
             using BaseAccessor = T_BaseAccessor;
             static constexpr bool isStrided = true;
 
-            Vec< numDims > strides;
+            types::Vec< numDims > strides;
         };
 
     }  // namespace types

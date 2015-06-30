@@ -3,10 +3,10 @@
 #include "policyExample.hpp"
 #include <chrono>
 #include <vector>
-#include "foobar/types/DataContainer.hpp"
-#include "foobar/types/RealValues.hpp"
-#include "foobar/types/ComplexAoSValues.hpp"
-#include "foobar/types/ComplexSoAValues.hpp"
+#include "foobar/mem/DataContainer.hpp"
+#include "foobar/mem/RealValues.hpp"
+#include "foobar/mem/ComplexAoSValues.hpp"
+#include "foobar/mem/ComplexSoAValues.hpp"
 
 
 using millisecs = std::chrono::duration<unsigned long long, std::milli>;
@@ -30,6 +30,7 @@ bool checkResult(const T& result, unsigned expected){
 
 void test(){
     using namespace foobar::types;
+    using namespace foobar::mem;
     using foobar::calcIntensity;
     using foobar::calcIntensity2;
 
