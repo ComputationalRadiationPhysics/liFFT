@@ -128,7 +128,7 @@ void testComplex()
     auto input = FFT_Type::wrapFFT_Input(aperture, foobar::policies::VolumeAccessor());
     auto output = FFT_Type::wrapFFT_Output(fftResult, foobar::policies::VolumeAccessor());
     auto fft = foobar::makeFFT<foobar::libraries::fftw::FFTW<>>(input, output);
-	generateData(aperture, Rect<double>(20,20));
+	generateData(aperture, Rect<double>(20,20), foobar::policies::VolumeAccessor());
 	fft(input, output);
 	using IntensityAcc =
 	        foobar::policies::TransformAccessor<
@@ -148,7 +148,7 @@ void testReal()
     auto input = FFT_Type::wrapFFT_Input(aperture, foobar::policies::VolumeAccessor());
     auto output = FFT_Type::wrapFFT_Output(fftResult, foobar::policies::VolumeAccessor());
     auto fft = foobar::makeFFT<foobar::libraries::fftw::FFTW<>>(input, output);
-    generateData(aperture, Rect<double>(20,20));
+    generateData(aperture, Rect<double>(20,20), foobar::policies::VolumeAccessor());
     write2File<foobar::policies::VolumeAccessor>(aperture, "input.txt");
     fft(input, output);
     DimOffsetWrapper< SymetricAdapter<fftw_complex>, 1 > symAdapter(aperture.xDim(), fftResult);
@@ -187,7 +187,7 @@ void testFile( T_File& file )
             foobar::policies::TransposeAccessor<>,
             CalcIntensityFunc
         >;
-    write2File<foobar::policies::DataContainerAccessor>(file.getData(), "input.txt");
+    write2File<foobar::policies::DataContainerAccessor<>>(file.getData(), "input.txt");
     write2File<IntensityAcc>(fullResult, "output.txt");
 }
 

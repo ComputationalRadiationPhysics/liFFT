@@ -14,7 +14,7 @@ namespace foobar {
         /**
          * Container used to store data with its meta-data
          */
-        template< unsigned T_numDims, class T_Memory, class T_BaseAccessor = typename T_Memory::Accessor, bool T_isStrided=false >
+        template< unsigned T_numDims, class T_Memory, class T_BaseAccessor = typename T_Memory::Accessor, bool T_isFlatMemory = true, bool T_isStrided=false >
         struct DataContainer
         {
             static constexpr unsigned numDims = T_numDims;
@@ -22,7 +22,7 @@ namespace foobar {
             using BaseAccessor = T_BaseAccessor;
             static constexpr bool isStrided = T_isStrided;
 
-            using Accessor = policies::DataContainerAccessor;
+            using Accessor = policies::DataContainerAccessor<T_isFlatMemory>;
 
             types::Vec< numDims > extents;
             Memory data;
@@ -46,8 +46,8 @@ namespace foobar {
              }
         };
 
-        template< unsigned T_numDims, class T_Memory, class T_BaseAccessor >
-        struct DataContainer< T_numDims, T_Memory, T_BaseAccessor, true >: DataContainer< T_numDims, T_Memory, T_BaseAccessor, false >
+        template< unsigned T_numDims, class T_Memory, class T_BaseAccessor, bool T_isFlatMemory >
+        struct DataContainer< T_numDims, T_Memory, T_BaseAccessor, T_isFlatMemory, true >: DataContainer< T_numDims, T_Memory, T_BaseAccessor, T_isFlatMemory, false >
         {
             static constexpr unsigned numDims = T_numDims;
             using Memory = T_Memory;

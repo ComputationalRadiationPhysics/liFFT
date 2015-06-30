@@ -21,7 +21,7 @@ namespace foobar {
 
         struct FileContainerAccessor
         {
-            policies::DataContainerAccessor acc_;
+            policies::DataContainerAccessor<> acc_;
 
             template< class T_Index, class T_Data >
             auto
@@ -61,7 +61,7 @@ namespace foobar {
             using Accessor = FileContainerAccessor;
             friend Accessor;
         private:
-            using DataAccessor = policies::DataContainerAccessor;
+            using DataAccessor = policies::DataContainerAccessor<>;
             using CopyPolicy = policies::Copy< FileAccessor, DataAccessor >;
             using ArrayType = std::conditional_t< isComplex, ComplexAoSValues<Accuracy>, RealValues<Accuracy> >;
             using ElementType = typename ArrayType::Value;
