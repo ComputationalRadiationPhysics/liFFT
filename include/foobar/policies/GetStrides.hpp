@@ -4,6 +4,7 @@
 #include "foobar/traits/IsStrided.hpp"
 #include "foobar/traits/NumDims.hpp"
 #include "foobar/policies/GetExtents.hpp"
+#include "foobar/types/Vec.hpp"
 
 namespace foobar {
 namespace policies {
@@ -17,20 +18,22 @@ namespace policies {
         struct GetStrides: private boost::noncopyable
         {
             using Data = T_Data;
-            using Extents = GetExtents< T_Data >;
             static constexpr unsigned numDims = traits::NumDims< Data >::value;
 
-            GetStrides(const Data& data): extents_(Extents(data)){}
+            GetStrides(const Data& data)
+            {
+                GetExtents< T_Data > extents(data);
+                strides_[0] = 1;
+                for(unsigned i=0; i+1<numDims; ++i)
+                    strides_[i+1] = strides_[i] * extents[i];
+            }
 
             unsigned operator[](unsigned dimIdx) const
             {
-                unsigned result = 1;
-                for(unsigned i=dimIdx; i+1<numDims; ++i)
-                    result *= extents_[i+1];
-                return result;
+                return strides_[dimIdx];
             }
         protected:
-            const Extents& extents_;
+            types::Vec<numDims> strides_;
         };
 
         /**
