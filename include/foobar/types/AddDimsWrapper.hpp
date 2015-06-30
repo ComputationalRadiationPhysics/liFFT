@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 namespace foobar {
 namespace types {
 
@@ -12,8 +14,12 @@ namespace types {
     template< class T_Base, unsigned T_numDims >
     struct AddDimsWrapper: T_Base
     {
-        using T_Base::T_Base;
+        using Base = T_Base;
+        using Base::Base;
         static constexpr unsigned numDims = T_numDims;
+
+        explicit AddDimsWrapper(const Base& base): Base(base){}
+        explicit AddDimsWrapper(Base&& base): Base(std::move(base)){}
     };
 
 }  // namespace types
