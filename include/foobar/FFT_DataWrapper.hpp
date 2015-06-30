@@ -41,9 +41,12 @@ namespace foobar {
         using AccRefType = std::result_of_t<BaseAccessor(const IdxType&, Base&)>;
         using AccType = typename std::remove_reference<AccRefType>::type;
         static constexpr bool isComplex = traits::IsComplex< AccType >::value;
-        static_assert( (isInput && isComplex == FFT_Def::isComplexInput) ||
-                       (!isInput && isComplex == FFT_Def::isComplexOutput),
-                       "Wrong element type (complex/real) for this FFT" );
+        static_assert( (isInput && (isComplex || !FFT_Def::isComplexInput)) ||
+                       (!isInput && (isComplex || !FFT_Def::isComplexOutput)),
+                       "Wrong element type for this FFT: Expected complex, got real" );
+        static_assert( (isInput && (!isComplex || FFT_Def::isComplexInput)) ||
+                       (!isInput && (!isComplex || FFT_Def::isComplexOutput)),
+                       "Wrong element type for this FFT: Expected real, got complex" );
 
         using Extents = std::array<unsigned, numDims>;
         // Precision (double, float...) is the base type of RawPtrType (which is a pointer)
