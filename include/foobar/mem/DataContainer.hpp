@@ -5,6 +5,7 @@
 #include "foobar/traits/IsAoS.hpp"
 #include "foobar/types/Vec.hpp"
 #include "foobar/policies/DataContainerAccessor.hpp"
+#include "foobar/policies/GetNumElements.hpp"
 
 namespace foobar {
 
@@ -24,8 +25,25 @@ namespace foobar {
             using Accessor = policies::DataContainerAccessor;
 
             types::Vec< numDims > extents;
-
             Memory data;
+
+            /**
+              * Allocates data in the underlying memory if it supports that
+              */
+             void
+             allocData()
+             {
+                 data.allocData(policies::getNumElements(*this, true));
+             }
+
+             /**
+               * Frees data in the underlying memory if it supports that
+               */
+             void
+             freeData()
+             {
+                 data.freeData();
+             }
         };
 
         template< unsigned T_numDims, class T_Memory, class T_BaseAccessor >
