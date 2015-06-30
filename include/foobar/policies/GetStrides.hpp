@@ -23,9 +23,10 @@ namespace policies {
             GetStrides(const Data& data)
             {
                 GetExtents< T_Data > extents(data);
-                strides_[0] = 1;
-                for(unsigned i=0; i+1<numDims; ++i)
-                    strides_[i+1] = strides_[i] * extents[i];
+                static_assert(numDims >= 1, "No dimensions");
+                strides_[numDims - 1] = 1;
+                for(unsigned i=numDims - 1; i>0; --i)
+                    strides_[i-1] = strides_[i] * extents[i];
             }
 
             unsigned operator[](unsigned dimIdx) const
