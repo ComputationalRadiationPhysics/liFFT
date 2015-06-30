@@ -27,6 +27,7 @@
 #include <cmath>
 #include <type_traits>
 #include "foobar/c++14_types.hpp"
+#include "testUtils.hpp"
 
 template< typename T = double >
 struct MyComplex{
@@ -64,53 +65,6 @@ std::ostream& operator<< (std::ostream& stream, MyComplex<T> val){
 	return stream;
 }
 
-template< class T_Accessor, typename T >
-void write2File(T& data, const std::string& name, T_Accessor acc = T_Accessor()){
-    auto copy = foobar::policies::makeCopy(acc, foobar::policies::StringStreamAccessor<>());
-
-    foobar::types::AddDimsWrapper< std::ofstream, 2 > inFile(name.c_str());
-    copy(data, inFile);
-//    foobar::policies::GetExtents< T, 2 > extents(data);
-//    foobar::types::Vec<2> idx;
-//    for(idx[0]=0; idx[0]<extents[0]; ++idx[0]){
-//        for(idx[1]=0; idx[1]<extents[1]; ++idx[1]){
-//            inFile << acc(idx, data);
-//            if(idx[1]+1 < extents[1])
-//                inFile << " ";
-//        }
-//        if(idx[0]+1 < extents[0])
-//            inFile << "\n";
-//    }
-    inFile.close();
-}
-
-struct CalcIntensityFunc
-{
-    template< typename T, typename = std::enable_if_t< foobar::traits::IsComplex<T>::value > >
-    auto
-    operator()(const T& val) const
-    -> decltype(val.real*val.real + val.imag*val.imag)
-    {
-        return val.real*val.real + val.imag*val.imag;
-    }
-
-    template< typename T, typename = std::enable_if_t< foobar::traits::IsComplex<T>::value > >
-    auto
-    operator()(const T& val) const
-    -> decltype(val[0]*val[0] + val[1]*val[1])
-    {
-        return val[0]*val[0] + val[1]*val[1];
-    }
-
-    template< typename T, typename = std::enable_if_t< !foobar::traits::IsComplex<T>::value > >
-    auto
-    operator()(const T& val) const
-    -> decltype(val*val)
-    {
-        return val*val;
-    }
-};
-
 using ComplexVol     = Volume< MyComplex<> >;
 using ComplexVolFFTW = Volume< fftw_complex >;
 using RealVol        = Volume<>;
@@ -130,13 +84,6 @@ void testComplex()
     auto fft = foobar::makeFFT<foobar::libraries::fftw::FFTW<>>(input, output);
 	generateData(aperture, Rect<double>(20,20), foobar::policies::VolumeAccessor());
 	fft(input, output);
-	using IntensityAcc =
-	        foobar::policies::TransformAccessor<
-                foobar::policies::VolumeAccessor,
-                CalcIntensityFunc
-            >;
-	write2File(aperture, "input.txt", IntensityAcc());
-	write2File(fftResult, "output.txt", foobar::policies::TransposeAccessor<IntensityAcc>());
 }
 
 void testReal()
@@ -149,20 +96,7 @@ void testReal()
     auto output = FFT_Type::wrapFFT_Output(fftResult, foobar::policies::VolumeAccessor());
     auto fft = foobar::makeFFT<foobar::libraries::fftw::FFTW<>>(input, output);
     generateData(aperture, Rect<double>(20,20), foobar::policies::VolumeAccessor());
-    write2File<foobar::policies::VolumeAccessor>(aperture, "input.txt");
     fft(input, output);
-    DimOffsetWrapper< SymetricAdapter<fftw_complex>, 1 > symAdapter(aperture.xDim(), fftResult);
-    using CopyIntensity = foobar::policies::Copy<
-        foobar::policies::TransformAccessor<
-            foobar::policies::VolumeAccessor,
-            CalcIntensityFunc
-        >,
-        foobar::policies::VolumeAccessor
-    >;
-    CopyIntensity copy;
-    copy(symAdapter, intensity);
-    auto adapter = makeTransposeAdapter(intensity);
-    write2File<foobar::policies::VolumeAccessor>(adapter, "output.txt");
 }
 
 template< typename T_File >
@@ -181,14 +115,6 @@ void testFile( T_File& file )
     auto fft = foobar::makeFFT<Library>(input, output);
     file.loadData(true);
     fft(input, output);
-    foobar::types::SymmetricWrapper< decltype(fftResult), foobar::policies::VolumeAccessor > fullResult(fftResult, file.getExtents()[0]);
-    using IntensityAcc =
-        foobar::policies::TransformAccessor<
-            foobar::policies::TransposeAccessor<>,
-            CalcIntensityFunc
-        >;
-    write2File<foobar::policies::DataContainerAccessor<>>(file.getData(), "input.txt");
-    write2File<IntensityAcc>(fullResult, "output.txt");
 }
 
 /*
@@ -199,6 +125,8 @@ int main(int argc, char** argv) {
     //testIntensityCalculator();
     //testReal();
     //testComplex();
+    initTest();
+    visualizeBaseTest();
     using FileType = foobar::mem::FileContainer<
         libTiff::Image<>,
         foobar::policies::ImageAccessorGetColorAsFp<>,
@@ -207,10 +135,8 @@ int main(int argc, char** argv) {
         >;
     FileType myFile("rect.tif");
     testFile(myFile);
-    if(std::system("python writeData.py -i input.txt -o input.pdf"))
-        std::cout << "Error converting input\n";
-    if(std::system("python writeData.py -s -i output.txt -o output.pdf"))
-        std::cout << "Error converting output\n";
+
+    finalizeTest();
     return 0;
 }
 

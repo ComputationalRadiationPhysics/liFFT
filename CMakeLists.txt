@@ -52,10 +52,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(CUDA_FOUND AND ENABLE_CUDA)
     list(APPEND CUDA_NVCC_FLAGS "-DWITH_CUDA")
-	cuda_add_executable(haLT_Test main.cu)
+	cuda_add_executable(haLT_Test main.cu testUtils.cpp)
 	CUDA_ADD_CUFFT_TO_TARGET(haLT_Test)
 else()
-	add_executable(haLT_Test main.cpp)
+	add_executable(haLT_Test main.cpp testUtils.cpp)
 endif()
 
 add_executable(tiff2PDF tiff2pdf.cpp)
