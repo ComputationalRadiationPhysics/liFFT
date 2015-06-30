@@ -1,6 +1,6 @@
 #pragma once
 
-#include "foobar/policies/GetExtents.hpp"
+#include <foobar/policies/flattenIdx.hpp>
 #include "foobar/c++14_types.hpp"
 #include "foobar/util.hpp"
 
@@ -12,28 +12,7 @@ namespace policies {
      */
     struct DataContainerAccessor
     {
-    protected:
-        template< class T_Index, class T_Data >
-        std::enable_if_t< std::is_integral<T_Index>::value, unsigned >
-        getFlatIdx(const T_Index& idx, const T_Data& data) const
-        {
-            return idx;
-        }
-
-        template< class T_Index, class T_Data >
-        std::enable_if_t< !std::is_integral<T_Index>::value, unsigned >
-        getFlatIdx(const T_Index& idx, const T_Data& data) const
-        {
-            static constexpr unsigned numDims = traits::NumDims<T_Data>::value;
-            GetExtents<T_Data> extents(data);
-            unsigned flatIdx = idx[0];
-            for(unsigned i=1; i<numDims; ++i)
-                flatIdx = flatIdx*extents[i] + idx[i];
-            return flatIdx;
-        }
-
     public:
-
         template< class T_Index, class T_Data >
         auto
         operator()(T_Index&& idx, T_Data& data) const
