@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cassert>
+#include <memory>
 #include "foobar/c++14_types.hpp"
 
 namespace foobar{

@@ -11,7 +11,7 @@ namespace policies {
     /**
      * Makes an index "flat", that is: vector indices are converted to an unsigned
      */
-    template< class T_Data, bool T_IsStrided = traits::IsStrided<T_Data> >
+    template< class T_Data, bool T_IsStrided = traits::IsStrided<T_Data>::value >
     struct FlattenIdx
     {
         template< class T_Index >

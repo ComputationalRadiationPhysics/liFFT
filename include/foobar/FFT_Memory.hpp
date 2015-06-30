@@ -2,6 +2,7 @@
 
 #include "foobar/policies/Copy.hpp"
 #include "foobar/policies/SafePtrCast.hpp"
+#include <algorithm>
 
 namespace foobar {
 namespace detail {
