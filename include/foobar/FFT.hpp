@@ -1,13 +1,25 @@
 #pragma once
 
 #include "foobar/FFT_Properties.hpp"
-#include "foobar/FFT_Impl.hpp"
 
 // Included for convenience, so only one include is required from user code
 #include "foobar/FFT_Definition.hpp"
 #include "foobar/FFT_DataWrapper.hpp"
+#include <boost/mpl/apply.hpp>
+
+namespace bmpl = boost::mpl;
 
 namespace foobar {
+
+    template< class T_Input, class T_Output >
+    class FFT_Interface
+    {
+    public:
+        virtual ~FFT_Interface(){};
+
+        virtual void operator()(T_Input& input, T_Output& output) = 0;
+        virtual void operator()(T_Input& inout) = 0;
+    };
 
     /**
      * Assembles an FFT
@@ -31,7 +43,7 @@ namespace foobar {
             typename T_OutputWrapper,
             bool T_constructWithReadOnly = true
             >
-    class FFT
+    class FFT: public FFT_Interface< T_InputWrapper, T_OutputWrapper >
     {
         using Library = T_Library;
         using Input = T_InputWrapper;
@@ -60,7 +72,8 @@ namespace foobar {
 
         void operator()(Input& input, Output& output)
         {
-            static_assert(!isInplace, "Must not be called for inplace transforms");
+            if(isInplace)
+                throw std::logic_error("Must not be called for inplace transforms");
             input.preProcess();
             lib_(input, output);
             output.postProcess();
@@ -68,7 +81,8 @@ namespace foobar {
 
         void operator()(Input& inout)
         {
-            static_assert(isInplace, "Must not be called for out-of-place transforms");
+            if(!isInplace)
+                throw std::logic_error("Must not be called for out-of-place transforms");
             inout.preProcess();
             lib_(inout);
             inout.postProcess();
