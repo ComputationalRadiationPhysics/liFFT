@@ -21,21 +21,13 @@ namespace types {
         Real<T> real, imag;
 
         Complex(){}
-        template< typename U, typename = std::enable_if_t< std::is_integral<U>::value > >
-        Complex(U real): real(std::forward<U>(real)), imag(0){}
+        template< typename U, typename = std::enable_if_t< std::is_integral<U>::value || std::is_floating_point<U>::value > >
+        Complex(U real): real(real), imag(0){}
+        Complex(const Complex&) = default;
         template< typename U, typename V >
         Complex(U&& real, V&& imag): real(std::forward<U>(real)), imag(std::forward<V>(imag)){}
         template< typename U, bool T_isConst >
         Complex(const ComplexRef<U, T_isConst>& ref): real(ref.real), imag(ref.imag){}
-
-        template< typename U >
-        Complex&
-        operator=(U&& real)
-        {
-            real = std::forward<U>(real);
-            imag = 0;
-            return *this;
-        }
     };
 
     /**
