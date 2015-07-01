@@ -25,5 +25,12 @@ namespace policies {
         const Data& data_;
     };
 
+    template< typename T_Data >
+    struct GetExtents< const T_Data >: GetExtents< T_Data >
+    {
+        using Parent = GetExtents< T_Data >;
+        using Parent::Parent;
+    };
+
 }  // namespace policies
 }  // namespace foobar

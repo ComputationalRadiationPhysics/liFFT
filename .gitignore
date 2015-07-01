@@ -1,6 +1,8 @@
 /Debug/
 /Release/
 *.pyc
+/input*.txt
+/output*.txt
 /input.pdf
 /input.txt
 /output.pdf

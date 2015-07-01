@@ -4,7 +4,7 @@ namespace foobar {
 namespace policies {
 
     /**
-     * Loops over N dimensions (last index varying fastest) and falls Functor(index, args...)
+     * Loops over N dimensions (last index varying fastest) and calls Functor(index, args...)
      */
     template< unsigned T_numDims >
     struct LoopNDims;

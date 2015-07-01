@@ -2,66 +2,63 @@
 
 #include "foobar/traits/NumDims.hpp"
 #include "foobar/traits/AccessorTraits.hpp"
-#include "foobar/policies/GetExtents.hpp"
-#include "foobar/types/Vec.hpp"
+#include "foobar/policies/Loop.hpp"
+#include "foobar/c++14_types.hpp"
 
 namespace foobar {
 namespace policies {
     namespace detail {
 
-        template<bool T_lastDim>
-        struct CopyImpl
+        struct CopyHandler
         {
+            template<
+                unsigned T_curDim,
+                class T_Index,
+                class T_Src,
+                class T_SrcAccessor,
+                class T_Dst,
+                class T_DstAccessor
+                >
+            void
+            handleInnerLoop(const T_Index& idx, const T_Src& src, T_SrcAccessor&& accSrc, T_Dst& dst, T_DstAccessor&& accDst)
+            {
+                if(idx[T_curDim] > 0){
+                    accSrc.readDelimiter(src, T_curDim);
+                    accDst.writeDelimiter(dst, T_curDim);
+                }
+                accDst.write(idx, dst, accSrc.read(idx, src));
+            }
+
             template<
                 unsigned T_curDim,
                 unsigned T_endDim,
                 class T_Index,
-                class T_Extents,
                 class T_Src,
                 class T_SrcAccessor,
                 class T_Dst,
                 class T_DstAccessor
-            >
-            static void
-            loop(T_Index& idx, const T_Extents& extents, const T_Src& src, T_SrcAccessor&& accSrc, T_Dst& dst, T_DstAccessor&& accDst)
+                >
+            void
+            handleLoopPre(const T_Index& idx, const T_Src& src, T_SrcAccessor&& accSrc, T_Dst& dst, T_DstAccessor&& accDst)
             {
-                for(idx[T_curDim]=0; idx[T_curDim]<extents[T_curDim]; ++idx[T_curDim])
-                {
-                    if(idx[T_curDim] > 0){
-                        accSrc.readDelimiter(src, T_curDim);
-                        accDst.writeDelimiter(dst, T_curDim);
-                    }
-                    accDst.write(idx, dst, accSrc.read(idx, src));
+                if(idx[T_curDim] > 0){
+                    accSrc.readDelimiter(src, T_curDim);
+                    accDst.writeDelimiter(dst, T_curDim);
                 }
             }
-        };
 
-        template<>
-        struct CopyImpl<false>
-        {
             template<
                 unsigned T_curDim,
-                unsigned T_lastDim,
+                unsigned T_endDim,
                 class T_Index,
-                class T_Extents,
                 class T_Src,
                 class T_SrcAccessor,
                 class T_Dst,
                 class T_DstAccessor
-            >
-            static void
-            loop(T_Index& idx, const T_Extents& extents, const T_Src& src, T_SrcAccessor&& accSrc, T_Dst& dst, T_DstAccessor&& accDst)
-            {
-                for(idx[T_curDim]=0; idx[T_curDim]<extents[T_curDim]; ++idx[T_curDim])
-                {
-                    if(idx[T_curDim] > 0){
-                        accSrc.readDelimiter(src, T_curDim);
-                        accDst.writeDelimiter(dst, T_curDim);
-                    }
-                    CopyImpl< (T_curDim+2 == T_lastDim) >::
-                            template loop< T_curDim+1, T_lastDim >(idx, extents, src, std::forward<T_SrcAccessor>(accSrc), dst, std::forward<T_DstAccessor>(accDst));
-                }
-            }
+                >
+            void
+            handleLoopPost(const T_Index& idx, const T_Src& src, T_SrcAccessor&& accSrc, T_Dst& dst, T_DstAccessor&& accDst)
+            {}
         };
 
         template< class T_BaseAccessor >
@@ -201,19 +198,15 @@ namespace policies {
         void
         operator()(const T_Src& src, T_Dst& dst)
         {
-            static constexpr unsigned numDims    = traits::NumDims<T_Src>::value;
-            static constexpr unsigned numDimsDst = traits::NumDims<T_Dst>::value;
-            static_assert(numDims == numDimsDst, "Dimensions must match");
+            static constexpr unsigned numDims    = traits::NumDims<std::remove_const_t<T_Src>>::value;
+            static constexpr unsigned numDimsDst = traits::NumDims<std::remove_const_t<T_Dst>>::value;
 
-            static_assert(DelimiterDimOk<T_SrcAccessor, numDims, traits::IsStreamAccessor<T_SrcAccessor, T_Src>::value>::value,
+            static_assert(DelimiterDimOk<T_SrcAccessor, numDims, traits::IsStreamAccessor<T_SrcAccessor, std::remove_const_t<T_Src>>::value>::value,
                     "Source accessor does not provide enough delimiters");
-            static_assert(DelimiterDimOk<T_DstAccessor, numDims, traits::IsStreamAccessor<T_DstAccessor, T_Dst>::value>::value,
+            static_assert(DelimiterDimOk<T_DstAccessor, numDimsDst, traits::IsStreamAccessor<T_DstAccessor, std::remove_const_t<T_Dst>>::value>::value,
                     "Destination accessor does not provide enough delimiters");
 
-            using ExtentsVec = types::Vec<numDims>;
-            ExtentsVec idx;
-            detail::CopyImpl< (numDims == 1) >::
-                    template loop< 0, numDims >(idx, GetExtents<T_Src>(src), src, accSrc_, dst, accDst_);
+            loop(src, dst, detail::CopyHandler(), accSrc_, accDst_);
         }
     };
 
