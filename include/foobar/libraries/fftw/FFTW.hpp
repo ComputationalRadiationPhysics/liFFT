@@ -1,10 +1,10 @@
 #pragma once
 
 #include <boost/utility.hpp>
-#include <boost/mpl/placeholders.hpp>
 #include "foobar/libraries/fftw/policies/Planner.hpp"
 #include "foobar/libraries/fftw/policies/ExecutePlan.hpp"
 #include "foobar/libraries/fftw/policies/FreePlan.hpp"
+#include <boost/mpl/placeholders.hpp>
 
 namespace bmpl = boost::mpl;
 

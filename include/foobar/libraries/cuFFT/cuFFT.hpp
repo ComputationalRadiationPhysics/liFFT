@@ -4,6 +4,9 @@
 #include "foobar/libraries/cuFFT/policies/CudaMemCpy.hpp"
 #include "foobar/libraries/cuFFT/policies/Planner.hpp"
 #include "foobar/libraries/cuFFT/policies/ExecutePlan.hpp"
+#include <boost/mpl/placeholders.hpp>
+
+namespace bmpl = boost::mpl;
 
 namespace foobar {
 namespace libraries {

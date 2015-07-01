@@ -8,6 +8,7 @@
 #include "foobar/libraries/cuFFT/traits/FFTType.hpp"
 #include "foobar/libraries/cuFFT/traits/Sign.hpp"
 #include "foobar/libraries/cuFFT/traits/LibTypes.hpp"
+#include "foobar/policies/SafePtrCast.hpp"
 
 namespace foobar {
 namespace libraries {
