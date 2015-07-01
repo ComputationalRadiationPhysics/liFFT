@@ -82,7 +82,7 @@ void testComplex()
     auto input = FFT_Type::wrapFFT_Input(aperture, foobar::policies::VolumeAccessor());
     auto output = FFT_Type::wrapFFT_Output(fftResult, foobar::policies::VolumeAccessor());
     auto fft = foobar::makeFFT<foobar::libraries::fftw::FFTW<>>(input, output);
-	generateData(aperture, Rect<double>(20,20), foobar::policies::VolumeAccessor());
+	generateData(aperture, Rect<double>(20,20,500,500), foobar::policies::VolumeAccessor());
 	fft(input, output);
 }
 
@@ -95,7 +95,7 @@ void testReal()
     auto input = FFT_Type::wrapFFT_Input(aperture, foobar::policies::VolumeAccessor());
     auto output = FFT_Type::wrapFFT_Output(fftResult, foobar::policies::VolumeAccessor());
     auto fft = foobar::makeFFT<foobar::libraries::fftw::FFTW<>>(input, output);
-    generateData(aperture, Rect<double>(20,20), foobar::policies::VolumeAccessor());
+    generateData(aperture, Rect<double>(20,20,500,500), foobar::policies::VolumeAccessor());
     fft(input, output);
 }
 
@@ -134,7 +134,7 @@ int main(int argc, char** argv) {
         false
         >;
     FileType myFile("rect.tif");
-    testFile(myFile);
+    //testFile(myFile);
 
     finalizeTest();
     return 0;

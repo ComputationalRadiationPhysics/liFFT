@@ -19,7 +19,9 @@ using TestC2COutput = ComplexContainer;
 
 #ifdef WITH_CUDA
 #include "foobar/libraries/cuFFT/cuFFT.hpp"
-using TestLibrary = foobar::libraries::cuFFT::CuFFT<>;
+//using TestLibrary = foobar::libraries::cuFFT::CuFFT<>;
+#include "foobar/libraries/fftw/FFTW.hpp"
+using TestLibrary = foobar::libraries::fftw::FFTW<>;
 #else
 #include "foobar/libraries/fftw/FFTW.hpp"
 using TestLibrary = foobar::libraries::fftw::FFTW<>;

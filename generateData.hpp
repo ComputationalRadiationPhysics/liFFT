@@ -33,34 +33,34 @@ void generateData(T& data, const Generator& generator, const T_Accessor& acc = T
 
 template<typename T>
 struct Spalt{
-    const int size_;
-    Spalt(int size):size_(size){}
+    const size_t size_, middle_;
+    Spalt(size_t size, size_t middle):size_(size), middle_(middle){}
 
     T
     operator()(size_t x, size_t y, size_t z) const{
-        return (abs(x-500)<=size_) ? 1 : 0;
+        return (abs(x-middle_)<=size_) ? 1 : 0;
     }
 };
 
 template<typename T>
 struct Rect{
-    const int sizeX_, sizeY_;
-    Rect(int sizeX, int sizeY):sizeX_(sizeX), sizeY_(sizeY){}
+    const size_t sizeX_, sizeY_, middleX_, middleY_;
+    Rect(size_t sizeX, size_t sizeY, size_t middleX, size_t middleY):sizeX_(sizeX), sizeY_(sizeY), middleX_(middleX), middleY_(middleY){}
 
     T
     operator()(size_t x, size_t y, size_t z) const{
-        return (abs(x-500)<=sizeX_ && abs(y-500)<=sizeY_) ? 1 : 0;
+        return (abs(x-middleX_)<=sizeX_ && abs(y-middleY_)<=sizeY_) ? 1 : 0;
     }
 };
 
 template<typename T>
 struct Circle{
-    const int size_;
-    Circle(int size):size_(size){}
+    const size_t size_, middle_;
+    Circle(size_t size, size_t middle):size_(size), middle_(middle){}
 
     T
     operator()(size_t x, size_t y, size_t z) const{
-        return (pow(abs(x-500), 2)+pow(abs(y-500), 2)<=size_*size_) ? 1 : 0;
+        return (pow(abs(x-middle_), 2)+pow(abs(y-middle_), 2)<=size_*size_) ? 1 : 0;
     }
 };
 

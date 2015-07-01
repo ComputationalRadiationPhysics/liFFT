@@ -39,7 +39,7 @@ void writeIntensity2File(const std::string& name, T& data, T_Accessor acc = T_Ac
 
 void initTest()
 {
-    TestExtents size = TestExtents::all(1024);
+    TestExtents size = TestExtents::all(16);
     TestExtents sizeHalf = size;
     sizeHalf[testNumDims-1] = size[testNumDims-1] / 2 + 1;
     testR2CInput.extents = size;
@@ -80,15 +80,23 @@ void finalizeTest()
 
 void visualizeBaseTest()
 {
-    generateData(testR2CInput, Rect<TestPrecision>(20,20));
-    generateData(testC2CInput, Rect<TestPrecision>(20,20));
-    testExecBaseR2C();
+    generateData(testR2CInput, Rect<TestPrecision>(2,2,8,8));
+    generateData(testC2CInput, Rect<TestPrecision>(2,2,8,8));
+    //testExecBaseR2C();
     testExecBaseC2C();
     writeIntensity2File("inputR2C.txt", testR2CInput);
     writeIntensity2File("inputC2C.txt", testC2CInput);
     auto fullR2COutput = foobar::types::makeSymmetricWrapper(testR2COutput, testC2CInput.extents[testR2CInput.numDims-1]);
     write2File("outputR2C_C.txt", testR2COutput);
     write2File("outputC2C_C.txt", testC2COutput);
+    write2File("inputC2C_C.txt", testC2CInput);
+    fftwf_complex* ptr = reinterpret_cast<fftwf_complex*>(testC2COutput.data.getData());
+    for(int y=0; y<16; y++){
+        for(int x=0; x<16; x++)
+            std::cout << "(" << ptr[y*16+x][0] << ", " << ptr[y*16+x][1] << ") ";
+        std::cout << std::endl;
+    }
+    return;
     writeIntensity2File("outputR2C.txt", fullR2COutput, foobar::policies::makeTransposeAccessorFor(fullR2COutput));
     writeIntensity2File("outputC2C.txt", testC2COutput, foobar::policies::makeTransposeAccessorFor(testC2COutput));
     if(!compare(fullR2COutput, testC2COutput))
