@@ -240,9 +240,9 @@ if __name__ == "__main__":
     ionsData, elecData = reading_data( elec_fn=elecFilenames_free, ions_fn=ionsFilenames )
     scat_dens          = get_scat_dens( ionsData, elecData )
     formFactor         = calculate_formFactor( scat_dens )
-    print "sum of formFactor: %e" % (formFactor.sum())
+    print("sum of formFactor: %e" % (formFactor.sum()))
     current            = convert2current( formFactor )
-    print "sum of current: %e" % (current.sum())
+    print("sum of current: %e" % (current.sum()))
 #    plot_formFactor(formFactor, xlim=(-1., 1.), ylim=(-1., 1.))
     plot_formFactor(current, xlim=(-1., 1.), ylim=(-1., 1.))
     

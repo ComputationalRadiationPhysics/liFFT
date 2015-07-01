@@ -55,7 +55,7 @@ class SpatialDensity(object):
         self.special = np.array(kwargs.pop('special', ""))
         self.subgrid = kwargs.pop('subgrid', None)
         if 'nc' not in kwargs:
-            print "WARNING: NO `nc` GIVEN! DEFAULTS TO 1."
+            print("WARNING: NO `nc` GIVEN! DEFAULTS TO 1.")
         self.nc      = kwargs.pop('nc', 1.) # critical density [#electrons/cm^3]
 
         for key, value in densData.iteritems():
@@ -114,11 +114,11 @@ class IonDensity(SpatialDensity):
         # TODO add documentation
         super(IonDensity, self).__init__(densData, size, **kwargs)
         if 'thick_bound' not in kwargs:
-            print "WARNING: NO `thick_bound` GIVEN. DEFAULTS TO 1."
+            print("WARNING: NO `thick_bound` GIVEN. DEFAULTS TO 1.")
         self.thick_bound = kwargs.pop('thick_bound', 1.)
         
         if 'thick_res' not in kwargs:
-            print "WARNING: NO `thick_res` GIVEN. DEFAULTS TO 1."
+            print("WARNING: NO `thick_res` GIVEN. DEFAULTS TO 1.")
         self.thick_res   = kwargs.pop('thick_res', 1.)
 
     def set_resonant(self, resonant):
@@ -192,7 +192,7 @@ class ElecDensity(SpatialDensity):
         # TODO add documentation
         super(ElecDensity, self).__init__(densData, size, **kwargs)
         if 'thick_free' not in kwargs:
-            print "WARNING: NO `thick_free` GIVEN! DEFAULTS TO 1."
+            print("WARNING: NO `thick_free` GIVEN! DEFAULTS TO 1.")
         self.thick_free = kwargs.pop('thick_free', 1.)
     
     def get_dens(self):
@@ -203,7 +203,7 @@ class ElecDensity(SpatialDensity):
         dens = np.zeros(self.shape)
 
         if self.charge != 1:
-            print "CHARGE OF THE ELECTRONS SHOULD BE ONE!!!!"
+            print("CHARGE OF THE ELECTRONS SHOULD BE ONE!!!!")
             self.charge = 1
 
         for key in self.data.iterkeys():
@@ -220,7 +220,7 @@ class ElecDensity(SpatialDensity):
         dens = np.zeros(self.shape)
 
         if self.charge != 1:
-            print "CHARGE OF THE ELECTRONS SHOULD BE ONE!!!!"
+            print("CHARGE OF THE ELECTRONS SHOULD BE ONE!!!!")
             self.charge = 1
 
         for key in self.data.iterkeys():
@@ -228,7 +228,7 @@ class ElecDensity(SpatialDensity):
                 dens += self.charge * self.data[key]
                 break
 
-        print "`get_spec_dens()` returns density without multiplying by any thickness value!"
+        print("`get_spec_dens()` returns density without multiplying by any thickness value!")
         return self.nc * dens
 
 def read_dat(fp, size, area=None):
@@ -253,7 +253,7 @@ def read_dat(fp, size, area=None):
         Specify which area should be read.
     """
 
-    print ">> reading file ...",fp
+    print(">> reading file ..."+fp)
     # dtype with all coloumns as field names and EOL
     memtype = create_dtype(size)
     fields = list(memtype.names)

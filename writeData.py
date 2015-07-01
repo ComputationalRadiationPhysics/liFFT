@@ -59,11 +59,11 @@ def main(name, argv):
   try:
     opts, args = getopt.getopt(argv,"hsi:o:",["isSpectral","ifile=","ofile="])
   except getopt.GetoptError:
-    print name+' -i <inputfile> -o <outputfile>'
+    print(name+' -i <inputfile> -o <outputfile>')
     sys.exit(2)
   for opt, arg in opts:
     if opt == '-h':
-       print name+' -i <inputfile> -o <outputfile>'
+       print(name+' -i <inputfile> -o <outputfile>')
        sys.exit()
     elif opt in ("-i", "--ifile"):
        inputfile = arg
@@ -72,7 +72,7 @@ def main(name, argv):
     elif opt in ("-s", "--isSpectral"):
        isSpectral = True
   
-  print 'Loading "' + inputfile + '" to "' + outputfile + '"'
+  print('Loading "' + inputfile + '" to "' + outputfile + '"')
   loadAndWriteData(inputfile, outputfile, isSpectral)
        
 if __name__ == "__main__":
