@@ -89,6 +89,8 @@ void visualizeBaseTest()
     auto fullR2COutput = foobar::types::makeSymmetricWrapper(testR2COutput, testC2CInput.extents[testR2CInput.numDims-1]);
     writeIntensity2File("outputR2C.txt", fullR2COutput, foobar::policies::makeTransposeAccessorFor(fullR2COutput));
     writeIntensity2File("outputC2C.txt", testC2COutput, foobar::policies::makeTransposeAccessorFor(testC2COutput));
+    if(!compare(fullR2COutput, testC2COutput))
+        std::cerr << "Test output mismatch";
     if(std::system("python writeData.py -i inputR2C.txt -o inputR2C.pdf"))
         std::cout << "Error converting input R2C\n";
     if(std::system("python writeData.py -i inputC2C.txt -o inputC2C.pdf"))
