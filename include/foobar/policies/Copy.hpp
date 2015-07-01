@@ -200,13 +200,14 @@ namespace policies {
         {
             static constexpr unsigned numDims    = traits::NumDims<std::remove_const_t<T_Src>>::value;
             static constexpr unsigned numDimsDst = traits::NumDims<std::remove_const_t<T_Dst>>::value;
+            static_assert(numDims == numDimsDst, "Dimensions must match");
 
             static_assert(DelimiterDimOk<T_SrcAccessor, numDims, traits::IsStreamAccessor<T_SrcAccessor, std::remove_const_t<T_Src>>::value>::value,
                     "Source accessor does not provide enough delimiters");
             static_assert(DelimiterDimOk<T_DstAccessor, numDimsDst, traits::IsStreamAccessor<T_DstAccessor, std::remove_const_t<T_Dst>>::value>::value,
                     "Destination accessor does not provide enough delimiters");
 
-            loop(src, dst, detail::CopyHandler(), accSrc_, accDst_);
+            loop(src, detail::CopyHandler(), accSrc_, dst, accDst_);
         }
     };
 

@@ -20,16 +20,15 @@ namespace policies {
                 class T_Extents,
                 class T_Src,
                 class T_SrcAccessor,
-                class T_Dst,
-                class T_DstAccessor,
-                class T_Handler
+                class T_Handler,
+                class... T_Args
             >
             static void
-            loop(T_Index& idx, const T_Extents& extents, T_Src& src, T_SrcAccessor&& accSrc, T_Dst& dst, T_DstAccessor&& accDst, T_Handler& handler)
+            loop(T_Index& idx, const T_Extents& extents, T_Src& src, T_SrcAccessor&& accSrc, T_Handler& handler, T_Args&& ... args)
             {
                 for(idx[T_curDim]=0; idx[T_curDim]<extents[T_curDim]; ++idx[T_curDim])
                 {
-                    handler.template handleInnerLoop<T_curDim>(idx, src, accSrc, dst, accDst);
+                    handler.template handleInnerLoop<T_curDim>(idx, src, accSrc, std::forward<T_Args>(args)...);
                 }
             }
         };
@@ -44,19 +43,18 @@ namespace policies {
                 class T_Extents,
                 class T_Src,
                 class T_SrcAccessor,
-                class T_Dst,
-                class T_DstAccessor,
-                class T_Handler
+                class T_Handler,
+                class... T_Args
             >
             static void
-            loop(T_Index& idx, const T_Extents& extents, T_Src& src, T_SrcAccessor&& accSrc, T_Dst& dst, T_DstAccessor&& accDst, T_Handler& handler)
+            loop(T_Index& idx, const T_Extents& extents, T_Src& src, T_SrcAccessor&& accSrc, T_Handler& handler, T_Args&& ... args)
             {
                 for(idx[T_curDim]=0; idx[T_curDim]<extents[T_curDim]; ++idx[T_curDim])
                 {
-                    handler.template handleLoopPre< T_curDim, T_endDim >(idx, src, accSrc, dst, accDst);
+                    handler.template handleLoopPre< T_curDim, T_endDim >(idx, src, accSrc, std::forward<T_Args>(args)...);
                     LoopImpl< (T_curDim+2 == T_endDim) >::
-                            template loop< T_curDim+1, T_endDim >(idx, extents, src, std::forward<T_SrcAccessor>(accSrc), dst, std::forward<T_DstAccessor>(accDst), handler);
-                    handler.template handleLoopPost< T_curDim, T_endDim >(idx, src, accSrc, dst, accDst);
+                            template loop< T_curDim+1, T_endDim >(idx, extents, src, std::forward<T_SrcAccessor>(accSrc), handler, std::forward<T_Args>(args)...);
+                    handler.template handleLoopPost< T_curDim, T_endDim >(idx, src, accSrc, std::forward<T_Args>(args)...);
                 }
             }
         };
@@ -66,45 +64,51 @@ namespace policies {
     /**
      * Defines a loop over all dimensions of src
      * Expects a handler that is then called for each iteration. Specifically:
-     * Before any inner loop:  handler.handleLoopPre< curDim, endDim >(idx, src, accSrc, dst, accDst)
-     * After any inner loop:   handler.handleLoopPost< curDim, endDim >(idx, src, accSrc, dst, accDst)
-     * In the most inner loop: handler.handleInnerLoop< curDim >(idx, src, accSrc, dst, accDst)
+     * Before any inner loop:  handler.handleLoopPre< curDim, endDim >(idx, src, accSrc, args...)
+     * After any inner loop:   handler.handleLoopPost< curDim, endDim >(idx, src, accSrc, args...)
+     * In the most inner loop: handler.handleInnerLoop< curDim >(idx, src, accSrc, args...)
      */
     template<
         class T_Src,
-        class T_Dst,
-        class T_SrcAccessor = const foobar::traits::DefaultAccessor_t<T_Src>,
-        class T_DstAccessor = const foobar::traits::DefaultAccessor_t<T_Dst>
+        class T_SrcAccessor = const foobar::traits::DefaultAccessor_t<T_Src>
     >
     struct Loop
     {
     public:
-        template< class T_Handler >
+        template< class T_Handler, class... T_Args >
         static void
-        execute(T_Src& src, T_Dst& dst, T_Handler&& handler, T_SrcAccessor& accSrc = T_SrcAccessor(), T_DstAccessor& accDst = T_DstAccessor())
+        execute(T_Src& src, T_Handler&& handler, T_SrcAccessor& accSrc, T_Args&& ... args)
         {
-            static constexpr unsigned numDims    = traits::NumDims<std::remove_const_t<T_Src>>::value;
-            static constexpr unsigned numDimsDst = traits::NumDims<std::remove_const_t<T_Dst>>::value;
-            static_assert(numDims == numDimsDst, "Dimensions must match");
+            static constexpr unsigned numDims = traits::NumDims<std::remove_const_t<T_Src>>::value;
 
             using ExtentsVec = types::Vec<numDims>;
             ExtentsVec idx;
             detail::LoopImpl< (numDims == 1) >::
-                    template loop< 0, numDims >(idx, GetExtents<T_Src>(src), src, accSrc, dst, accDst, handler);
+                    template loop< 0, numDims >(idx, GetExtents<T_Src>(src), src, accSrc, handler, std::forward<T_Args>(args)...);
         }
     };
 
     template<
         class T_Src,
-        class T_Dst,
         class T_Handler,
         class T_SrcAccessor = const foobar::traits::DefaultAccessor_t<T_Src>,
-        class T_DstAccessor = const foobar::traits::DefaultAccessor_t<T_Dst>
+        class... T_Args
     >
     void
-    loop(T_Src& src, T_Dst& dst, T_Handler&& handler, T_SrcAccessor& accSrc = T_SrcAccessor(), T_DstAccessor& accDst = T_DstAccessor())
+    loop(T_Src& src, T_Handler&& handler, T_SrcAccessor& accSrc, T_Args&& ... args)
     {
-        Loop< T_Src, T_Dst, T_SrcAccessor, T_DstAccessor >::execute(src, dst, handler, accSrc, accDst);
+        Loop< T_Src, T_SrcAccessor >::execute(src, handler, accSrc, std::forward<T_Args>(args)...);
+    }
+
+    template<
+        class T_Src,
+        class T_Handler,
+        class T_SrcAccessor = const foobar::traits::DefaultAccessor_t<T_Src>
+    >
+    void
+    loop(T_Src& src, T_Handler&& handler, T_SrcAccessor& accSrc = T_SrcAccessor())
+    {
+        Loop< T_Src, T_SrcAccessor >::execute(src, handler, accSrc);
     }
 
 }  // namespace policies

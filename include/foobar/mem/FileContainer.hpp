@@ -5,7 +5,6 @@
 #include "foobar/mem/DataContainer.hpp"
 #include "foobar/traits/IsStrided.hpp"
 #include "foobar/traits/IntegralType.hpp"
-#include "foobar/policies/LoopNDims.hpp"
 #include "foobar/policies/GetExtents.hpp"
 #include "foobar/policies/DataContainerAccessor.hpp"
 #include "foobar/policies/GetNumElements.hpp"
