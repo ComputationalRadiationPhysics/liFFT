@@ -4,6 +4,9 @@
 #include "foobar/traits/DefaultAccessor.hpp"
 #include "foobar/policies/GetExtents.hpp"
 #include "foobar/policies/ArrayAccessor.hpp"
+#include "foobar/types/Complex.hpp"
+#include "foobar/c++14_types.hpp"
+#include "foobar/traits/IsComplex.hpp"
 
 namespace foobar {
     namespace types {
@@ -23,10 +26,24 @@ namespace foobar {
 
             SymmetricWrapper(Base& base, unsigned realSize): base_(base), realSize_(realSize){}
 
+            template< typename T >
+            static Complex<T>
+            makeConjugate(const Complex<T>& val)
+            {
+                return Complex<T>(val.real, -val.imag);
+            }
+
+            template< typename T >
+            static T
+            makeConjugate(const T& val)
+            {
+                return val;
+            }
+
             template< typename T_Index >
             auto
             operator()(const T_Index& idx) const
-            -> std::result_of_t< BaseAccessor(const T_Index&, const Base&) >
+            -> std::remove_reference_t< std::result_of_t< BaseAccessor(const T_Index&, const Base&) > >
             {
                 static constexpr unsigned lastDim = numDims - 1;
                 // If this instance is const, the base type (and therefore the returned type)
@@ -36,15 +53,24 @@ namespace foobar {
                 if(idx[lastDim] >= extents[lastDim]){
                     T_Index newIdx(idx);
                     newIdx[lastDim] = realSize_ - idx[lastDim];
-                    return acc_(newIdx, cBase);
+                    return makeConjugate(acc_(newIdx, cBase));
                 }else
                     return acc_(idx, cBase);
             }
 
+            template<typename T>
+            struct DisableForComplex
+            {
+                using Plain = std::remove_cv_t<T>;
+                static constexpr bool isComplex = traits::IsComplex<Plain>::value;
+                using type = std::enable_if< !isComplex, T >;
+            };
+
+            // Only enabled for non-complex types as references are not possible due to "virtual memory handling" with conjugate complex values
             template< typename T_Index >
             auto
             operator()(const T_Index& idx)
-            -> std::result_of_t< BaseAccessor(const T_Index&, Base&) >
+            -> typename DisableForComplex< std::result_of_t< BaseAccessor(const T_Index&, Base&) > >::type::type
             {
                 static constexpr unsigned lastDim = numDims - 1;
                 policies::GetExtents<Base> extents(base_);

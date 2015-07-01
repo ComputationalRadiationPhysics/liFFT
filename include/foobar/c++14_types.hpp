@@ -24,6 +24,9 @@ namespace std {
     using remove_const_t = typename remove_const<T>::type;
 
     template< class T >
+    using remove_cv_t = typename remove_cv<T>::type;
+
+    template< class T >
     using make_unsigned_t = typename make_unsigned<T>::type;
 
     template< class T >
