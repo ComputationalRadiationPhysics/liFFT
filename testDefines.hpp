@@ -17,6 +17,14 @@ using TestR2COutput = ComplexContainer;
 using TestC2CInput  = ComplexContainer;
 using TestC2COutput = ComplexContainer;
 
+#ifdef WITH_CUDA
+#include "foobar/libraries/cuFFT/cuFFT.hpp"
+using TestLibrary = foobar::libraries::cuFFT::CuFFT<>;
+#else
+#include "foobar/libraries/fftw/FFTW.hpp"
+using TestLibrary = foobar::libraries::fftw::FFTW<>;
+#endif
+
 // Control values used in the test suite
 extern TestR2CInput  testR2CInput;
 extern TestR2COutput testR2COutput;

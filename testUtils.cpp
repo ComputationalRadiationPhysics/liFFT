@@ -20,8 +20,8 @@ TestC2COutput testC2COutput;
 using FFT_R2C = foobar::FFT_Definition< foobar::FFT_Kind::Real2Complex, testNumDims, TestPrecision, std::true_type>;
 using FFT_C2C = foobar::FFT_Definition< foobar::FFT_Kind::Complex2Complex, testNumDims, TestPrecision, std::true_type>;
 
-foobar::FFT_Interface<decltype(FFT_R2C::wrapFFT_Input(testR2CInput)), decltype(FFT_R2C::wrapFFT_Output(testR2COutput))>* fftR2C;
-foobar::FFT_Interface<decltype(FFT_C2C::wrapFFT_Input(testC2CInput)), decltype(FFT_C2C::wrapFFT_Output(testC2COutput))>* fftC2C;
+foobar::FFT_Interface_Outplace<decltype(FFT_R2C::wrapFFT_Input(testR2CInput)), decltype(FFT_R2C::wrapFFT_Output(testR2COutput))>* fftR2C;
+foobar::FFT_Interface_Outplace<decltype(FFT_C2C::wrapFFT_Input(testC2CInput)), decltype(FFT_C2C::wrapFFT_Output(testC2COutput))>* fftC2C;
 
 template< typename T, class T_Accessor = foobar::traits::DefaultAccessor_t<T> >
 void write2File(const std::string& name, T& data, T_Accessor acc = T_Accessor()){
@@ -54,14 +54,14 @@ void initTest()
     {
         auto input = FFT_R2C::wrapFFT_Input(testR2CInput);
         auto output = FFT_R2C::wrapFFT_Output(testR2COutput);
-        using FFT = decltype(foobar::makeFFT<foobar::libraries::fftw::FFTW<>>(input, output));
+        using FFT = decltype(foobar::makeFFT<TestLibrary>(input, output));
         fftR2C = static_cast<decltype(fftR2C)>(malloc(sizeof(FFT)));
         new(fftR2C)auto(FFT(input, output));
     }
     {
         auto input = FFT_C2C::wrapFFT_Input(testC2CInput);
         auto output = FFT_C2C::wrapFFT_Output(testC2COutput);
-        using FFT = decltype(foobar::makeFFT<foobar::libraries::fftw::FFTW<>>(input, output));
+        using FFT = decltype(foobar::makeFFT<TestLibrary>(input, output));
         fftC2C = static_cast<decltype(fftC2C)>(malloc(sizeof(FFT)));
         new(fftC2C)auto(FFT(input, output));
     }

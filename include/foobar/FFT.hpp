@@ -12,13 +12,21 @@ namespace bmpl = boost::mpl;
 namespace foobar {
 
     template< class T_Input, class T_Output >
-    class FFT_Interface
+    class FFT_Interface_Inplace
     {
     public:
-        virtual ~FFT_Interface(){};
+        virtual ~FFT_Interface_Inplace(){};
+
+        virtual void operator()(T_Input& inout) = 0;
+    };
+
+    template< class T_Input, class T_Output >
+    class FFT_Interface_Outplace
+    {
+    public:
+        virtual ~FFT_Interface_Outplace(){};
 
         virtual void operator()(T_Input& input, T_Output& output) = 0;
-        virtual void operator()(T_Input& inout) = 0;
     };
 
     /**
@@ -43,7 +51,12 @@ namespace foobar {
             typename T_OutputWrapper,
             bool T_constructWithReadOnly = true
             >
-    class FFT: public FFT_Interface< T_InputWrapper, T_OutputWrapper >
+    class FFT:
+            public std::conditional_t<
+                T_InputWrapper::FFT_Def::isInplace,
+                FFT_Interface_Inplace< T_InputWrapper, T_OutputWrapper >,
+                FFT_Interface_Outplace< T_InputWrapper, T_OutputWrapper >
+            >
     {
         using Library = T_Library;
         using Input = T_InputWrapper;
@@ -72,8 +85,7 @@ namespace foobar {
 
         void operator()(Input& input, Output& output)
         {
-            if(isInplace)
-                throw std::logic_error("Must not be called for inplace transforms");
+            static_assert(!isInplace, "Must not be called for inplace transforms");
             input.preProcess();
             lib_(input, output);
             output.postProcess();
@@ -81,8 +93,7 @@ namespace foobar {
 
         void operator()(Input& inout)
         {
-            if(!isInplace)
-                throw std::logic_error("Must not be called for out-of-place transforms");
+            static_assert(isInplace, "Must not be called for out-of-place transforms");
             inout.preProcess();
             lib_(inout);
             inout.postProcess();
