@@ -6,6 +6,7 @@
 #include "foobar/types/Real.hpp"
 #include "foobar/policies/Loop.hpp"
 #include <iostream>
+#include <cmath>
 
 void initTest();
 void visualizeBaseTest();
@@ -17,7 +18,8 @@ void testExecBaseC2C();
 struct CompareTest
 {
     bool ok = true;
-    double maxDiff = 0;
+    double maxAbsDiff = 0;
+    double maxRelDiff = 0;
 
     template< unsigned T_curDim, unsigned T_endDim, class... T_Args>
     void handleLoopPre(T_Args&&...){}
@@ -26,24 +28,24 @@ struct CompareTest
 
     template<typename T>
     bool
-    compare(const foobar::types::Complex<T>& l, const foobar::types::Complex<T>& r)
+    compare(const foobar::types::Complex<T>& expected, const foobar::types::Complex<T>& is)
     {
-        return compare(l.real, r.real) && compare(l.imag, r.imag);
+        return compare(expected.real, is.real) && compare(expected.imag, is.imag);
     }
 
     template<typename T>
     bool
-    compare(const foobar::types::Real<T>& l, const foobar::types::Real<T>& r)
+    compare(const foobar::types::Real<T>& expected, const foobar::types::Real<T>& is)
     {
-        if(abs(l-r) < 1e-8)
+        T absDiff = std::abs(expected-is);
+        T relDiff = std::abs(absDiff / expected);
+        if(absDiff > maxAbsDiff)
+            maxAbsDiff = absDiff;
+        if(relDiff > maxRelDiff)
+            maxRelDiff = relDiff;
+        if(absDiff < 5e-1 || relDiff < 5e-1)
             return true;
-        else
-        {
-            auto diff = abs(l-r);
-            if(diff > maxDiff)
-                maxDiff = diff;
-            return false;
-        }
+        return false;
     }
 
     template<
@@ -69,6 +71,6 @@ compare(const T& left, const U& right, const T_AccessorT& leftAcc = T_AccessorT(
     CompareTest result;
     foobar::policies::loop(left, result, leftAcc, right, rightAcc);
     if(!result.ok)
-        std::cerr << "Max diff = " << result.maxDiff << std::endl;
+        std::cerr << "Max AbsDiff = " << result.maxAbsDiff  << " Max RelDiff = " << result.maxRelDiff << std::endl;
     return result.ok;
 }

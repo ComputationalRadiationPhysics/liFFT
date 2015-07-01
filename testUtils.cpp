@@ -23,7 +23,7 @@ using FFT_C2C = foobar::FFT_Definition< foobar::FFT_Kind::Complex2Complex, testN
 foobar::FFT_Interface<decltype(FFT_R2C::wrapFFT_Input(testR2CInput)), decltype(FFT_R2C::wrapFFT_Output(testR2COutput))>* fftR2C;
 foobar::FFT_Interface<decltype(FFT_C2C::wrapFFT_Input(testC2CInput)), decltype(FFT_C2C::wrapFFT_Output(testC2COutput))>* fftC2C;
 
-template< class T_Accessor, typename T >
+template< typename T, class T_Accessor = foobar::traits::DefaultAccessor_t<T> >
 void write2File(const std::string& name, T& data, T_Accessor acc = T_Accessor()){
     auto copy = foobar::policies::makeCopy(acc, foobar::policies::StringStreamAccessor<>());
 
@@ -87,6 +87,8 @@ void visualizeBaseTest()
     writeIntensity2File("inputR2C.txt", testR2CInput);
     writeIntensity2File("inputC2C.txt", testC2CInput);
     auto fullR2COutput = foobar::types::makeSymmetricWrapper(testR2COutput, testC2CInput.extents[testR2CInput.numDims-1]);
+    write2File("outputR2C_C.txt", testR2COutput);
+    write2File("outputC2C_C.txt", testC2COutput);
     writeIntensity2File("outputR2C.txt", fullR2COutput, foobar::policies::makeTransposeAccessorFor(fullR2COutput));
     writeIntensity2File("outputC2C.txt", testC2COutput, foobar::policies::makeTransposeAccessorFor(testC2COutput));
     if(!compare(fullR2COutput, testC2COutput))
