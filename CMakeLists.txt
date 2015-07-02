@@ -53,10 +53,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(CUDA_FOUND AND ENABLE_CUDA)
     add_definitions(-DWITH_CUDA)
-	cuda_add_executable(haLT_Test main.cu testUtils.cu)
+	cuda_add_executable(haLT_Test main.cu testUtils.cu testCustomTypes.cu testFile.cu)
 	CUDA_ADD_CUFFT_TO_TARGET(haLT_Test)
 else()
-	add_executable(haLT_Test main.cpp testUtils.cpp)
+	add_executable(haLT_Test main.cpp testUtils.cpp testCustomTypes.cpp testFile.cpp)
 endif()
 
 add_executable(tiff2PDF tiff2pdf.cpp)
