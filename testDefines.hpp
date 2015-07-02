@@ -6,6 +6,7 @@
 
 // Types used for the test suite
 constexpr unsigned testNumDims = 2;
+constexpr unsigned testSize = 1024;
 using TestExtents      = foobar::types::Vec<testNumDims>;
 using TestPrecision    = float;
 using RealType         = foobar::mem::RealValues<TestPrecision>;
@@ -19,9 +20,7 @@ using TestC2COutput = ComplexContainer;
 
 #ifdef WITH_CUDA
 #include "foobar/libraries/cuFFT/cuFFT.hpp"
-//using TestLibrary = foobar::libraries::cuFFT::CuFFT<>;
-#include "foobar/libraries/fftw/FFTW.hpp"
-using TestLibrary = foobar::libraries::fftw::FFTW<>;
+using TestLibrary = foobar::libraries::cuFFT::CuFFT<>;
 #else
 #include "foobar/libraries/fftw/FFTW.hpp"
 using TestLibrary = foobar::libraries::fftw::FFTW<>;

@@ -15,11 +15,15 @@ void finalizeTest();
 void testExecBaseR2C();
 void testExecBaseC2C();
 
+struct CmpError{
+    double maxAbsDiff = 0;
+    double maxRelDiff = 0;
+};
+
 struct CompareTest
 {
     bool ok = true;
-    double maxAbsDiff = 0;
-    double maxRelDiff = 0;
+    CmpError e;
 
     template< unsigned T_curDim, unsigned T_endDim, class... T_Args>
     void handleLoopPre(T_Args&&...){}
@@ -39,11 +43,11 @@ struct CompareTest
     {
         T absDiff = std::abs(expected-is);
         T relDiff = std::abs(absDiff / expected);
-        if(absDiff > maxAbsDiff)
-            maxAbsDiff = absDiff;
-        if(relDiff > maxRelDiff)
-            maxRelDiff = relDiff;
-        if(absDiff < 5e-1 || relDiff < 5e-1)
+        if(absDiff > e.maxAbsDiff)
+            e.maxAbsDiff = absDiff;
+        if(relDiff > e.maxRelDiff)
+            e.maxRelDiff = relDiff;
+        if(absDiff < 5e-5 || relDiff < 5e-5)
             return true;
         return false;
     }
@@ -65,12 +69,12 @@ struct CompareTest
 };
 
 template< class T, class U, class T_AccessorT = foobar::traits::DefaultAccessor_t<T>, class T_AccessorU = foobar::traits::DefaultAccessor_t<U> >
-bool
+CmpError
 compare(const T& left, const U& right, const T_AccessorT& leftAcc = T_AccessorT(), const T_AccessorU& rightAcc = T_AccessorU())
 {
     CompareTest result;
     foobar::policies::loop(left, result, leftAcc, right, rightAcc);
     if(!result.ok)
-        std::cerr << "Max AbsDiff = " << result.maxAbsDiff  << " Max RelDiff = " << result.maxRelDiff << std::endl;
-    return result.ok;
+        std::cerr << "Max AbsDiff = " << result.e.maxAbsDiff  << " Max RelDiff = " << result.e.maxRelDiff << std::endl;
+    return result.e;
 }
