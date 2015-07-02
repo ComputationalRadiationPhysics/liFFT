@@ -1,6 +1,7 @@
 #include "testUtils.hpp"
 #include "testCustomTypes.hpp"
 #include "testFile.hpp"
+#include "testPlainPtr.hpp"
 
 int main(int argc, char** argv) {
     using namespace foobarTest;
@@ -9,6 +10,7 @@ int main(int argc, char** argv) {
 
     testCustomTypes();
     testFile();
+    testPlainPtr();
 
     finalize();
     return 0;

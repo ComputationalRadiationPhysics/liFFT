@@ -108,6 +108,8 @@ namespace foobarTest {
         auto e = compare(fullR2COutput, baseC2COutput);
         if(!e.first)
             std::cerr << "Test output mismatch: " << e.second << std::endl;
+        else
+            std::cout << "Self-check passed" << std::endl;
         if(std::system("python writeData.py -i inputR2C.txt -o inputR2C.pdf"))
             std::cout << "Error converting input R2C\n";
         if(std::system("python writeData.py -i inputC2C.txt -o inputC2C.pdf"))

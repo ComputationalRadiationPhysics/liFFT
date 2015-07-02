@@ -70,7 +70,13 @@ namespace foobarTest {
         std::enable_if_t< foobar::traits::IsComplex<T>::value, bool >
         compare(const T& expected, const U& is)
         {
-            return compare(expected.real, is.real) && compare(expected.imag, is.imag);
+            using Precision = foobar::traits::IntegralType_t<T>;
+            using Complex = foobar::types::Complex<Precision>;
+            static_assert(foobar::traits::IsBinaryCompatible<T, Complex>::value, "Cannot convert expected");
+            static_assert(foobar::traits::IsBinaryCompatible<U, Complex>::value, "Cannot convert is");
+            const Complex& expected_ = reinterpret_cast<const Complex&>(expected);
+            const Complex& is_ = reinterpret_cast<const Complex&>(is);
+            return compare(expected_.real, is_.real) && compare(expected_.imag, is_.imag);
         }
 
         template<class T, class U>
