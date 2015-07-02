@@ -51,8 +51,13 @@ namespace foobar {
                 const Base& cBase = base_;
                 policies::GetExtents<Base> extents(cBase);
                 if(idx[lastDim] >= extents[lastDim]){
-                    T_Index newIdx(idx);
+                    // We are in the "virtual" part, that does not exist in memory
+                    // --> Use symmetry as conj(F(x,y,z)) = F(-x,-y,-z) = F(nx-x, ny-y, nz-z)
+                    // And be careful with the 0 element as F(nx, ny, nz) does not exist in memory, but is (periodicity) F(0, 0, 0)
+                    T_Index newIdx;
                     newIdx[lastDim] = realSize_ - idx[lastDim];
+                    for(unsigned i=0; i<lastDim; i++)
+                        newIdx[i] = idx[i] == 0 ? 0 : extents[i] - idx[i];
                     return makeConjugate(acc_(newIdx, cBase));
                 }else
                     return acc_(idx, cBase);
