@@ -1,5 +1,8 @@
 #pragma once
 
+#include "foobar/traits/IsBinaryCompatible.hpp"
+#include "foobar/types/Complex.hpp"
+
 namespace foobar {
 namespace libraries {
 namespace fftw {

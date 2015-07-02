@@ -1,7 +1,7 @@
 #pragma once
 
 #include <boost/utility.hpp>
-#include <foobar/traits/IsBinaryCompatible.hpp>
+#include "foobar/traits/IsBinaryCompatible.hpp"
 #include "foobar/c++14_types.hpp"
 #include "foobar/void_t.hpp"
 
