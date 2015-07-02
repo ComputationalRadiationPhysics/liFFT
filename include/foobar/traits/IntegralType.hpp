@@ -47,5 +47,8 @@ namespace traits {
               >::type;
     };
 
+    template< typename T >
+    using IntegralType_t = typename IntegralType<T>::type;
+
 }  // namespace traits
 }  // namespace foobar
