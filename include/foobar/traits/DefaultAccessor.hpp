@@ -24,5 +24,17 @@ namespace traits {
     template< typename T >
     using DefaultAccessor_t = typename DefaultAccessor<T>::type;
 
+    /**
+     * Returns an instance of the default accessor for the given container
+     *
+     * @param The container to get the default accessor for
+     * @return Instance of an accessor
+     */
+    template< typename T >
+    DefaultAccessor_t<T>
+    getDefaultAccessor(const T&){
+        return DefaultAccessor_t<T>();
+    }
+
 }  // namespace traits
 }  // namespace foobar
