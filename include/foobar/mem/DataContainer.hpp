@@ -6,6 +6,10 @@
 #include "foobar/types/Vec.hpp"
 #include "foobar/policies/DataContainerAccessor.hpp"
 #include "foobar/policies/GetNumElements.hpp"
+#include "foobar/traits/DefaultAccessor.hpp"
+#include "foobar/mem/RealValues.hpp"
+#include "foobar/mem/ComplexAoSValues.hpp"
+#include "foobar/void_t.hpp"
 
 namespace foobar {
 
@@ -14,7 +18,7 @@ namespace foobar {
         /**
          * Container used to store data with its meta-data
          */
-        template< unsigned T_numDims, class T_Memory, class T_BaseAccessor = typename T_Memory::Accessor, bool T_isFlatMemory = true, bool T_isStrided=false >
+        template< unsigned T_numDims, class T_Memory, class T_BaseAccessor = traits::DefaultAccessor_t<T_Memory>, bool T_isFlatMemory = true, bool T_isStrided=false >
         struct DataContainer
         {
             static constexpr unsigned numDims = T_numDims;
@@ -57,7 +61,13 @@ namespace foobar {
             types::Vec< numDims > strides;
         };
 
-    }  // namespace types
+        template< unsigned T_numDims, typename T_Precision, bool T_isStrided = false >
+        using RealContainer = DataContainer< T_numDims, RealValues<T_Precision>, typename RealValues<T_Precision>::Accessor, true, false >;
+
+        template< unsigned T_numDims, typename T_Precision, bool T_isStrided = false >
+        using ComplexContainer = DataContainer< T_numDims, ComplexAoSValues<T_Precision>, typename ComplexAoSValues<T_Precision>::Accessor, true, false >;
+
+    }  // namespace mem
 
     namespace traits {
 
