@@ -38,7 +38,7 @@ struct Spalt{
 
     T
     operator()(size_t x, size_t y, size_t z) const{
-        return (abs(x-middle_)<=size_) ? 1 : 0;
+        return (std::abs(x-middle_)<=size_) ? 1 : 0;
     }
 };
 
@@ -49,7 +49,7 @@ struct Rect{
 
     T
     operator()(size_t x, size_t y, size_t z) const{
-        return (abs(x-middleX_)<=sizeX_ && abs(y-middleY_)<=sizeY_) ? 1 : 0;
+        return (std::abs(x-middleX_)<=sizeX_ && std::abs(y-middleY_)<=sizeY_) ? 1 : 0;
     }
 };
 
@@ -60,7 +60,7 @@ struct Circle{
 
     T
     operator()(size_t x, size_t y, size_t z) const{
-        return (pow(abs(x-middle_), 2)+pow(abs(y-middle_), 2)<=size_*size_) ? 1 : 0;
+        return (std::pow(std::abs(x-middle_), 2)+std::pow(std::abs(y-middle_), 2)<=size_*size_) ? 1 : 0;
     }
 };
 
