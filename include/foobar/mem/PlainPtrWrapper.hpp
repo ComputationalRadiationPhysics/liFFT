@@ -8,6 +8,9 @@
 #include "foobar/util.hpp"
 #include "foobar/policies/SafePtrCast.hpp"
 #include "foobar/policies/ArrayAccessor.hpp"
+#include "foobar/c++14_types.hpp"
+#include "foobar/traits/IntegralType.hpp"
+#include "foobar/traits/IsComplex.hpp"
 
 namespace foobar {
 namespace mem {
@@ -19,32 +22,44 @@ namespace mem {
     template< class T_NumDims, typename T_Pointer, class T_IsStrided >
     class PlainPtrWrapper: protected DataContainer< T_NumDims::value, T_Pointer*, void, T_IsStrided::value>
     {
+    protected:
+        using Parent = DataContainer< T_NumDims::value, T_Pointer*, void, T_IsStrided::value>;
     public:
         static constexpr unsigned numDims = T_NumDims::value;
         using Pointer = T_Pointer;
         using IntegralType = typename traits::IntegralType<Pointer>::type;
         static constexpr bool isStrided = T_IsStrided::value;
+        static constexpr bool isComplex = traits::IsComplex<T_Pointer>::value;
+        static constexpr bool isAoS = true;
 
+        using IdxType = types::Vec<numDims>;
         using Accessor = policies::ArrayAccessor< true >;
 
         using Ref = Pointer&;
         using ConstRef = const Pointer&;
 
-        PlainPtrWrapper(Pointer* ptr, types::Vec<numDims> extents): data(ptr), extents(extents)
+        using Parent::extents;
+
+        PlainPtrWrapper(Pointer* ptr, const IdxType& extents)
         {
             static_assert(!isStrided, "You need to specify the strides!");
+            this->data = ptr;
+            this->extents = extents;
         }
 
-        PlainPtrWrapper(IntegralType* ptr, types::Vec<numDims> extents):
+        PlainPtrWrapper(IntegralType* ptr, const IdxType& extents):
             PlainPtrWrapper(policies::safe_ptr_cast<Pointer*>(ptr), extents)
         {}
 
-        PlainPtrWrapper(Pointer* ptr, types::Vec<numDims> extents, types::Vec<numDims> strides): data(ptr), extents(extents), strides(strides)
+        PlainPtrWrapper(Pointer* ptr, const IdxType& extents, const IdxType& strides)
         {
             static_assert(isStrided, "You cannot specify strides!!");
+            this->data = ptr;
+            this->extents = extents;
+            this->strides = strides;
         }
 
-        PlainPtrWrapper(IntegralType* ptr, types::Vec<numDims> extents, types::Vec<numDims> strides):
+        PlainPtrWrapper(IntegralType* ptr, const IdxType& extents, const IdxType& strides):
             PlainPtrWrapper(policies::safe_ptr_cast<Pointer*>(ptr), extents, strides)
         {}
 
@@ -53,7 +68,7 @@ namespace mem {
         operator()(T_Index&& idx)
         {
             unsigned flatIdx = policies::flattenIdx(idx, *this);
-            return data[flatIdx];
+            return this->data[flatIdx];
         }
 
         template< class T_Index >
@@ -61,7 +76,7 @@ namespace mem {
         operator()(T_Index&& idx) const
         {
             unsigned flatIdx = policies::flattenIdx(idx, *this);
-            return data[flatIdx];
+            return this->data[flatIdx];
         }
     };
 
@@ -69,9 +84,12 @@ namespace mem {
      * Evaluates to Real<T> or Complex<T> depending on the template argument
      */
     template< bool T_isComplex, typename T >
-    struct RealOrComplex: std::conditional< T_isComplex, types::Real<T>, types::Complex<T>>
+    struct RealOrComplex
     {
-        static_assert(std::is_floating_point<T>::value, "Only floating point values are allowed!");
+        using IntegralType = traits::IntegralType_t<T>;
+        using type = std::conditional_t< T_isComplex, types::Complex<IntegralType>, types::Real<IntegralType> >;
+        static_assert(std::is_floating_point<T>::value || std::is_same<T, type>::value,
+                "Only floating point, Real or Complex values are allowed!");
     };
     template< bool T_isComplex, typename T >
     using RealOrComplex_t = typename RealOrComplex< T_isComplex, T >::type;

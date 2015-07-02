@@ -76,11 +76,22 @@ namespace policies {
     template< typename T_Src, typename T_Dest, typename T_SFINAE = void >
     struct SafePtrCast: SafePtrCast_Impl< T_Src, T_Dest >{};
 
+    template< typename T >
+    struct SafePtrCast<T, T>
+    {
+        T&
+        operator()(T& data) const
+        {
+            return data;
+        }
+    };
+
     template< typename T_Src, typename T_Dest >
     struct SafePtrCast<
         T_Src,
         T_Dest,
         std::enable_if_t<
+            !std::is_same< T_Src, T_Dest >::value &&
             SafePtrCastExist< T_Src, float* >::value &&
             SafePtrCastExist< float*, T_Dest >::value
         >
@@ -113,6 +124,7 @@ namespace policies {
             return conv2(conv1(data));
         }
     };
+
     /**
      * Safely casts a pointer to another one
      *
@@ -124,6 +136,19 @@ namespace policies {
     safe_ptr_cast(T_Src* data)
     {
         return SafePtrCast< T_Src*, T_Dest >()(data);
+    }
+
+    /**
+     * Safely casts a pointer to another one
+     *
+     * @param data pointer to convert
+     * @return converted pointer
+     */
+    template< typename T_Dest, typename T_Src>
+    T_Dest
+    safe_ptr_cast(std::pair<T_Src*, T_Src*> data)
+    {
+        return SafePtrCast< std::pair<T_Src*, T_Src*>, T_Dest >()(data);
     }
 
 }  // namespace policies
