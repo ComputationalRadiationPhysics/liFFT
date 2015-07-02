@@ -125,8 +125,8 @@ int main(int argc, char** argv) {
     //testIntensityCalculator();
     //testReal();
     //testComplex();
-    initTest();
-    visualizeBaseTest();
+    foobarTest::init();
+    foobarTest::visualizeBase();
     using FileType = foobar::mem::FileContainer<
         libTiff::Image<>,
         foobar::policies::ImageAccessorGetColorAsFp<>,
@@ -136,7 +136,7 @@ int main(int argc, char** argv) {
     FileType myFile("rect.tif");
     //testFile(myFile);
 
-    finalizeTest();
+    foobarTest::finalize();
     return 0;
 }
 
