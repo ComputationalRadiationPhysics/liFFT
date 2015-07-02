@@ -28,6 +28,16 @@ namespace types {
         Complex(U&& real, V&& imag): real(std::forward<U>(real)), imag(std::forward<V>(imag)){}
         template< typename U, bool T_isConst >
         Complex(const ComplexRef<U, T_isConst>& ref): real(ref.real), imag(ref.imag){}
+
+        template< typename U >
+        std::enable_if_t< traits::IsBinaryCompatible< U, Complex>::value, Complex >
+        operator=(const U& other)
+        {
+            auto other_ = reinterpret_cast<const Complex&>(other);
+            return *this = other_;
+        }
+
+        Complex& operator=(const Complex&) = default;
     };
 
     /**
@@ -61,13 +71,6 @@ namespace types {
     };
 
 }  // namespace types
-
-namespace traits {
-
-    template< typename T >
-    struct IsBinaryCompatibleImpl< types::Complex<T>, T >: std::true_type{};
-
-}  // namespace policies
 }  // namespace foobar
 
 template<typename T>
