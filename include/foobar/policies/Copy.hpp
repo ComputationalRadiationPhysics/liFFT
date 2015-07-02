@@ -220,5 +220,17 @@ namespace policies {
                 >(std::forward<T_SrcAccessor>(accSrc), std::forward<T_DstAccessor>(accDst));
     }
 
+    template<
+        class T_Src,
+        class T_Dst,
+        class T_SrcAccessor = const foobar::traits::DefaultAccessor_t<T_Src>,
+        class T_DstAccessor = const foobar::traits::DefaultAccessor_t<T_Dst>
+    >
+    void
+    copy(const T_Src& src, T_Dst& dst, T_SrcAccessor&& accSrc = T_SrcAccessor(), T_DstAccessor&& accDst = T_DstAccessor())
+    {
+        makeCopy(std::forward<T_SrcAccessor>(accSrc), std::forward<T_DstAccessor>(accDst))(src, dst);
+    }
+
 }  // namespace policies
 }  // namespace foobar
