@@ -91,7 +91,8 @@ namespace libTiff
          * Opens the image at the given filePath for reading
          *
          * @param filePath Path to the image to load
-         * @param loadData True if the image data should be loaded or only its memory allocated. The data can be (re)loaded with \ref load()
+         * @param loadData True if the image data should be loaded or only its memory allocated.
+         *          The data can be (re)loaded with \ref load()
          */
         Image(const std::string& filePath, bool loadData = true): Image(Allocator())
         {
@@ -121,7 +122,8 @@ namespace libTiff
          * Implicitly closes an open image
          *
          * @param filePath Path to the image to load
-         * @param loadData True if the image data should be loaded or only its memory allocated. The data can be (re)loaded with \ref load()
+         * @param loadData True if the image data should be loaded or only its memory allocated.
+         *          The data can be (re)loaded with \ref load()
          */
         void open(const std::string& filePath, bool loadData = true);
 
