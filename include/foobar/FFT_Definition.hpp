@@ -3,6 +3,7 @@
 #include "foobar/FFT_Kind.hpp"
 #include "foobar/AutoDetect.hpp"
 #include "foobar/c++14_types.hpp"
+#include "foobar/util.hpp"
 #include "foobar/FFT_DataWrapper.hpp"
 
 namespace foobar {
@@ -52,10 +53,20 @@ namespace foobar {
          * @return DataWrapper that can then be used as input for a FFT and provides a default Accessor to access the underlying data
          */
         template<typename T_Base, typename T_BaseAccessor = traits::DefaultAccessor_t<T_Base> >
-        static FFT_InputDataWrapper< FFT_Definition, T_Base, T_BaseAccessor >
-        wrapFFT_Input(T_Base& base, T_BaseAccessor&& acc = T_BaseAccessor())
+        static FFT_InputDataWrapper<
+                FFT_Definition,
+                std::remove_reference_t<T_Base>,
+                negate< std::is_lvalue_reference<T_Base> >,
+                std::remove_reference_t<T_BaseAccessor>
+            >
+        wrapFFT_Input(T_Base&& base, T_BaseAccessor&& acc = T_BaseAccessor())
         {
-            return FFT_InputDataWrapper< FFT_Definition, T_Base, T_BaseAccessor >(base, std::forward<T_BaseAccessor>(acc));
+            return FFT_InputDataWrapper<
+                        FFT_Definition,
+                        std::remove_reference_t<T_Base>,
+                        negate< std::is_lvalue_reference<T_Base> >,
+                        std::remove_reference_t<T_BaseAccessor>
+                    >(std::forward<T_Base>(base), std::forward<T_BaseAccessor>(acc));
         }
 
         /**
@@ -69,10 +80,20 @@ namespace foobar {
          * @return DataWrapper that can then be used as input for a FFT and provides a default Accessor to access the underlying data
          */
         template< typename T_Base, typename T_BaseAccessor = traits::DefaultAccessor_t<T_Base> >
-        static FFT_OutputDataWrapper< FFT_Definition, T_Base, T_BaseAccessor >
-        wrapFFT_Output(T_Base& base, T_BaseAccessor&& acc = T_BaseAccessor())
+        static FFT_OutputDataWrapper<
+                FFT_Definition,
+                std::remove_reference_t<T_Base>,
+                negate< std::is_lvalue_reference<T_Base> >,
+                std::remove_reference_t<T_BaseAccessor>
+            >
+        wrapFFT_Output(T_Base&& base, T_BaseAccessor&& acc = T_BaseAccessor())
         {
-            return FFT_OutputDataWrapper< FFT_Definition, T_Base, T_BaseAccessor >(base, std::forward<T_BaseAccessor>(acc));
+            return FFT_OutputDataWrapper<
+                        FFT_Definition,
+                        std::remove_reference_t<T_Base>,
+                        negate< std::is_lvalue_reference<T_Base> >,
+                        std::remove_reference_t<T_BaseAccessor>
+                    >(std::forward<T_Base>(base), std::forward<T_BaseAccessor>(acc));
         }
     };
 

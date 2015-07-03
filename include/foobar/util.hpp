@@ -18,6 +18,12 @@ namespace foobar {
         static_assert(value, "Assertion failed <see above for more information>");
     };
 
+    /**
+     * Negates a BoolConst-like type
+     */
+    template< typename T >
+    struct negate: BoolConst< !T::value >{};
+
     template <class T, class M>
     M get_member_type(M T:: *);
 
