@@ -18,22 +18,11 @@ namespace foobarTest {
         std::unique_ptr<Complex[]> output(new Complex[testSize*(testSize/2+1)]);
         for(unsigned i=0; i<testSize*testSize; ++i)
             input[i] = std::rand() / RAND_MAX;
-        auto inWrapped = foobar::mem::wrapPtr<false>(input.get(), testSize, testSize);
-        auto outWrapped = foobar::mem::wrapPtr<true>(output.get(), testSize, testSize/2+1);
-        for(unsigned y=0; y<testSize; y+=4)
-        {
-            for(unsigned x=0; x<testSize; x+=3)
-                if(inWrapped(TestExtents(y,x)) != input[y*testSize + x])
-                {
-                    std::cerr << "PlainPtrWrapper maps wrong indices!" << std::endl;
-                    return;
-                }
-        }
         using FFT_TYPE = foobar::FFT_2D_R2C<TestPrecision>;
-        auto fftIn = FFT_TYPE::wrapFFT_Input(inWrapped);
-        auto fftOut = FFT_TYPE::wrapFFT_Output(outWrapped);
-        auto fft = foobar::makeFFT<TestLibrary>(fftIn, fftOut);
-        fft(fftIn, fftOut);
+        auto inWrapped = FFT_TYPE::wrapFFT_Input(foobar::mem::wrapPtr<false>(input.get(), testSize, testSize));
+        auto outWrapped = FFT_TYPE::wrapFFT_Output(foobar::mem::wrapPtr<true>(output.get(), testSize, testSize/2+1));
+        auto fft = foobar::makeFFT<TestLibrary>(inWrapped, outWrapped);
+        fft(inWrapped, outWrapped);
         foobar::policies::copy(inWrapped, baseR2CInput);
         execBaseR2C();
         auto res = compare(baseR2COutput, outWrapped);
