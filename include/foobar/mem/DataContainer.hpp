@@ -27,12 +27,32 @@ namespace foobar {
             static constexpr bool isStrided = T_isStrided;
 
             using Accessor = policies::DataContainerAccessor<T_isFlatMemory>;
+            using IdxType = types::Vec< numDims >;
 
-            types::Vec< numDims > extents;
+            IdxType extents;
             Memory data;
 
             /**
+             * Creates an uninitialized data container
+             */
+            DataContainer() = default;
+            /**
+             * Creates a data container with the specified extents and optionally allocates the memory
+             * Note: If the underlying memory does not support automatic destruction
+             * you must use freeData() to free the memory
+             *
+             * @param extents Extents of the container
+             */
+            DataContainer(const IdxType& extents, bool alloc = true): extents(extents)
+            {
+                if(alloc)
+                    allocData();
+            }
+
+            /**
               * Allocates data in the underlying memory if it supports that
+              * Note: If the underlying memory does not support automatic destruction
+              * you must use freeData() to free the memory
               */
              void
              allocData()
@@ -53,17 +73,37 @@ namespace foobar {
         template< unsigned T_numDims, class T_Memory, class T_BaseAccessor, bool T_isFlatMemory >
         struct DataContainer< T_numDims, T_Memory, T_BaseAccessor, T_isFlatMemory, true >: DataContainer< T_numDims, T_Memory, T_BaseAccessor, T_isFlatMemory, false >
         {
-            static constexpr unsigned numDims = T_numDims;
-            using Memory = T_Memory;
-            using BaseAccessor = T_BaseAccessor;
-            static constexpr bool isStrided = true;
+            using Parent = DataContainer< T_numDims, T_Memory, T_BaseAccessor, T_isFlatMemory, false >;
 
-            types::Vec< numDims > strides;
+            using IdxType = typename Parent::IdxType;
+
+            IdxType strides;
+
+            DataContainer(): Parent(){}
+            /**
+             * Creates a data container with the specified extents and strides and optionally allocates the memory
+             * Note: If the underlying memory does not support automatic destruction
+             * you must use freeData() to free the memory
+             *
+             * @param extents Extents of the container
+             * @param strides Strides of the container
+             */
+            DataContainer(const IdxType& extents, const IdxType& strides = IdxType::all(0), bool alloc = true): Parent(extents, false), strides(strides)
+            {
+                if(alloc)
+                    this->allocData();
+            }
         };
 
+        /**
+         * A container storing real data with automatic memory management
+         */
         template< unsigned T_numDims, typename T_Precision, bool T_isStrided = false >
         using RealContainer = DataContainer< T_numDims, RealValues<T_Precision>, typename RealValues<T_Precision>::Accessor, true, false >;
 
+        /**
+         * A container storing complex data with automatic memory management
+         */
         template< unsigned T_numDims, typename T_Precision, bool T_isStrided = false >
         using ComplexContainer = DataContainer< T_numDims, ComplexAoSValues<T_Precision>, typename ComplexAoSValues<T_Precision>::Accessor, true, false >;
 
