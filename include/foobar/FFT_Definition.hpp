@@ -95,6 +95,61 @@ namespace foobar {
                         std::remove_reference_t<T_BaseAccessor>
                     >(std::forward<T_Base>(base), std::forward<T_BaseAccessor>(acc));
         }
+
+        /**
+         * The type of the output wrapper for a given input wrapper type
+         * Use \ref getNewFFT_Output to get an instance of this!
+         */
+        template< typename T_Wrapper >
+        using OutputWrapper = FFT_OutputDataWrapper<
+                FFT_Definition,
+                std::conditional_t<
+                    isComplexOutput,
+                    mem::ComplexContainer< T_Wrapper::numDims, typename T_Wrapper::PrecisionType >,
+                    mem::RealContainer< T_Wrapper::numDims, typename T_Wrapper::PrecisionType >
+                >,
+                std::true_type
+            >;
+
+        /**
+         * Gets an instance of a FFT_OutputDataWrapper for the given
+         * @param fftInput
+         * @return
+         */
+        template< typename T_Wrapper >
+        static OutputWrapper<T_Wrapper>
+        getNewFFT_Output(const T_Wrapper& fftInput)
+        {
+            static_assert(std::is_same< typename T_Wrapper::FFT_Def, FFT_Definition >::value, "Wrong wrapper passed in!");
+            static_assert(kind != FFT_Kind::Complex2Real, "Missing argument for the full size of the last dimension");
+            using Base = typename OutputWrapper<T_Wrapper>::Base;
+            typename Base::IdxType extents;
+            for(unsigned i=0; i<T_Wrapper::numDims; ++i)
+                extents[i] = fftInput.getExtents()[i];
+            if(kind == FFT_Kind::Real2Complex)
+                extents[T_Wrapper::numDims - 1] = extents[T_Wrapper::numDims - 1]/2 + 1;
+            return OutputWrapper<T_Wrapper>(Base(extents));
+        }
+
+        template< typename T_Wrapper >
+        static OutputWrapper<T_Wrapper>
+        getNewFFT_Output(const T_Wrapper& fftInput, unsigned fullSizeLastDim)
+        {
+            static_assert(std::is_same< typename T_Wrapper::FFT_Def, FFT_Definition >::value, "Wrong wrapper passed in!");
+            using Base = typename OutputWrapper<T_Wrapper>::Base;
+            typename Base::IdxType extents;
+            for(unsigned i=0; i<T_Wrapper::numDims; ++i)
+                extents[i] = fftInput.getExtents()[i];
+            if(kind == FFT_Kind::Real2Complex)
+                extents[T_Wrapper::numDims - 1] = extents[T_Wrapper::numDims - 1]/2 + 1;
+            else if(kind == FFT_Kind::Complex2Real)
+            {
+                if(fullSizeLastDim/2 + 1 != extents[T_Wrapper::numDims - 1 ])
+                    throw std::runtime_error("Wrong extents for last dim given");
+                extents[T_Wrapper::numDims - 1 ] = fullSizeLastDim;
+            }
+            return OutputWrapper<T_Wrapper>(Base(extents));
+        }
     };
 
     // Some definitions for commonly used FFT types
