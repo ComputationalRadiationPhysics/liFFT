@@ -21,6 +21,18 @@ namespace traits {
         using type = policies::ArrayAccessor<false>;
     };
 
+    /**
+     * Specialization for reference types
+     */
+    template< typename T >
+    struct DefaultAccessor<T&>: DefaultAccessor<T>{};
+
+    /**
+     * Specialization for const types
+     */
+    template< typename T >
+    struct DefaultAccessor<const T>: DefaultAccessor<T>{};
+
     template< typename T >
     using DefaultAccessor_t = typename DefaultAccessor<T>::type;
 
