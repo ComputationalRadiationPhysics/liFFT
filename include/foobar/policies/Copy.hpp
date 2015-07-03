@@ -190,6 +190,32 @@ namespace policies {
                             )
                     >::value;
         };
+        template< bool T_doCheck = false, class dummy = void >
+        struct ExtentsCheck
+        {
+            template< class... T >
+            static void
+            check(T&&...){}
+        };
+
+        template<class dummy>
+        struct ExtentsCheck<true, dummy>
+        {
+            template< class T_Src, class T_Dst >
+            static void
+            check(const T_Src& src, const T_Dst& dst)
+            {
+                GetExtents<T_Src> extSrc(src);
+                GetExtents<T_Dst> extDst(dst);
+                for(unsigned i=0; i<traits::NumDims<T_Src>::value; i++)
+                {
+                    if(extSrc[i] != extDst[i])
+                        throw std::runtime_error("Extents mismatch in dim " + std::to_string(i) + ": "
+                                + std::to_string(extSrc[i]) + "!=" + std::to_string(extDst[i]));
+                }
+            }
+        };
+
     public:
         Copy(){}
         Copy(T_SrcAccessor accSrc, T_DstAccessor accDst): accSrc_(accSrc), accDst_(accDst){}
@@ -198,13 +224,18 @@ namespace policies {
         void
         operator()(const T_Src& src, T_Dst& dst)
         {
-            static constexpr unsigned numDims    = traits::NumDims<std::remove_const_t<T_Src>>::value;
-            static constexpr unsigned numDimsDst = traits::NumDims<std::remove_const_t<T_Dst>>::value;
+            using PlainSrc = std::remove_const_t<T_Src>;
+            using PlainDst = std::remove_const_t<T_Dst>;
+            static constexpr unsigned numDims    = traits::NumDims<PlainSrc>::value;
+            static constexpr unsigned numDimsDst = traits::NumDims<PlainDst>::value;
             static_assert(numDims == numDimsDst, "Dimensions must match");
+            static constexpr bool srcIsStream = traits::IsStreamAccessor<T_SrcAccessor, PlainSrc>::value;
+            static constexpr bool dstIsStream = traits::IsStreamAccessor<T_DstAccessor, PlainDst>::value;
+            ExtentsCheck<!srcIsStream && !dstIsStream>::check(src, dst);
 
-            static_assert(DelimiterDimOk<T_SrcAccessor, numDims, traits::IsStreamAccessor<T_SrcAccessor, std::remove_const_t<T_Src>>::value>::value,
+            static_assert(DelimiterDimOk<T_SrcAccessor, numDims, srcIsStream>::value,
                     "Source accessor does not provide enough delimiters");
-            static_assert(DelimiterDimOk<T_DstAccessor, numDimsDst, traits::IsStreamAccessor<T_DstAccessor, std::remove_const_t<T_Dst>>::value>::value,
+            static_assert(DelimiterDimOk<T_DstAccessor, numDimsDst, dstIsStream>::value,
                     "Destination accessor does not provide enough delimiters");
 
             loop(src, detail::CopyHandler(), accSrc_, dst, accDst_);
