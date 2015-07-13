@@ -2,6 +2,9 @@
 
 #include "foobar/policies/Copy.hpp"
 #include "foobar/policies/SafePtrCast.hpp"
+#include "foobar/traits/NumDims.hpp"
+#include "foobar/policies/GetExtents.hpp"
+#include "foobar/policies/ConvertAccessor.hpp"
 #include <algorithm>
 
 namespace foobar {
@@ -17,7 +20,11 @@ namespace detail {
     struct FFT_Memory
     {
         using Memory = T_Memory;
-        using Ptr = std::result_of_t< decltype(&Memory::getData)(Memory) >;
+        using Ptr = std::result_of_t< decltype(&Memory::Memory::getData)(typename Memory::Memory) >;
+        static constexpr unsigned numDims = traits::NumDims< Memory >::value;
+
+        using MemAcc = typename Memory::Accessor;
+        using DataType = std::remove_reference_t< std::result_of_t< MemAcc(types::Vec<numDims>&, Memory&) > >;
 
         Memory data_;
 
@@ -30,8 +37,8 @@ namespace detail {
         void
         init(const T_Extents& extents)
         {
-            unsigned numEls = std::accumulate(std::begin(extents), std::end(extents), 1, std::multiplies<unsigned>());
-            data_.allocData(numEls);
+            data_.extents = extents;
+            data_.allocData();
         }
 
         /**
@@ -43,9 +50,9 @@ namespace detail {
          */
         template< class T_Obj, class T_Acc >
         Ptr
-        getPtr(T_Obj, T_Acc)
+        getPtr(T_Obj&, T_Acc&)
         {
-            return data_.getData();
+            return data_.data.getData();
         }
 
         /**
@@ -58,7 +65,7 @@ namespace detail {
         void
         copyFrom(T_Obj& obj, T_Acc&& acc)
         {
-            auto copy = policies::makeCopy(typename Memory::Accessor(), std::forward<T_Acc>(acc));
+            auto copy = policies::makeCopy(std::forward<T_Acc>(acc), typename Memory::Accessor());
             copy(obj, data_);
         }
 
@@ -70,10 +77,27 @@ namespace detail {
          */
         template< class T_Obj, class T_Acc >
         void
-        copyTo(T_Obj& obj, T_Acc&& acc)
+        copyTo(T_Obj& obj, T_Acc&& acc) const
         {
-            auto copy = policies::makeCopy(std::forward<T_Acc>(acc), typename Memory::Accessor());
+            using ObjDataType = std::remove_reference_t< std::result_of_t< T_Acc(types::Vec<numDims>&, T_Obj&) > >;
+            using PlainAcc = std::remove_cv_t< std::remove_reference_t< T_Acc > >;
+            using AccSrc = std::conditional_t<
+                    traits::IsBinaryCompatible<DataType, ObjDataType>::value &&
+                        !std::is_same<DataType, ObjDataType>::value,
+                    policies::ConvertAccessor<PlainAcc, DataType>,
+                    PlainAcc>;
+
+            auto copy = policies::makeCopy(typename Memory::Accessor(), AccSrc(std::forward<T_Acc>(acc)));
             copy(data_, obj);
+        }
+
+        /**
+         * Checks whether the pointer(s) is/are valid for use. That is they point to contiguous memory
+         * @return
+         */
+        template< class T_Obj, class T_Acc >
+        bool checkPtr(const T_Obj&, const T_Acc&) const {
+            return true;
         }
     };
 
@@ -81,6 +105,14 @@ namespace detail {
     struct FFT_Memory_GetPtr
     {
         using Ptr = T_Ptr;
+    private:
+        template< class T_Obj, class T_Acc, class T_Idx >
+        Ptr
+        doGetPtr(T_Obj& obj, T_Acc& acc, T_Idx& idx) const
+        {
+            return policies::safe_ptr_cast<Ptr>(&acc(idx, obj));
+        }
+    public:
 
         /**
          * Returns a pointer to the start of the data in the given object
@@ -92,11 +124,33 @@ namespace detail {
          */
         template< class T_Obj, class T_Acc >
         Ptr
-        getPtr(T_Obj& obj, T_Acc& acc)
+        getPtr(T_Obj& obj, T_Acc& acc) const
         {
             static constexpr unsigned numDims = traits::NumDims< T_Obj >::value;
             auto idx = types::Vec<numDims>::all(0);
-            return policies::safe_ptr_cast<Ptr>(&acc(idx, obj));
+            return doGetPtr(obj, acc, idx);
+        }
+
+        template< class T_Obj, class T_Acc >
+        bool checkPtr(T_Obj& obj, T_Acc& acc) const
+        {
+            static constexpr unsigned numDims = traits::NumDims< T_Obj >::value;
+            auto idx = types::Vec<numDims>::all(0);
+            Ptr startPtr = doGetPtr(obj, acc, idx);
+            policies::GetExtents<T_Obj> extents(obj);
+            // Basically set check dimensions to the end-index and check if the returned pointer matches the expected one
+            unsigned factor = 1;
+            for(unsigned i=numDims; i>0; --i)
+            {
+                unsigned j = i-1;
+                startPtr += extents[j] * factor;
+                factor *= extents[j];
+                idx[j] = extents[j];
+                Ptr isPtr = doGetPtr(obj, acc, idx);
+                if(startPtr != isPtr)
+                    return false;
+            }
+            return true;
         }
     };
 
@@ -104,6 +158,15 @@ namespace detail {
     struct FFT_Memory_GetPtr< T_Ptr, false >
     {
         using Ptr = T_Ptr;
+    private:
+        template< class T_Obj, class T_Acc, class T_Idx >
+        Ptr
+        doGetPtr(T_Obj& obj, T_Acc& acc, T_Idx& idx) const
+        {
+            auto& ref = acc(idx, obj);
+            return policies::safe_ptr_cast<Ptr>(std::make_pair(&ref.real, &ref.imag));
+        }
+    public:
 
         /**
          * Returns a pointer to the start of the data in the given object
@@ -116,12 +179,33 @@ namespace detail {
          */
         template< class T_Obj, class T_Acc >
         Ptr
-        getPtr(T_Obj& obj, T_Acc& acc)
+        getPtr(T_Obj& obj, T_Acc& acc) const
         {
             static constexpr unsigned numDims = traits::NumDims< T_Obj >::value;
             auto idx = types::Vec<numDims>::all(0);
-            auto& ref = acc(idx, obj);
-            return policies::safe_ptr_cast<Ptr>(std::make_pair(&ref.real, &ref.imag));
+            return doGetPtr(obj, acc, idx);
+        }
+
+        template< class T_Obj, class T_Acc >
+        bool checkPtr(T_Obj& obj, T_Acc& acc) const
+        {
+            static constexpr unsigned numDims = traits::NumDims< T_Obj >::value;
+            auto idx = types::Vec<numDims>::all(0);
+            Ptr startPtr = doGetPtr(obj, acc, idx);
+            policies::GetExtents<T_Obj> extents(obj);
+            // Basically set check dimensions to the end-index and check if the returned pointer matches the expected one
+            unsigned factor = 1;
+            for(unsigned i=numDims-1; i>0; --i)
+            {
+                startPtr.first  += extents[i] * factor;
+                startPtr.second += extents[i] * factor;
+                factor = extents[i];
+                idx[i] = extents[i];
+                Ptr isPtr = doGetPtr(obj, acc, idx);
+                if(startPtr != isPtr)
+                    return false;
+            }
+            return true;
         }
     };
 
@@ -129,7 +213,8 @@ namespace detail {
      * Specialization that does not use own memory but forwards everything to the base object
      */
     template< typename T_Memory>
-    struct FFT_Memory< T_Memory, false >: public FFT_Memory_GetPtr< std::result_of_t< decltype(&T_Memory::getData)(T_Memory) > >
+    struct FFT_Memory< T_Memory, false >:
+        public FFT_Memory_GetPtr< std::result_of_t< decltype(&T_Memory::Memory::getData)(typename T_Memory::Memory) > >
     {
         using Memory = T_Memory;
 

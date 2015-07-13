@@ -82,16 +82,20 @@ namespace foobar {
         static constexpr bool isAoS = needOwnMemoryPtr || traits::IsAoS< Base >::value;
         static constexpr bool isStrided = !needOwnMemoryPtr && traits::IsStrided< Base >::value;
 
-        using Memory_t = std::conditional_t<
-                           isComplex,
-                           std::conditional_t<
-                               isAoS,
-                               mem::ComplexAoSValues<PrecisionType, needOwnMemoryPtr>,
-                               mem::ComplexSoAValues<PrecisionType, needOwnMemoryPtr>
-                           >,
-                           mem::RealValues<PrecisionType, needOwnMemoryPtr>
-                       >;
+        using Memory_t = mem::DataContainer<
+                             numDims,
+                             std::conditional_t<
+                                 isComplex,
+                                 std::conditional_t<
+                                     isAoS,
+                                     mem::ComplexAoSValues<PrecisionType, needOwnMemoryPtr>,
+                                     mem::ComplexSoAValues<PrecisionType, needOwnMemoryPtr>
+                                 >,
+                                 mem::RealValues<PrecisionType, needOwnMemoryPtr>
+                             >
+                         >;
         using Memory = detail::FFT_Memory< Memory_t, needOwnMemoryPtr >;
+        using MemoryFallback = detail::FFT_Memory< Memory_t, true >;
 
         using Accessor = FFT_DataAccessor;
         friend Accessor;
@@ -103,6 +107,7 @@ namespace foobar {
         BaseAccessor acc_;
         Extents extents_;
         Memory memory_;
+        MemoryFallback* memFallback_;
     public:
 
         FFT_DataWrapper(ParamType data):
@@ -115,6 +120,13 @@ namespace foobar {
             for(unsigned i=0; i<numDims; ++i)
                 extents_[i] = extents[i];
             memory_.init(extents_);
+            if(memory_.checkPtr(base_, acc_))
+                memFallback_ = nullptr;
+            else
+            {
+                memFallback_ = new MemoryFallback();
+                memFallback_->init(extents_);
+            }
         }
 
         std::result_of_t< BaseAccessor(const IdxType&, Base&) >
@@ -139,7 +151,10 @@ namespace foobar {
         getDataPtr()
         -> decltype(memory_.getPtr(base_, acc_))
         {
-            return memory_.getPtr(base_, acc_);
+            if(memFallback_)
+                return memFallback_->getPtr(base_, acc_);
+            else
+                return memory_.getPtr(base_, acc_);
         }
 
         /**
@@ -180,7 +195,12 @@ namespace foobar {
         preProcess()
         {
             if(isInput)
-                memory_.copyFrom(base_, acc_);
+            {
+                if(memFallback_)
+                    memFallback_->copyFrom(base_, acc_);
+                else
+                    memory_.copyFrom(base_, acc_);
+            }
         }
 
         /**
@@ -191,7 +211,12 @@ namespace foobar {
         postProcess()
         {
             if(!isInput)
-                memory_.copyTo(base_, acc_);
+            {
+                if(memFallback_)
+                    memFallback_->copyTo(base_, acc_);
+                else
+                    memory_.copyTo(base_, acc_);
+            }
         }
     };
 

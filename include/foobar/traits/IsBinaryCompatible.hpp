@@ -1,5 +1,7 @@
 #pragma once
 
+#include "foobar/c++14_types.hpp"
+
 namespace foobar {
 namespace traits {
 
@@ -21,7 +23,8 @@ namespace traits {
     struct IsBinaryCompatible
             : std::integral_constant<
               bool,
-              IsBinaryCompatibleImpl< T_Src, T_Dest >::value || IsBinaryCompatibleImpl< T_Dest, T_Src >::value
+              IsBinaryCompatibleImpl< std::remove_cv_t<T_Src>, std::remove_cv_t<T_Dest> >::value ||
+              IsBinaryCompatibleImpl< std::remove_cv_t<T_Dest>, std::remove_cv_t<T_Src> >::value
               >{};
 
 }  // namespace traits
