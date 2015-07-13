@@ -2,6 +2,7 @@
 
 #include "foobar/traits/IsBinaryCompatible.hpp"
 #include "foobar/types/Real.hpp"
+#include "foobar/c++14_types.hpp"
 
 namespace foobar {
 namespace types {
