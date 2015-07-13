@@ -76,13 +76,13 @@ namespace foobarTest {
     void testComplex()
     {
         using foobar::policies::VolumeAccessor;
-        ComplexVol2D aperture(1024, 1024);
+        ComplexVol2D aperture(testSize, testSize);
         ComplexVol2D fftResult(aperture.xDim(), aperture.yDim(), aperture.zDim());
         using FFT_Type = foobar::FFT_2D_C2C<TestPrecision>;
         auto input = FFT_Type::wrapFFT_Input(aperture, VolumeAccessor());
         auto output = FFT_Type::wrapFFT_Output(fftResult, VolumeAccessor());
         auto fft = foobar::makeFFT<TestLibrary>(input, output);
-        generateData(aperture, Rect<TestPrecision>(20,20,500,500), VolumeAccessor());
+        generateData(aperture, Rect<TestPrecision>(20,20,testSize/2-10,testSize/2-10), VolumeAccessor());
         fft(input, output);
         foobar::policies::copy(aperture, baseC2CInput, VolumeAccessor());
         execBaseC2C();
@@ -96,14 +96,14 @@ namespace foobarTest {
     void testReal()
     {
         using foobar::policies::VolumeAccessor;
-        RealVol2D aperture(1024, 1024);
+        RealVol2D aperture(testSize, testSize);
         ComplexVolFFTW2D fftResult(aperture.xDim()/2+1, aperture.yDim(), aperture.zDim());
         RealVol2D intensity(aperture.xDim(), aperture.yDim(), aperture.zDim());
         using FFT_Type = foobar::FFT_2D_R2C<TestPrecision>;
         auto input = FFT_Type::wrapFFT_Input(aperture, VolumeAccessor());
         auto output = FFT_Type::wrapFFT_Output(fftResult, VolumeAccessor());
         auto fft = foobar::makeFFT<TestLibrary>(input, output);
-        generateData(aperture, Rect<TestPrecision>(20,20,500,500), VolumeAccessor());
+        generateData(aperture, Rect<TestPrecision>(20,20,testSize/2-10,testSize/2-10), VolumeAccessor());
         fft(input, output);
         foobar::policies::copy(aperture, baseR2CInput, VolumeAccessor());
         execBaseR2C();

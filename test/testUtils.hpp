@@ -126,7 +126,7 @@ namespace foobarTest {
      */
     template< class T, class U, class T_AccessorT = foobar::traits::DefaultAccessor_t<T>, class T_AccessorU = foobar::traits::DefaultAccessor_t<U> >
     std::pair< bool, CmpError >
-    compare(const T& expected, const U& is, CmpError allowedErr = CmpError(5e-5, 5e-5), const T_AccessorT& expAcc = T_AccessorT(), const T_AccessorU& isAcc = T_AccessorU())
+    compare(const T& expected, const U& is, CmpError allowedErr = CmpError(1e-4, 5e-5), const T_AccessorT& expAcc = T_AccessorT(), const T_AccessorU& isAcc = T_AccessorU())
     {
         CompareFunc result(allowedErr);
         foobar::policies::loop(expected, result, expAcc, is, isAcc);

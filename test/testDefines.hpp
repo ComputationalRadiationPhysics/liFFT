@@ -12,7 +12,7 @@
 namespace foobarTest{
     // Types used for the test suite
     constexpr unsigned testNumDims = 2;
-    constexpr unsigned testSize = 1024;
+    constexpr unsigned testSize = 2048;
     using TestExtents      = foobar::types::Vec<testNumDims>;
     using TestPrecision    = float;
     using RealType         = foobar::mem::RealValues<TestPrecision>;
