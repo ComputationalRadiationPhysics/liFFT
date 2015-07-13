@@ -18,7 +18,7 @@ public:
     using ConstRef = const T&;
 
     Volume(size_t xDim, size_t yDim = 1, size_t zDim = 1): xDim_(xDim), yDim_(yDim), zDim_(zDim){
-        data_ = static_cast<T*>(fftw_malloc(xDim*yDim*zDim*sizeof(T))); //new T[xDim*yDim*zDim_];
+        data_ = new T[xDim_*yDim_*zDim_];
         isOwned_ = true;
     }
     Volume(size_t xDim, size_t yDim, size_t zDim, T* data): xDim_(xDim), yDim_(yDim), zDim_(zDim){
@@ -27,7 +27,7 @@ public:
     }
     ~Volume(){
         if(isOwned_)
-            fftw_free(data_);//delete[] data_;
+            delete[] data_;
     }
     T*
     data(){
