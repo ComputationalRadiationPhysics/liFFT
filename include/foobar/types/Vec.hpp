@@ -30,6 +30,9 @@ namespace types{
             Vec(T val, TArgs ... values): values_{std::forward<T>(val), std::forward<TArgs>(values)...}
         {}
 
+        Vec(const Storage& values): values_(values)
+        {}
+
         Vec(){}
 
         static Vec< numDims, type >
