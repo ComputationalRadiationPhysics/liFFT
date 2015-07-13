@@ -106,9 +106,11 @@ namespace policies {
             }
             PlanType plan;
             createPlan(plan, extents);
-            unsigned numElements = input.getNumElements();
-            allocIn.malloc(plan.InDevicePtr, numElements * sizeof(LibInType));
-            allocOut.malloc(plan.OutDevicePtr, numElements * sizeof(LibOutType));
+            // Need 2 counts as they are different for C2R/R2C (maybe 1 element off)
+            unsigned numElementsIn = input.getNumElements();
+            unsigned numElementsOut = output.getNumElements();
+            allocIn.malloc(plan.InDevicePtr, numElementsIn * sizeof(LibInType));
+            allocOut.malloc(plan.OutDevicePtr, numElementsOut * sizeof(LibOutType));
             return plan;
         }
 
