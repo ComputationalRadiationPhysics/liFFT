@@ -1,7 +1,7 @@
 #pragma once
 
 namespace foobar {
-namespace policies {
+namespace accessors {
 
     /**
      * Accessor that access the data directly via the index
@@ -48,5 +48,5 @@ namespace policies {
         }
     };
 
-}  // namespace policies
+}  // namespace accessors
 }  // namespace foobar

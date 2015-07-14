@@ -4,7 +4,7 @@
 #include "foobar/c++14_types.hpp"
 
 namespace foobar {
-namespace policies {
+namespace accessors {
 
     /**
      * Accessor that uses a reinterpret cast to convert the type returned from accessor to target type
@@ -50,5 +50,5 @@ namespace policies {
         }
     };
 
-} // namespace policies
+} // namespace accessors
 } // namespace foobar

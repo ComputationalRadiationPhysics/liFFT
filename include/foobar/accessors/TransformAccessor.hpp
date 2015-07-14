@@ -1,7 +1,7 @@
 #pragma once
 
 namespace foobar {
-namespace policies {
+namespace accessors {
 
     /**
      * Accessor that transforms all elements on access using the specified functor
@@ -58,5 +58,5 @@ namespace policies {
         return TransformAccessor< traits::DefaultAccessor_t<T>, T_Func >(traits::DefaultAccessor_t<T>(), std::forward<T_Func>(func));
     }
 
-}  // namespace policies
+}  // namespace accessors
 }  // namespace foobar

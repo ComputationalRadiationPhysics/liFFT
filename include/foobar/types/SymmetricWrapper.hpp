@@ -3,7 +3,7 @@
 #include "foobar/traits/NumDims.hpp"
 #include "foobar/traits/DefaultAccessor.hpp"
 #include "foobar/policies/GetExtents.hpp"
-#include "foobar/policies/ArrayAccessor.hpp"
+#include "foobar/accessors/ArrayAccessor.hpp"
 #include "foobar/types/Complex.hpp"
 #include "foobar/c++14_types.hpp"
 #include "foobar/traits/IsComplex.hpp"
@@ -20,7 +20,7 @@ namespace foobar {
             using Base = T_Base;
             using BaseAccessor = T_BaseAccessor;
 
-            using Accessor = policies::ArrayAccessor<true>;
+            using Accessor = accessors::ArrayAccessor<true>;
 
             static constexpr unsigned numDims = traits::NumDims<Base>::value;
 

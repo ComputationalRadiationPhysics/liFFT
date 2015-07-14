@@ -5,7 +5,7 @@
 #include "foobar/util.hpp"
 
 namespace foobar {
-namespace policies {
+namespace accessors {
 
     /**
      * Accessor that can read and write a DataContainer (type with an array-like member named data)
@@ -25,7 +25,7 @@ namespace policies {
                 )
            )
         {
-            auto flatIdx = flattenIdx(idx, data);
+            auto flatIdx = policies::flattenIdx(idx, data);
             typename T_Data::BaseAccessor acc;
             return acc(flatIdx, getConstCorrect<T_Data>(data.data));
         }
@@ -34,7 +34,7 @@ namespace policies {
         void
         operator()(T_Index&& idx, T_Data& data, T_Value&& value) const
         {
-            auto flatIdx = flattenIdx(idx, data);
+            auto flatIdx = policies::flattenIdx(idx, data);
             typename T_Data::BaseAccessor acc;
             acc(flatIdx, getConstCorrect<T_Data>(data.data), std::forward<T_Value>(value));
         }
@@ -66,5 +66,5 @@ namespace policies {
         }
     };
 
-}  // namespace policies
+}  // namespace accessors
 }  // namespace foobar

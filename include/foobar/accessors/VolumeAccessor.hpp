@@ -3,7 +3,7 @@
 #include "foobar/c++14_types.hpp"
 
 namespace foobar {
-namespace policies {
+namespace accessors {
 
     /**
      * Accesses a Volume (1D-3D) by using its ()-operator(x, y, z) where x is the fastest varying index
@@ -53,5 +53,5 @@ namespace policies {
         }
     };
 
-}  // namespace policies
+}  // namespace accessors
 }  // namespace foobar

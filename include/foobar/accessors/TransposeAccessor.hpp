@@ -1,9 +1,9 @@
 #pragma once
 
-#include "foobar/policies/ArrayAccessor.hpp"
+#include "foobar/accessors/ArrayAccessor.hpp"
 
 namespace foobar {
-namespace policies {
+namespace accessors {
 
     /**
      * Accessor that transposes all accesses such that the 2nd half comes before the first
@@ -20,7 +20,7 @@ namespace policies {
         transposeIdx(const T_Index& idxIn, T_Index& idxOut, const T_Data& data) const
         {
             static constexpr unsigned numDims = traits::NumDims< T_Data >::value;
-            GetExtents< T_Data > extents(data);
+            policies::GetExtents< T_Data > extents(data);
             for(unsigned i=0; i<numDims; ++i)
             {
                 unsigned ext = extents[i];
@@ -79,5 +79,5 @@ namespace policies {
         return TransposeAccessor< traits::DefaultAccessor_t<T> >();
     }
 
-}  // namespace policies
+}  // namespace accessors
 }  // namespace foobar

@@ -4,7 +4,7 @@
 #include "foobar/traits/IsComplex.hpp"
 #include "foobar/traits/IsAoS.hpp"
 #include "foobar/types/Vec.hpp"
-#include "foobar/policies/DataContainerAccessor.hpp"
+#include "foobar/accessors/DataContainerAccessor.hpp"
 #include "foobar/policies/GetNumElements.hpp"
 #include "foobar/traits/DefaultAccessor.hpp"
 #include "foobar/mem/RealValues.hpp"
@@ -26,7 +26,7 @@ namespace foobar {
             using BaseAccessor = T_BaseAccessor;
             static constexpr bool isStrided = T_isStrided;
 
-            using Accessor = policies::DataContainerAccessor<T_isFlatMemory>;
+            using Accessor = accessors::DataContainerAccessor<T_isFlatMemory>;
             using IdxType = types::Vec< numDims >;
 
             IdxType extents;

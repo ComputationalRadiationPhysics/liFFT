@@ -1,6 +1,6 @@
 #pragma once
 
-#include "foobar/policies/ArrayAccessor.hpp"
+#include "foobar/accessors/ArrayAccessor.hpp"
 
 namespace foobar {
 namespace traits {
@@ -18,7 +18,7 @@ namespace traits {
      */
     template< typename T >
     struct DefaultAccessor<T*>{
-        using type = policies::ArrayAccessor<false>;
+        using type = accessors::ArrayAccessor<false>;
     };
 
     /**

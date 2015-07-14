@@ -7,7 +7,7 @@
 #include "foobar/types/DimOffsetWrapper.hpp"
 #include "foobar/FFT.hpp"
 #include "Volume.hpp"
-#include "foobar/policies/VolumeAccessor.hpp"
+#include "foobar/accessors/VolumeAccessor.hpp"
 #include "foobar/libraries/fftw/fftw3Include.h"
 #include "generateData.hpp"
 #include "foobar/policies/Copy.hpp"
@@ -75,7 +75,7 @@ namespace foobarTest {
 
     void testComplex()
     {
-        using foobar::policies::VolumeAccessor;
+        using foobar::accessors::VolumeAccessor;
         ComplexVol2D aperture(testSize, testSize);
         ComplexVol2D fftResult(aperture.xDim(), aperture.yDim(), aperture.zDim());
         using FFT_Type = foobar::FFT_2D_C2C<TestPrecision>;
@@ -95,7 +95,7 @@ namespace foobarTest {
 
     void testReal()
     {
-        using foobar::policies::VolumeAccessor;
+        using foobar::accessors::VolumeAccessor;
         RealVol2D aperture(testSize, testSize);
         ComplexVolFFTW2D fftResult(aperture.xDim()/2+1, aperture.yDim(), aperture.zDim());
         RealVol2D intensity(aperture.xDim(), aperture.yDim(), aperture.zDim());

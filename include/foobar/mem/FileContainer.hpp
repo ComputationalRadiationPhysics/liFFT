@@ -6,7 +6,7 @@
 #include "foobar/traits/IsStrided.hpp"
 #include "foobar/traits/IntegralType.hpp"
 #include "foobar/policies/GetExtents.hpp"
-#include "foobar/policies/DataContainerAccessor.hpp"
+#include "foobar/accessors/DataContainerAccessor.hpp"
 #include "foobar/policies/GetNumElements.hpp"
 #include "foobar/policies/Copy.hpp"
 #include "foobar/c++14_types.hpp"
@@ -20,7 +20,7 @@ namespace foobar {
 
         struct FileContainerAccessor
         {
-            policies::DataContainerAccessor<> acc_;
+            accessors::DataContainerAccessor<> acc_;
 
             template< class T_Index, class T_Data >
             auto
@@ -60,7 +60,7 @@ namespace foobar {
             using Accessor = FileContainerAccessor;
             friend Accessor;
         private:
-            using DataAccessor = policies::DataContainerAccessor<>;
+            using DataAccessor = accessors::DataContainerAccessor<>;
             using CopyPolicy = policies::Copy< FileAccessor, DataAccessor >;
             using ArrayType = std::conditional_t< isComplex, ComplexAoSValues<Accuracy>, RealValues<Accuracy> >;
             using ElementType = typename ArrayType::Value;

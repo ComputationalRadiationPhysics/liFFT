@@ -7,7 +7,7 @@
 #include "foobar/traits/DefaultAccessor.hpp"
 #include "foobar/policies/Copy.hpp"
 #include "foobar/types/AddDimsWrapper.hpp"
-#include "foobar/policies/StreamAccessor.hpp"
+#include "foobar/accessors/StreamAccessor.hpp"
 
 std::string
 remove_extension(const std::string& filename) {
@@ -27,7 +27,7 @@ int main(int argc, char** argv) {
     libTiff::FloatImage<> img(srcFilePath);
     std::string tmpFilePath = srcFilePath + ".txt";
     foobar::types::AddDimsWrapper< std::ofstream, 2 > outFile(tmpFilePath);
-    foobar::policies::Copy< typename foobar::traits::DefaultAccessor<decltype(img)>::type, foobar::policies::StringStreamAccessor<> > copy;
+    foobar::policies::Copy< typename foobar::traits::DefaultAccessor<decltype(img)>::type, foobar::accessors::StringStreamAccessor<> > copy;
 
     copy(img, outFile);
     outFile.close();

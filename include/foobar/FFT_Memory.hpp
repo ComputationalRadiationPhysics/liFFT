@@ -4,7 +4,7 @@
 #include "foobar/policies/SafePtrCast.hpp"
 #include "foobar/traits/NumDims.hpp"
 #include "foobar/policies/GetExtents.hpp"
-#include "foobar/policies/ConvertAccessor.hpp"
+#include "foobar/accessors/ConvertAccessor.hpp"
 #include <algorithm>
 
 namespace foobar {
@@ -84,7 +84,7 @@ namespace detail {
             using AccSrc = std::conditional_t<
                     traits::IsBinaryCompatible<DataType, ObjDataType>::value &&
                         !std::is_same<DataType, ObjDataType>::value,
-                    policies::ConvertAccessor<PlainAcc, DataType>,
+                    accessors::ConvertAccessor<PlainAcc, DataType>,
                     PlainAcc>;
 
             auto copy = policies::makeCopy(typename Memory::Accessor(), AccSrc(std::forward<T_Acc>(acc)));

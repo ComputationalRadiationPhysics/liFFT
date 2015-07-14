@@ -5,7 +5,7 @@
 #include "foobar/Composite.hpp"
 
 namespace foobar {
-namespace policies {
+namespace accessors {
 
     /**
      * Enumeration of all possible Color(Channel)s
@@ -83,5 +83,5 @@ namespace policies {
             ImageAccessor
             >;
 
-}  // namespace policies
+}  // namespace accessors
 }  // namespace foobar

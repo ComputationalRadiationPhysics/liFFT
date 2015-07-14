@@ -7,7 +7,7 @@
 #include "foobar/types/Complex.hpp"
 #include "foobar/util.hpp"
 #include "foobar/policies/SafePtrCast.hpp"
-#include "foobar/policies/ArrayAccessor.hpp"
+#include "foobar/accessors/ArrayAccessor.hpp"
 #include "foobar/c++14_types.hpp"
 #include "foobar/traits/IntegralType.hpp"
 #include "foobar/traits/IsComplex.hpp"
@@ -33,7 +33,7 @@ namespace mem {
         static constexpr bool isAoS = true;
 
         using IdxType = types::Vec<numDims>;
-        using Accessor = policies::ArrayAccessor< true >;
+        using Accessor = accessors::ArrayAccessor< true >;
 
         using Ref = Pointer&;
         using ConstRef = const Pointer&;

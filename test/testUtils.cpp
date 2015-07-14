@@ -3,10 +3,10 @@
 #include "foobar/FFT.hpp"
 #include "foobar/libraries/fftw/FFTW.hpp"
 #include "generateData.hpp"
-#include "foobar/policies/TransformAccessor.hpp"
-#include "foobar/policies/TransposeAccessor.hpp"
+#include "foobar/accessors/TransformAccessor.hpp"
+#include "foobar/accessors/TransposeAccessor.hpp"
 #include "foobar/types/SymmetricWrapper.hpp"
-#include "foobar/policies/StreamAccessor.hpp"
+#include "foobar/accessors/StreamAccessor.hpp"
 #include "foobar/types/AddDimsWrapper.hpp"
 #include "foobar/policies/CalcIntensityFunctor.hpp"
 #include <iostream>
@@ -34,7 +34,7 @@ namespace foobarTest {
      */
     template< typename T, class T_Accessor = foobar::traits::DefaultAccessor_t<T> >
     void write2File(const std::string& name, T& data, T_Accessor acc = T_Accessor()){
-        auto copy = foobar::policies::makeCopy(acc, foobar::policies::StringStreamAccessor<>());
+        auto copy = foobar::policies::makeCopy(acc, foobar::accessors::StringStreamAccessor<>());
 
         foobar::types::AddDimsWrapper< std::ofstream, 2 > file(name.c_str());
         copy(data, file);
@@ -50,7 +50,7 @@ namespace foobarTest {
      */
     template< typename T, class T_Accessor = foobar::traits::DefaultAccessor_t<T> >
     void writeIntensity2File(const std::string& name, T& data, T_Accessor acc = T_Accessor()){
-        write2File(name, data, foobar::policies::makeTransformAccessor(acc, foobar::policies::CalcIntensityFunc()));
+        write2File(name, data, foobar::accessors::makeTransformAccessor(acc, foobar::policies::CalcIntensityFunc()));
     }
 
     void init()
@@ -103,8 +103,8 @@ namespace foobarTest {
         writeIntensity2File("inputR2C.txt", baseR2CInput);
         writeIntensity2File("inputC2C.txt", baseC2CInput);
         auto fullR2COutput = foobar::types::makeSymmetricWrapper(baseR2COutput, baseC2CInput.extents[baseR2CInput.numDims-1]);
-        writeIntensity2File("outputR2C.txt", fullR2COutput, foobar::policies::makeTransposeAccessorFor(fullR2COutput));
-        writeIntensity2File("outputC2C.txt", baseC2COutput, foobar::policies::makeTransposeAccessorFor(baseC2COutput));
+        writeIntensity2File("outputR2C.txt", fullR2COutput, foobar::accessors::makeTransposeAccessorFor(fullR2COutput));
+        writeIntensity2File("outputC2C.txt", baseC2COutput, foobar::accessors::makeTransposeAccessorFor(baseC2COutput));
         auto e = compare(fullR2COutput, baseC2COutput);
         if(!e.first)
             std::cerr << "Test output mismatch: " << e.second << std::endl;

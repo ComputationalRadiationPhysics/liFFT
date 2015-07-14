@@ -3,7 +3,7 @@
 #include <cstring>
 
 namespace foobar {
-namespace policies {
+namespace accessors {
 
     /**
      * Provides delimiters for (up to) 2D text-files
@@ -84,5 +84,5 @@ namespace policies {
     template< typename T_ReturnType = float >
     using StringStreamAccessor = StreamAccessor< T_ReturnType >;
 
-}  // namespace policies
+}  // namespace accessors
 }  // namespace foobar

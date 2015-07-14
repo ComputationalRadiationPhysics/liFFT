@@ -2,7 +2,7 @@
 
 #include "foobar/mem/RealValues.hpp"
 #include "foobar/types/Complex.hpp"
-#include "foobar/policies/ArrayAccessor.hpp"
+#include "foobar/accessors/ArrayAccessor.hpp"
 
 namespace foobar {
     namespace mem {
@@ -20,7 +20,7 @@ namespace foobar {
             using Value = types::Complex<T>;
             using Ref = types::ComplexRef<T>;
             using ConstRef = const types::ComplexRef<T, true>;
-            using Accessor = policies::ArrayAccessor<>;
+            using Accessor = accessors::ArrayAccessor<>;
 
             ComplexSoAValues(){}
             ComplexSoAValues(Ptr realData, Ptr imagData): real_(realData), imag_(imagData){}

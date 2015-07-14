@@ -5,7 +5,7 @@
 #include "foobar/traits/DefaultAccessor.hpp"
 #include "foobar/traits/IsComplex.hpp"
 #include "foobar/traits/IsStrided.hpp"
-#include "foobar/policies/VolumeAccessor.hpp"
+#include "foobar/accessors/VolumeAccessor.hpp"
 #include "foobar/policies/GetExtents.hpp"
 #include "foobar/types/Vec.hpp"
 #include "foobar/util.hpp"
@@ -25,7 +25,7 @@ namespace traits {
     template< libTiff::ImageFormat T_imgFormat, class T_Allocator >
     struct DefaultAccessor< libTiff::Image< T_imgFormat, T_Allocator > >
     {
-        using type = policies::VolumeAccessor;
+        using type = accessors::VolumeAccessor;
     };
 
 }  // namespace traits

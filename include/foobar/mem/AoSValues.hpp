@@ -3,7 +3,7 @@
 #include <memory>
 #include "foobar/traits/IntegralType.hpp"
 #include "foobar/traits/IsComplex.hpp"
-#include "foobar/policies/ArrayAccessor.hpp"
+#include "foobar/accessors/ArrayAccessor.hpp"
 
 namespace foobar {
 namespace mem {
@@ -42,7 +42,7 @@ namespace detail {
                         std::unique_ptr< Value[] >,
                         std::unique_ptr< Value[], NopDeleter >
                      >;
-        using Accessor = policies::ArrayAccessor<>;
+        using Accessor = accessors::ArrayAccessor<>;
 
         AoSValues(): data_(nullptr){}
         AoSValues(Ptr data): data_(data){}

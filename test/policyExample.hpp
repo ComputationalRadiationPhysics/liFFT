@@ -5,7 +5,7 @@
 #include "foobar/traits/IsAoS.hpp"
 #include "foobar/policies/GetExtents.hpp"
 #include "foobar/policies/GetStrides.hpp"
-#include "foobar/policies/DataContainerAccessor.hpp"
+#include "foobar/accessors/DataContainerAccessor.hpp"
 #include "foobar/policies/CalcIntensity.hpp"
 
 namespace foobar {
@@ -55,7 +55,7 @@ namespace foobar {
     void
     calcIntensity2(T_Input& input, typename traits::IntegralType<T_Input>::type* output)
     {
-        policies::CalcIntensity< policies::DataContainerAccessor<> > calcIntensity;
+        policies::CalcIntensity< accessors::DataContainerAccessor<> > calcIntensity;
         policies::GetExtents<T_Input> extents(input);
         policies::GetStrides<T_Input> strides(input);
         for(unsigned i=0; i<extents[0]; ++i){

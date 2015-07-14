@@ -3,7 +3,7 @@
 
 #include "foobar/mem/DataContainer.hpp"
 #include "foobar/mem/FileContainer.hpp"
-#include "foobar/policies/ImageAccessor.hpp"
+#include "foobar/accessors/ImageAccessor.hpp"
 #include "libTiff/libTiff.hpp"
 #include "libTiff/traitsAndPolicies.hpp"
 #include "foobar/FFT.hpp"
@@ -52,7 +52,7 @@ namespace foobarTest {
     {
         using FileType = foobar::mem::FileContainer<
             libTiff::Image<>,
-            foobar::policies::ImageAccessorGetColorAsFp<TestPrecision>,
+            foobar::accessors::ImageAccessorGetColorAsFp<TestPrecision>,
             TestPrecision,
             false
             >;
