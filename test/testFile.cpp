@@ -46,6 +46,7 @@ namespace foobarTest {
             std::cerr << "Error in TIFF test: " << res.second << std::endl;
         else
             std::cout << "TIFF test passed" << std::endl;
+        visualizeOutput(BaseInstance::OutR2C, "outputTiff.pdf");
     }
 
     void testFile()

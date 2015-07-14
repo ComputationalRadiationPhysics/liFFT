@@ -60,6 +60,7 @@ namespace foobarTest {
             std::cerr << "Error in TIFF-ZIP test: " << res.second << std::endl;
         else
             std::cout << "TIFF-ZIP test passed" << std::endl;
+        visualizeOutput(BaseInstance::OutR2C, "Tiff-Zip.pdf");
     }
 
     void testZip(){
