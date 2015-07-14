@@ -22,6 +22,19 @@ namespace foobarTest {
      */
     void visualizeBase();
 
+    enum class BaseInstance{
+        InR2C, OutR2C,
+        InC2C, OutC2C
+    };
+
+    /**
+     * Outputs one of the base data containers to a file (pdf+txt)
+     *
+     * @param inst Which one to output
+     * @param filePath Output path
+     */
+    void visualizeOutput(BaseInstance inst, const std::string& filePath);
+
     /**
      * Executes the FFT on the base Input for R2C
      */

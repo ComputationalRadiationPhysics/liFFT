@@ -96,24 +96,43 @@ namespace foobarTest {
         generateData(baseC2CInput, Rect<TestPrecision>(20,testSize/2));
         execBaseR2C();
         execBaseC2C();
-        writeIntensity2File("inputR2C.txt", baseR2CInput);
-        writeIntensity2File("inputC2C.txt", baseC2CInput);
         auto fullR2COutput = foobar::types::makeSymmetricWrapper(baseR2COutput, baseC2CInput.getExtents()[baseR2CInput.numDims-1]);
-        writeIntensity2File("outputR2C.txt", fullR2COutput, foobar::accessors::makeTransposeAccessorFor(fullR2COutput));
-        writeIntensity2File("outputC2C.txt", baseC2COutput, foobar::accessors::makeTransposeAccessorFor(baseC2COutput));
         auto e = compare(fullR2COutput, baseC2COutput);
         if(!e.first)
             std::cerr << "Test output mismatch: " << e.second << std::endl;
         else
             std::cout << "Self-check passed" << std::endl;
-        if(std::system("python writeData.py -i inputR2C.txt -o inputR2C.pdf"))
-            std::cout << "Error converting input R2C\n";
-        if(std::system("python writeData.py -i inputC2C.txt -o inputC2C.pdf"))
-            std::cout << "Error converting input C2C\n";
-        if(std::system("python writeData.py -s -i outputR2C.txt -o outputR2C.pdf"))
-            std::cout << "Error converting output R2C\n";
-        if(std::system("python writeData.py -s -i outputC2C.txt -o outputC2C.pdf"))
-            std::cout << "Error converting output C2C\n";
+        visualizeOutput(BaseInstance::InC2C, "inputC2C.pdf");
+        visualizeOutput(BaseInstance::InR2C, "inputR2C.pdf");
+        visualizeOutput(BaseInstance::OutC2C, "outputC2C.pdf");
+        visualizeOutput(BaseInstance::OutR2C, "outputR2C.pdf");
+    }
+
+    void visualizeOutput(BaseInstance inst, const std::string& filePath){
+        std::string txtFile = filePath+".txt";
+        switch(inst)
+        {
+        case BaseInstance::InC2C:
+            writeIntensity2File(txtFile, baseC2CInput);
+            break;
+        case BaseInstance::InR2C:
+            writeIntensity2File(txtFile, baseC2CInput);
+            break;
+        case BaseInstance::OutC2C:
+            writeIntensity2File(txtFile, baseC2COutput, foobar::accessors::makeTransposeAccessorFor(baseC2COutput));
+            break;
+        case BaseInstance::OutR2C:
+            {
+                auto fullR2COutput = foobar::types::makeSymmetricWrapper(baseR2COutput, baseC2CInput.getExtents()[baseR2CInput.numDims-1]);
+                writeIntensity2File(txtFile, fullR2COutput, foobar::accessors::makeTransposeAccessorFor(fullR2COutput));
+            }
+            break;
+        default:
+            throw std::runtime_error("Invalid value");
+        }
+        std::string cmd = "python writeData.py -i " + txtFile + " -o " + filePath;
+        if(std::system(cmd.c_str()))
+            std::cout << "Error converting txt to pdf for " << filePath << "\n";
     }
 
     void execBaseR2C()
