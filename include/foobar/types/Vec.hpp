@@ -35,6 +35,14 @@ namespace types{
 
         Vec(){}
 
+        /**
+         * Convert to integral value if it is one
+         */
+        template<typename U, typename = std::enable_if_t< std::is_same<U, T>::value && numDims==1> >
+        operator U() const {
+            return values_[0];
+        }
+
         static Vec< numDims, type >
         all(const type& val)
         {
