@@ -58,14 +58,10 @@ namespace foobarTest {
         TestExtents size = TestExtents::all(testSize);
         TestExtents sizeHalf = size;
         sizeHalf[testNumDims-1] = size[testNumDims-1] / 2 + 1;
-        baseR2CInput.extents = size;
-        baseR2COutput.extents = sizeHalf;
-        baseC2CInput.extents = size;
-        baseC2COutput.extents = size;
-        baseR2CInput.allocData();
-        baseR2COutput.allocData();
-        baseC2CInput.allocData();
-        baseC2COutput.allocData();
+        baseR2CInput.allocData(size);
+        baseR2COutput.allocData(sizeHalf);
+        baseC2CInput.allocData(size);
+        baseC2COutput.allocData(size);
 
         {
             auto input = FFT_R2C::wrapFFT_Input(baseR2CInput);
@@ -96,13 +92,13 @@ namespace foobarTest {
 
     void visualizeBase()
     {
-        generateData(baseR2CInput, Rect<TestPrecision>(20,20,500,500));
-        generateData(baseC2CInput, Rect<TestPrecision>(20,20,500,500));
+        generateData(baseR2CInput, Rect<TestPrecision>(20,testSize/2));
+        generateData(baseC2CInput, Rect<TestPrecision>(20,testSize/2));
         execBaseR2C();
         execBaseC2C();
         writeIntensity2File("inputR2C.txt", baseR2CInput);
         writeIntensity2File("inputC2C.txt", baseC2CInput);
-        auto fullR2COutput = foobar::types::makeSymmetricWrapper(baseR2COutput, baseC2CInput.extents[baseR2CInput.numDims-1]);
+        auto fullR2COutput = foobar::types::makeSymmetricWrapper(baseR2COutput, baseC2CInput.getExtents()[baseR2CInput.numDims-1]);
         writeIntensity2File("outputR2C.txt", fullR2COutput, foobar::accessors::makeTransposeAccessorFor(fullR2COutput));
         writeIntensity2File("outputC2C.txt", baseC2COutput, foobar::accessors::makeTransposeAccessorFor(baseC2COutput));
         auto e = compare(fullR2COutput, baseC2COutput);

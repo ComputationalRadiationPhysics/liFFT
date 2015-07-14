@@ -5,6 +5,8 @@
 #include "foobar/traits/IsComplex.hpp"
 #include "foobar/accessors/ArrayAccessor.hpp"
 
+#include <cassert>
+
 namespace foobar {
 namespace mem {
 namespace detail {
@@ -28,6 +30,8 @@ namespace detail {
     template< typename T, bool T_ownsPointer = true >
     class AoSValues
     {
+    private:
+        size_t numElements_;
     public:
         using type = typename traits::IntegralType<T>::type;
         static constexpr bool ownsPointer = T_ownsPointer;
@@ -44,31 +48,35 @@ namespace detail {
                      >;
         using Accessor = accessors::ArrayAccessor<>;
 
-        AoSValues(): data_(nullptr){}
-        AoSValues(Ptr data): data_(data){}
+        AoSValues(): AoSValues(nullptr, 0){}
+        AoSValues(Ptr data, size_t numElements): data_(data), numElements_(numElements){}
 
         void
-        operator=(Ptr data)
+        reset(Ptr data, size_t numElements)
         {
             data_.reset(data);
+            numElements_ = numElements;
         }
 
         void
         allocData(size_t numElements)
         {
             data_.reset(new Value[numElements]);
+            numElements_ = numElements;
         }
 
         void
         freeData()
         {
             data_.reset();
+            numElements_ = 0;
         }
 
-        void
+        Ptr
         releaseData()
         {
-            data_.release();
+            numElements_ = 0;
+            return data_.release();
         }
 
         Ptr
@@ -77,15 +85,23 @@ namespace detail {
             return data_.get();
         }
 
+        size_t
+        getNumElements() const
+        {
+            return numElements_;
+        }
+
         ConstRef
         operator[](size_t idx) const
         {
+            assert(idx < numElements_);
             return data_[idx];
         }
 
         Ref
         operator[](size_t idx)
         {
+            assert(idx < numElements_);
             return data_[idx];
         }
 

@@ -37,8 +37,7 @@ namespace detail {
         void
         init(const T_Extents& extents)
         {
-            data_.extents = extents;
-            data_.allocData();
+            data_.allocData(extents);
         }
 
         /**
@@ -52,7 +51,7 @@ namespace detail {
         Ptr
         getPtr(T_Obj&, T_Acc&)
         {
-            return data_.data.getData();
+            return data_.getData();
         }
 
         /**
@@ -143,9 +142,9 @@ namespace detail {
             for(unsigned i=numDims; i>0; --i)
             {
                 unsigned j = i-1;
-                startPtr += extents[j] * factor;
+                startPtr += (extents[j]-1) * factor;
                 factor *= extents[j];
-                idx[j] = extents[j];
+                idx[j] = extents[j]-1;
                 Ptr isPtr = doGetPtr(obj, acc, idx);
                 if(startPtr != isPtr)
                     return false;

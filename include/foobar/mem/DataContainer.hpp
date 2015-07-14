@@ -5,14 +5,17 @@
 #include "foobar/traits/IsAoS.hpp"
 #include "foobar/types/Vec.hpp"
 #include "foobar/accessors/DataContainerAccessor.hpp"
+#include "foobar/policies/GetExtents.hpp"
 #include "foobar/policies/GetNumElements.hpp"
 #include "foobar/traits/DefaultAccessor.hpp"
 #include "foobar/mem/RealValues.hpp"
 #include "foobar/mem/ComplexAoSValues.hpp"
 #include "foobar/void_t.hpp"
+#include "foobar/c++14_types.hpp"
+
+#include <cassert>
 
 namespace foobar {
-
     namespace mem {
 
         /**
@@ -25,28 +28,74 @@ namespace foobar {
             using Memory = T_Memory;
             using BaseAccessor = T_BaseAccessor;
             static constexpr bool isStrided = T_isStrided;
+            static constexpr bool isFlatMemory = T_isFlatMemory;
 
             using Accessor = accessors::DataContainerAccessor<T_isFlatMemory>;
             using IdxType = types::Vec< numDims >;
 
-            IdxType extents;
-            Memory data;
+            friend struct accessors::DataContainerAccessor<isFlatMemory>;
+            friend struct policies::GetExtents<DataContainer>;
 
             /**
              * Creates an uninitialized data container
              */
             DataContainer() = default;
             /**
-             * Creates a data container with the specified extents and optionally allocates the memory
+             * Creates a data container with the specified extents and allocates the memory
              * Note: If the underlying memory does not support automatic destruction
              * you must use freeData() to free the memory
              *
              * @param extents Extents of the container
              */
-            DataContainer(const IdxType& extents, bool alloc = true): extents(extents)
+            DataContainer(const IdxType& extents)
             {
-                if(alloc)
-                    allocData();
+                allocData(extents);
+            }
+
+            /**
+             * Creates a data container with the specified extents
+             *
+             * @param extents Extents of the container
+             */
+            DataContainer(const Memory& data, const IdxType& extents): data(data), extents(extents)
+            {}
+
+            /**
+             * Creates a data container with the specified extents
+             *
+             * @param extents Extents of the container
+             */
+            DataContainer(Memory&& data, const IdxType& extents): data(std::move(data)), extents(extents)
+            {}
+
+            template< typename T_Idx >
+            std::result_of_t< Accessor(T_Idx&, DataContainer&) >
+            operator()(T_Idx& idx)
+            {
+                assert(policies::checkSizes(idx, extents));
+                return Accessor()(idx, *this);
+            }
+
+            template< typename T_Idx >
+            std::result_of_t< Accessor(T_Idx&, const DataContainer&) >
+            operator()(T_Idx& idx) const
+            {
+                assert(policies::checkSizes(idx, extents));
+                return Accessor()(idx, *this);
+            }
+
+            void
+            setData(const IdxType& extents, const Memory& data)
+            {
+                this->extents = extents;
+                this->data = data;
+            }
+
+            void
+            setData(const IdxType& extents, Memory&& data)
+            {
+                this->extents = extents;
+                this->data = std::move(data);
             }
 
             /**
@@ -55,8 +104,9 @@ namespace foobar {
               * you must use freeData() to free the memory
               */
              void
-             allocData()
+             allocData(const IdxType& extents)
              {
+                 this->extents = extents;
                  data.allocData(policies::getNumElements(*this, true));
              }
 
@@ -67,7 +117,51 @@ namespace foobar {
              freeData()
              {
                  data.freeData();
+                 extents = IdxType::all(0);
              }
+
+             template<class T>
+             struct GetData
+             {
+                 static auto
+                 getData(Memory& data)
+                 -> decltype(data.getData())
+                 {
+                     return data.getData();
+                 }
+             };
+
+             template<class T>
+             struct GetData<T*>
+             {
+                 static Memory
+                 getData(Memory data)
+                 {
+                     return data;
+                 }
+             };
+
+             /**
+              * Tries to return a pointer to the data
+              * That is if Memory is a pointer type, data is returned, otherwise data.getData() is returned
+              * @return Pointer to memory
+              */
+             std::result_of_t< decltype(&GetData<Memory>::getData)(Memory&) >
+             getData()
+             {
+                 return GetData<Memory>::getData(data);
+             }
+
+             const IdxType&
+             getExtents() const
+             {
+                 return extents;
+             }
+
+        protected:
+             IdxType extents;
+             Memory data;
+
         };
 
         template< unsigned T_numDims, class T_Memory, class T_BaseAccessor, bool T_isFlatMemory >
@@ -76,8 +170,7 @@ namespace foobar {
             using Parent = DataContainer< T_numDims, T_Memory, T_BaseAccessor, T_isFlatMemory, false >;
 
             using IdxType = typename Parent::IdxType;
-
-            IdxType strides;
+            using Memory = typename Parent::Memory;
 
             DataContainer(): Parent(){}
             /**
@@ -88,11 +181,29 @@ namespace foobar {
              * @param extents Extents of the container
              * @param strides Strides of the container
              */
-            DataContainer(const IdxType& extents, const IdxType& strides = IdxType::all(0), bool alloc = true): Parent(extents, false), strides(strides)
-            {
-                if(alloc)
-                    this->allocData();
-            }
+            DataContainer(const IdxType& extents, const IdxType& strides): Parent(extents), strides(strides)
+            {}
+
+            /**
+             * Creates a data container with the specified extents
+             *
+             * @param extents Extents of the container
+             */
+            DataContainer(const Memory& data, const IdxType& extents, const IdxType& strides): Parent(data, extents), strides(strides)
+            {}
+
+            /**
+             * Creates a data container with the specified extents
+             *
+             * @param extents Extents of the container
+             */
+            DataContainer(Memory&& data, const IdxType& extents, const IdxType& strides): Parent(std::move(data), extents), strides(strides)
+            {}
+
+
+        private:
+            IdxType strides;
+
         };
 
         /**

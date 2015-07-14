@@ -23,11 +23,11 @@ struct GeneratorAccessor
 template< typename T, class Generator, class T_Accessor = foobar::traits::DefaultAccessor_t<T> >
 void generateData(T& data, const Generator& generator, const T_Accessor& acc = T_Accessor()){
     static constexpr unsigned numDims = foobar::traits::NumDims<T>::value;
-    foobar::mem::DataContainer< numDims, const Generator*, GeneratorAccessor, false > genContainer;
-    genContainer.data = &generator;
-    foobar::policies::GetExtents<T> extents(data);
+    foobar::types::Vec<numDims> extents;
+    foobar::policies::GetExtents<T> extentsData(data);
     for(unsigned i=0; i<numDims; i++)
-        genContainer.extents[i] = extents[i];
+        extents[i] = extentsData[i];
+    foobar::mem::DataContainer< numDims, const Generator*, GeneratorAccessor, false > genContainer(&generator, extents);
     foobar::policies::makeCopy(typename decltype(genContainer)::Accessor(), acc)(genContainer, data);
 }
 
@@ -43,9 +43,23 @@ struct Spalt{
 };
 
 template<typename T>
+struct Cosinus{
+    const size_t middle_;
+    const T factor_;
+    Cosinus(size_t period, size_t middle):factor_(2 * M_PI / period), middle_(middle){}
+
+    T
+    operator()(size_t x, size_t y, size_t z) const{
+        auto dist = std::sqrt(std::pow(std::abs(x-middle_), 2)+std::pow(std::abs(y-middle_), 2));
+        return std::cos( factor_ * dist );
+    }
+};
+
+template<typename T>
 struct Rect{
     const size_t sizeX_, sizeY_, middleX_, middleY_;
-    Rect(size_t sizeX, size_t sizeY, size_t middleX, size_t middleY):sizeX_(sizeX), sizeY_(sizeY), middleX_(middleX), middleY_(middleY){}
+    Rect(size_t sizeX, size_t middleX): Rect(sizeX, middleX, sizeX, middleX){}
+    Rect(size_t sizeX, size_t middleX, size_t sizeY, size_t middleY):sizeX_(sizeX), sizeY_(sizeY), middleX_(middleX), middleY_(middleY){}
 
     T
     operator()(size_t x, size_t y, size_t z) const{

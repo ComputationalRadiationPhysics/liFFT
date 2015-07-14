@@ -23,13 +23,13 @@ namespace foobar {
             using Accessor = accessors::ArrayAccessor<>;
 
             ComplexSoAValues(){}
-            ComplexSoAValues(Ptr realData, Ptr imagData): real_(realData), imag_(imagData){}
+            ComplexSoAValues(Ptr realData, Ptr imagData, size_t numElements): real_(realData, numElements), imag_(imagData, numElements){}
 
             void
-            operator=(std::pair<Ptr, Ptr> data)
+            reset(std::pair<Ptr, Ptr> data, size_t numElements)
             {
-                real_ = data.first;
-                imag_ = data.second;
+                real_.reset(data.first, numElements);
+                imag_.reset(data.second, numElements);
             }
 
             void
@@ -46,11 +46,10 @@ namespace foobar {
                 imag_.freeData();
             }
 
-            void
+            std::pair<Ptr, Ptr>
             releaseData()
             {
-                real_.releaseData();
-                imag_.releaseData();
+                return std::make_pair(real_.releaseData(), imag_.releaseData());
             }
 
             std::pair<Ptr, Ptr>

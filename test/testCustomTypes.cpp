@@ -82,7 +82,7 @@ namespace foobarTest {
         auto input = FFT_Type::wrapFFT_Input(aperture, VolumeAccessor());
         auto output = FFT_Type::wrapFFT_Output(fftResult, VolumeAccessor());
         auto fft = foobar::makeFFT<TestLibrary>(input, output);
-        generateData(aperture, Rect<TestPrecision>(20,20,testSize/2-10,testSize/2-10), VolumeAccessor());
+        generateData(aperture, Rect<TestPrecision>(20,testSize/2), VolumeAccessor());
         fft(input, output);
         foobar::policies::copy(aperture, baseC2CInput, VolumeAccessor());
         execBaseC2C();
@@ -103,7 +103,7 @@ namespace foobarTest {
         auto input = FFT_Type::wrapFFT_Input(aperture, VolumeAccessor());
         auto output = FFT_Type::wrapFFT_Output(fftResult, VolumeAccessor());
         auto fft = foobar::makeFFT<TestLibrary>(input, output);
-        generateData(aperture, Rect<TestPrecision>(20,20,testSize/2-10,testSize/2-10), VolumeAccessor());
+        generateData(aperture, Rect<TestPrecision>(20,testSize/2), VolumeAccessor());
         fft(input, output);
         foobar::policies::copy(aperture, baseR2CInput, VolumeAccessor());
         execBaseR2C();

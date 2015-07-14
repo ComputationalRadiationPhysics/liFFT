@@ -67,7 +67,7 @@ namespace foobar {
             using Ptr = ElementType*;
 
             using Data = DataContainer< numDims, ArrayType >;
-            using ExtentsVec = decltype(std::declval<Data>().extents);
+            using ExtentsVec = decltype(std::declval<Data>().getExtents());
 
             FileHandler fileHandler_;
             Data data_;
@@ -75,26 +75,21 @@ namespace foobar {
             bool gotData_;
 
             void
-            loadExtents()
+            allocData()
             {
                 assert(fileHandler_.isOpen());
-                policies::GetExtents< FileHandler > extents(fileHandler_);
-                for(unsigned i=0; i<numDims; ++i)
-                    data_.extents[i] = extents[i];
-            }
-
-            void allocData()
-            {
-                if(data_.data.getData())
+                if(data_.getData())
                     return;
-                assert(fileHandler_.isOpen());
-                unsigned numEl = policies::GetNumElements< Data >()(data_);
-                data_.data.allocData(numEl);
+                policies::GetExtents< FileHandler > fileExtents(fileHandler_);
+                typename Data::IdxType extents;
+                for(unsigned i=0; i<numDims; ++i)
+                    extents[i] = fileExtents[i];
+                data_.allocData(extents);
             }
 
             void freeData()
             {
-                data_.data.freeData();
+                data_.freeData();
             }
 
         public:
@@ -119,7 +114,6 @@ namespace foobar {
                 if(!filePath.empty()){
                     fileHandler_.open(filePath);
                     if(fileHandler_.isOpen()){
-                        loadExtents();
                         allocData();
                     }
                 }
@@ -129,14 +123,14 @@ namespace foobar {
             getExtents() const
             {
                 assert(fileHandler_.isOpen());
-                return data_.extents;
+                return data_.getExtents();
             }
 
             Ptr
             getAllocatedMemory()
             {
                 allocData();
-                return data_.data.getData();
+                return data_.getData();
             }
 
             Data&

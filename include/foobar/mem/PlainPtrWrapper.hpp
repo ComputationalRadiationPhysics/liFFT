@@ -38,25 +38,20 @@ namespace mem {
         using Ref = Pointer&;
         using ConstRef = const Pointer&;
 
-        using Parent::extents;
+        friend struct policies::GetExtents<PlainPtrWrapper>;
 
-        PlainPtrWrapper(Pointer* ptr, const IdxType& extents)
+        PlainPtrWrapper(Pointer* ptr, const IdxType& extents): Parent(ptr, extents)
         {
             static_assert(!isStrided, "You need to specify the strides!");
-            this->data = ptr;
-            this->extents = extents;
         }
 
         PlainPtrWrapper(IntegralType* ptr, const IdxType& extents):
             PlainPtrWrapper(policies::safe_ptr_cast<Pointer*>(ptr), extents)
         {}
 
-        PlainPtrWrapper(Pointer* ptr, const IdxType& extents, const IdxType& strides)
+        PlainPtrWrapper(Pointer* ptr, const IdxType& extents, const IdxType& strides): Parent(ptr, extents, strides)
         {
             static_assert(isStrided, "You cannot specify strides!!");
-            this->data = ptr;
-            this->extents = extents;
-            this->strides = strides;
         }
 
         PlainPtrWrapper(IntegralType* ptr, const IdxType& extents, const IdxType& strides):
@@ -67,6 +62,7 @@ namespace mem {
         Ref
         operator()(T_Index&& idx)
         {
+            assert(policies::checkSizes(idx, this->getExtents()));
             unsigned flatIdx = policies::flattenIdx(idx, *this);
             return this->data[flatIdx];
         }
@@ -75,6 +71,7 @@ namespace mem {
         ConstRef
         operator()(T_Index&& idx) const
         {
+            assert(policies::checkSizes(idx, this->getExtents()));
             unsigned flatIdx = policies::flattenIdx(idx, *this);
             return this->data[flatIdx];
         }
