@@ -1,4 +1,3 @@
-#include "libTiff.hpp"
 #include "libTiff/exceptions.hpp"
 #include "libTiff/converters.hpp"
 #include "foobar/AllocatorWrapper.hpp"

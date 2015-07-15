@@ -1,6 +1,6 @@
 #pragma once
 
-#include "libTiff/libTiff.hpp"
+#include "libTiff/image.hpp"
 #include "foobar/traits/NumDims.hpp"
 #include "foobar/traits/DefaultAccessor.hpp"
 #include "foobar/traits/IsComplex.hpp"

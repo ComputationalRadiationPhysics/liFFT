@@ -2,7 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "libTiff/libTiff.hpp"
+#include "libTiff/image.hpp"
 #include "libTiff/traitsAndPolicies.hpp"
 #include "foobar/traits/DefaultAccessor.hpp"
 #include "foobar/policies/Copy.hpp"

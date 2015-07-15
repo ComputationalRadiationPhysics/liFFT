@@ -6,7 +6,7 @@
 #include "generateData.hpp"
 #include "foobar/FFT.hpp"
 
-#include "libTiff/libTiff.hpp"
+#include "libTiff/image.hpp"
 #include "libTiff/traitsAndPolicies.hpp"
 
 #include <algorithm>

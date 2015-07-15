@@ -242,4 +242,4 @@ namespace libTiff
 
 }  // namespace libTiff
 
-#include "libTiff/libTiff.tpp"
+#include "libTiff/image.tpp"

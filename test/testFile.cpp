@@ -4,7 +4,7 @@
 #include "foobar/mem/DataContainer.hpp"
 #include "foobar/mem/FileContainer.hpp"
 #include "foobar/accessors/ImageAccessor.hpp"
-#include "libTiff/libTiff.hpp"
+#include "libTiff/image.hpp"
 #include "libTiff/traitsAndPolicies.hpp"
 #include "foobar/FFT.hpp"
 
