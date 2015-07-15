@@ -152,6 +152,8 @@ namespace policies {
             std::enable_if_t< !traits::IsWriteAccessor< BaseAccessor, T_Data, T_Value, T_Index >::value >
             write(const T_Index& idx, T_Data& data, T_Value&& value)
             {
+                using LeftType = decltype(acc_(idx, data));
+                static_assert(AssertValue<std::is_assignable<LeftType, T_Value>>::value, "Cannot assign value returned from srcAccessor to dstData");
                 acc_(idx, data) = std::forward<T_Value>(value);
             }
         };
