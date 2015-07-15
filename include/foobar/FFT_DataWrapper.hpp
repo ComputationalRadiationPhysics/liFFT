@@ -19,27 +19,6 @@
 
 namespace foobar {
 
-    struct FFT_DataAccessor
-    {
-    private:
-        template< class T_FFT_DataWrapper >
-        struct RefType
-        {
-            using BaseRef = typename T_FFT_DataWrapper::Base&;
-            using type = std::conditional_t< std::is_const<T_FFT_DataWrapper>::value, AddConstVal_t< BaseRef >, BaseRef >;
-        };
-        template< class T_FFT_DataWrapper >
-        using RefType_t = typename RefType<T_FFT_DataWrapper>::type;
-    public:
-        template< typename T_Idx, class T_FFT_DataWrapper >
-        auto
-        operator()(T_Idx&& idx, T_FFT_DataWrapper& data) const
-        ->decltype(data.acc_(std::forward<T_Idx>(idx), const_cast<RefType_t<T_FFT_DataWrapper>>(data.base_)))
-        {
-            return data.acc_(std::forward<T_Idx>(idx), const_cast<RefType_t<T_FFT_DataWrapper>>(data.base_));
-        }
-    };
-
     /**
      * Wrapper for the data
      */
@@ -59,6 +38,7 @@ namespace foobar {
         using BaseAccessor = T_BaseAccessor;
         static constexpr bool hasInstance = T_HasInstance::value;
 
+        static_assert(!FFT_Def::isInplace, "Use the FFT_InplaceDataWrapper for inplace transforms");
         static constexpr unsigned numDims = traits::NumDims< Base >::value;
         static_assert(numDims == FFT_Def::numDims, "Wrong number of dimensions");
         using IdxType = types::Vec<numDims>;
@@ -72,14 +52,13 @@ namespace foobar {
                        (!isInput && (!isComplex || FFT_Def::isComplexOutput)),
                        "Wrong element type for this FFT: Expected real, got complex" );
 
-        using Extents = std::array<unsigned, numDims>;
+        using Extents = IdxType;
         // Precision (double, float...) is the base type of RawPtrType (which is a pointer)
         // For Complex-SoA values RawPtrType is a std::pair of pointers
         using PrecisionType = typename traits::IntegralType<AccType>::type;
         static_assert(std::is_same<PrecisionType, typename FFT_Def::PrecisionType>::value, "Wrong precision type");
 
         static constexpr bool needOwnMemoryPtr = !std::is_reference<AccRefType>::value || std::is_const<AccRefType>::value;
-        //static constexpr bool needOwnMemory = needOwnMemoryPtr && !FFT_Def::isInplace;
         static constexpr bool isAoS = needOwnMemoryPtr || traits::IsAoS< Base >::value;
         static constexpr bool isStrided = !needOwnMemoryPtr && traits::IsStrided< Base >::value;
 
@@ -98,8 +77,7 @@ namespace foobar {
         using Memory = detail::FFT_Memory< Memory_t, needOwnMemoryPtr >;
         using MemoryFallback = detail::FFT_Memory< Memory_t, true >;
 
-        using Accessor = FFT_DataAccessor;
-        friend Accessor;
+        using Accessor = accessors::ArrayAccessor<true>;
 
         using RefType = typename std::add_lvalue_reference<Base>::type;
         using InstanceType = std::conditional_t< hasInstance, Base, RefType >;
@@ -192,7 +170,7 @@ namespace foobar {
         unsigned
         getNumElements() const
         {
-            return std::accumulate(std::begin(extents_), std::end(extents_), 1u, std::multiplies<unsigned>());
+            return std::accumulate(extents_.cbegin(), extents_.cend(), 1u, std::multiplies<unsigned>());
         }
 
         /**
