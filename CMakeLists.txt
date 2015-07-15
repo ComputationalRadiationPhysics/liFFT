@@ -36,8 +36,9 @@ set(ENABLE_CUDA ${CUDA_FOUND} CACHE BOOL "Use CUDA")
 ###############################################################################
 # Boost
 ###############################################################################
-find_package(Boost 1.48.0 REQUIRED)
+find_package(Boost 1.48.0 COMPONENTS program_options REQUIRED)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+set(LIBS ${LIBS} ${Boost_LIBRARIES})
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
 
@@ -61,16 +62,20 @@ file(GLOB haLT_Test_CU_FILES
 
 if(CUDA_FOUND AND ENABLE_CUDA)
     add_definitions(-DWITH_CUDA)
-	cuda_add_executable(haLT_Test ${haLT_Test_CU_FILES})
-	CUDA_ADD_CUFFT_TO_TARGET(haLT_Test)
+    cuda_add_executable(haLT_Test ${haLT_Test_CU_FILES})
+    CUDA_ADD_CUFFT_TO_TARGET(haLT_Test)
+    cuda_add_executable(fftTiffImg fftTiffImg/main.cu)
+    CUDA_ADD_CUFFT_TO_TARGET(fftTiffImg)
 else()
 	add_executable(haLT_Test ${haLT_Test_CPP_FILES})
+	add_executable(fftTiffImg fftTiffImg/main.cpp)
 endif()
 
 add_executable(tiff2PDF tiff2Pdf/tiff2pdf.cpp)
 
 target_link_libraries(haLT_Test ${LIBS})
 target_link_libraries(tiff2PDF ${TIFF_LIBRARIES})
+target_link_libraries(fftTiffImg ${LIBS})
 
 add_custom_command(
     TARGET haLT_Test
