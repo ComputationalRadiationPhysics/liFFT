@@ -64,13 +64,10 @@ namespace policies {
         //static_assert(T_isComplexOut || !T_isFwd, "Complex2Real is always a backward transform");
         static_assert(numDims > 0 && numDims <= 3, "Only 1D-3D is supported");
 
-    public:
-        using PlanType = Plan< LibInType, LibOutType >;
-
     private:
-        template< class T_Extents >
+        template< class T_Plan, class T_Extents >
         void
-        createPlan(PlanType& plan, T_Extents& extents)
+        createPlan(T_Plan& plan, T_Extents& extents)
         {
             cufftCreate(&plan.plan);
             cufftResult result;
@@ -85,9 +82,9 @@ namespace policies {
         }
     public:
 
-        template< class T_AllocatorIn, class T_AllocatorOut >
-        PlanType
-        operator()(Input& input, Output& output, T_AllocatorIn allocIn, T_AllocatorOut allocOut)
+        template< class T_Plan, class T_Allocator >
+        void
+        operator()(T_Plan& plan, Input& input, Output& output, const T_Allocator& alloc)
         {
             static_assert(!isInplace, "Cannot be used for inplace transforms!");
             auto extents(input.getExtents());
@@ -104,27 +101,23 @@ namespace policies {
                 if(!dimOk)
                     throw std::runtime_error("Dimension " + std::to_string(i) + ": Extents mismatch");
             }
-            PlanType plan;
-            createPlan(plan, extents);
             // Need 2 counts as they are different for C2R/R2C (maybe 1 element off)
             unsigned numElementsIn = input.getNumElements();
             unsigned numElementsOut = output.getNumElements();
-            allocIn.malloc(plan.InDevicePtr, numElementsIn * sizeof(LibInType));
-            allocOut.malloc(plan.OutDevicePtr, numElementsOut * sizeof(LibOutType));
-            return plan;
+            plan.InDevicePtr.reset(alloc.template malloc<LibInType>(numElementsIn * sizeof(LibInType)));
+            plan.OutDevicePtr.reset(alloc.template malloc<LibOutType>(numElementsOut * sizeof(LibOutType)));
+            createPlan(plan, extents);
         }
 
-        template< class T_Allocator >
-        PlanType
-        operator()(Input& inOut, T_Allocator alloc)
+        template< class T_Plan, class T_Allocator >
+        void
+        operator()(T_Plan& plan, Input& inOut, const T_Allocator& alloc)
         {
             static_assert(isInplace, "Must be used for inplace transforms!");
             auto extents(inOut.getExtents());
-            PlanType plan;
-            createPlan(plan, extents);
             unsigned numElements = inOut.getNumElements();
-            alloc.malloc(plan.InDevicePtr, numElements * std::max(sizeof(LibInType), sizeof(LibOutType)));
-            plan.OutDevicePtr = nullptr;
+            plan.InDevicePtr.reset(alloc.template malloc<LibInType>(numElements * std::max(sizeof(LibInType), sizeof(LibOutType))));
+            createPlan(plan, extents);
             return plan;
         }
     };

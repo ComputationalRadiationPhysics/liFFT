@@ -114,56 +114,54 @@ namespace policies {
         using Executer = detail::ExecutePlan< Precision, isComplexIn, isComplexOut, isFwd >;
 
     public:
-        using PlanType = Plan< LibInType, LibOutType >;
-
-        template< class T_Copier >
+        template< class T_Plan, class T_Copier >
         void
-        operator()(PlanType& plan, Input& input, Output& output, T_Copier& copy)
+        operator()(T_Plan& plan, Input& input, Output& output, const T_Copier& copy)
         {
             using foobar::policies::safe_ptr_cast;
             static_assert(!isInplace, "Cannot be used for inplace transforms!");
 
             auto pIn = safe_ptr_cast<LibInType*>(input.getDataPtr());
-            if( plan.InDevicePtr != nullptr)
+            if( plan.InDevicePtr )
             {
                 unsigned numElements = input.getNumElements();
-                copy.H2D(plan.InDevicePtr, pIn, numElements * sizeof(LibInType));
-                pIn = plan.InDevicePtr;
+                copy.H2D(plan.InDevicePtr.get(), pIn, numElements * sizeof(LibInType));
+                pIn = plan.InDevicePtr.get();
             }
-            auto pOut = (plan.OutDevicePtr) ? plan.OutDevicePtr : safe_ptr_cast<LibOutType*>(output.getDataPtr());
+            auto pOut = (plan.OutDevicePtr) ? plan.OutDevicePtr.get() : safe_ptr_cast<LibOutType*>(output.getDataPtr());
             cufftResult result = Executer()(plan.plan, pIn, pOut);
             if(result != CUFFT_SUCCESS)
                 throw std::runtime_error("Error executing plan: " + std::to_string(result));
-            if( plan.OutDevicePtr != nullptr)
+            if( plan.OutDevicePtr )
             {
                 unsigned numElements = output.getNumElements();
                 pOut = safe_ptr_cast<LibOutType*>(output.getDataPtr());
-                copy.D2H(pOut, plan.OutDevicePtr, numElements * sizeof(LibOutType));
+                copy.D2H(pOut, plan.OutDevicePtr.get(), numElements * sizeof(LibOutType));
             }
         }
 
-        template< class T_Copier >
+        template< class T_Plan, class T_Copier >
         void
-        operator()(PlanType& plan, Input& inOut, T_Copier& copy)
+        operator()(T_Plan& plan, Input& inOut, const T_Copier& copy)
         {
             using foobar::policies::safe_ptr_cast;
             static_assert(isInplace, "Must be used for inplace transforms!");
 
             auto pIn = safe_ptr_cast<LibInType*>(inOut.getDataPtr());
-            if( plan.InDevicePtr != nullptr)
+            if( plan.InDevicePtr )
             {
                 unsigned numElements = inOut.getNumElements();
-                copy.H2D(plan.InDevicePtr, pIn, numElements * sizeof(LibInType));
-                pIn = plan.InDevicePtr;
+                copy.H2D(plan.InDevicePtr.get(), pIn, numElements * sizeof(LibInType));
+                pIn = plan.InDevicePtr.get();
             }
             cufftResult result = Executer()(plan.plan, pIn, pIn);
             if(result != CUFFT_SUCCESS)
                 throw std::runtime_error("Error executing plan: " + std::to_string(result));
-            if( plan.InDevicePtr != nullptr)
+            if( plan.InDevicePtr )
             {
                 unsigned numElements = inOut.getNumElements();
                 auto pOut = safe_ptr_cast<LibOutType*>(inOut.getDataPtr());
-                copy.D2H(pOut, plan.InDevicePtr, numElements * sizeof(LibOutType));
+                copy.D2H(pOut, plan.InDevicePtr.get(), numElements * sizeof(LibOutType));
             }
         }
     };

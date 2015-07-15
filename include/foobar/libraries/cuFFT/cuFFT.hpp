@@ -23,14 +23,15 @@ namespace cuFFT {
      * \tparam T_FFT_Properties Placeholder that will be replaced by a class containing the properties for this FFT
      */
     template<
-        class T_AllocatorIn = policies::CudaAllocator,
-        class T_AllocatorOut = policies::CudaAllocator,
+        class T_Allocator = policies::CudaAllocator,
         class T_Copier = policies::CudaMemCpy,
         class T_FFT_Properties = bmpl::_1
     >
-    class CuFFT: private boost::noncopyable
+    class CuFFT
     {
     private:
+        using Allocator = T_Allocator;
+        using Copier = T_Copier;
         using FFT = T_FFT_Properties;
         using Input = typename FFT::Input;
         using Output = typename FFT::Output;
@@ -58,47 +59,41 @@ namespace cuFFT {
                     FFT::isComplexIn,
                     FFT::isComplexOut
                 >;
-        using PlanType = typename Planner::PlanType;
+        using LibTypes = traits::LibTypes< PrecisionType, FFT::isComplexIn, FFT::isComplexOut >;
+        using PlanType = Plan<typename LibTypes::InType, typename LibTypes::OutType, Allocator>;
 
         PlanType plan_;
-        T_AllocatorIn allocIn_;
-        T_AllocatorOut allocOut_;
-        T_Copier copy_;
 
+        CuFFT(CuFFT& obj) = delete;
+        CuFFT& operator=(const CuFFT&) = delete;
     public:
         explicit CuFFT(Input& input, Output& output)
         {
-            plan_ = Planner()(input, output, allocIn_, allocOut_);
+            Planner()(plan_, input, output, Allocator());
         }
 
         explicit CuFFT(Input& inOut)
         {
-            plan_ = Planner()(inOut, allocIn_, allocOut_);
+            Planner()(plan_, inOut, Allocator());
         }
 
-        CuFFT(CuFFT&& obj):
-            plan_(std::move(obj.plan_)),
-            allocIn_(std::move(obj.allocIn_)),
-            allocOut_(std::move(obj.allocOut_)),
-            copy_(std::move(obj.copy_)){}
+        CuFFT(CuFFT&& obj) = default;
+        CuFFT& operator=(CuFFT&&) = default;
 
 
         ~CuFFT()
         {
             cufftDestroy(plan_.plan);
-            allocIn_.free(plan_.InDevicePtr);
-            if(!FFT::isInplace)
-                allocOut_.free(plan_.OutDevicePtr);
         }
 
         void operator()(Input& input, Output& output)
         {
-            Executer()(plan_, input, output, copy_);
+            Executer()(plan_, input, output, Copier());
         }
 
         void operator()(Input& inOut)
         {
-            Executer()(plan_, inOut, copy_);
+            Executer()(plan_, inOut, Copier());
         }
     };
 

@@ -15,13 +15,13 @@ namespace policies {
     struct CudaMemCpy
     {
         template< typename T >
-        void H2D(T* ptrTo, T* ptrFrom, unsigned memSize)
+        void H2D(T* ptrTo, T* ptrFrom, unsigned memSize) const
         {
             CudaSafeCall(cudaMemcpy(ptrTo, ptrFrom, memSize, cudaMemcpyHostToDevice));
         }
 
         template< typename T >
-        void D2H(T* ptrTo, T* ptrFrom, unsigned memSize)
+        void D2H(T* ptrTo, T* ptrFrom, unsigned memSize) const
         {
             CudaSafeCall(cudaMemcpy(ptrTo, ptrFrom, memSize, cudaMemcpyDeviceToHost));
         }

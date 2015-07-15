@@ -15,13 +15,17 @@ namespace policies {
     struct CudaAllocator
     {
         template< typename T >
-        void malloc(T*& ptr, size_t memSize)
+        T*
+        malloc(size_t memSize) const
         {
-            CudaSafeCall(cudaMalloc(reinterpret_cast<void**>(&ptr), memSize));
+            void* ptr;
+            CudaSafeCall(cudaMalloc(&ptr, memSize));
+            return reinterpret_cast<T*>(ptr);
         }
 
         template< typename T >
-        void free(T* ptr)
+        void
+        free(T* ptr) const
         {
             CudaSafeCall(cudaFree(ptr));
         }
