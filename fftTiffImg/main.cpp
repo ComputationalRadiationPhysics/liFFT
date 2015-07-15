@@ -78,16 +78,21 @@ copy2Data(const T_Img& img, T_Data& data, unsigned zDim, const T_Acc& acc = T_Ac
  * @param data Datacontainer to copy from
  * @param img  Image to copy to
  * @param zDim z-Index
- * @param acc  Accessor to use to access the data
+ * @param accData  Accessor to use to access the data
+ * @param accImg  Accessor to use to access the image
  */
-template< class T_Img, class T_Data, class T_Acc = foobar::traits::DefaultAccessor_t<T_Data> >
+template<
+    class T_Data,
+    class T_Img,
+    class T_AccData = foobar::traits::DefaultAccessor_t<T_Data>,
+    class T_AccImg = foobar::traits::DefaultAccessor_t<T_Img> >
 void
-copy2Img(const T_Data& data, T_Img& img, unsigned zDim,  const T_Acc& acc = T_Acc())
+copy2Img(const T_Data& data, T_Img& img, unsigned zDim, const T_AccData& accData = T_AccData(), const T_AccImg& accImg = T_AccImg())
 {
     foobar::types::Vec<3> idx(zDim, 0u, 0u);
     for(; idx[1] < img.getHeight(); ++idx[1])
         for(; idx[2] < img.getWidth(); ++idx[2])
-            img(idx[2], idx[1]) = acc(idx, data);
+            accImg(foobar::types::Vec<2>(idx[1], idx[2]), img) = accData(idx, data);
 }
 
 string
@@ -163,7 +168,8 @@ main(int argc, char** argv)
     fft(input, output);
     // Copy the intensities to the img and save it
     auto acc = foobar::accessors::makeTransformAccessorFor(foobar::policies::CalcIntensityFunc(), output);
-    copy2Img(output, img, 0, acc);
+    auto accImg = foobar::accessors::makeTransposeAccessorFor(img);
+    copy2Img(output, img, 0, acc, accImg);
     img.saveTo(outFilePath);
 
     return 0;
