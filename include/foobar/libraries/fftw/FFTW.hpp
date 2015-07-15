@@ -66,7 +66,9 @@ namespace fftw {
             outPtr_ = nullptr;
         }
 
-        FFTW(FFTW&& obj): plan_(std::move(obj.plan_)), inPtr_(obj.inPtr_), outPtr_(obj.outPtr_){}
+        FFTW(FFTW&& obj): plan_(obj.plan_), inPtr_(obj.inPtr_), outPtr_(obj.outPtr_){
+            obj.plan_ = nullptr;
+        }
 
         ~FFTW()
         {

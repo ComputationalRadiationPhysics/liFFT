@@ -19,10 +19,33 @@ namespace cuFFT {
                 T_Deleter().free(ptr);
             }
         };
+        Plan(const Plan&) = delete;
+        Plan& operator=(const Plan&) = delete;
     public:
-        cufftHandle plan;
+        cufftHandle handle;
         std::unique_ptr<T_In, Deleter<T_In>> InDevicePtr;
         std::unique_ptr<T_Out, Deleter<T_Out>> OutDevicePtr;
+
+        Plan() = default;
+        Plan(Plan&& obj): handle(obj.handle), InDevicePtr(std::move(obj.InDevicePtr)), OutDevicePtr(std::move(obj.OutDevicePtr))
+        {
+            obj.handle = 0;
+        }
+
+        Plan& operator=(Plan&& obj)
+        {
+            if(this!=&obj)
+                return *this;
+            handle = obj.handle; obj.handle = 0;
+            InDevicePtr = std::move(obj.InDevicePtr);
+            OutDevicePtr = std::move(obj.OutDevicePtr);
+            return *this;
+        }
+
+        ~Plan(){
+            if(handle)
+                cufftDestroy(handle);
+        }
   };
 
 }  // namespace cuFFT

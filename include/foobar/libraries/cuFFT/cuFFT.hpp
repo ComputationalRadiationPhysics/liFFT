@@ -80,12 +80,6 @@ namespace cuFFT {
         CuFFT(CuFFT&& obj) = default;
         CuFFT& operator=(CuFFT&&) = default;
 
-
-        ~CuFFT()
-        {
-            cufftDestroy(plan_.plan);
-        }
-
         void operator()(Input& input, Output& output)
         {
             Executer()(plan_, input, output, Copier());

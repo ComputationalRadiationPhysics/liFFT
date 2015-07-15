@@ -69,14 +69,14 @@ namespace policies {
         void
         createPlan(T_Plan& plan, T_Extents& extents)
         {
-            cufftCreate(&plan.plan);
+            //cufftCreate(&handle);
             cufftResult result;
             if(numDims == 1)
-                result = cufftPlan1d(&plan.plan, extents[0], FFTType::value, 1);
+                result = cufftPlan1d(&plan.handle, extents[0], FFTType::value, 1);
             else if(numDims == 2)
-                result = cufftPlan2d(&plan.plan, extents[0], extents[1], FFTType::value);
+                result = cufftPlan2d(&plan.handle, extents[0], extents[1], FFTType::value);
             else
-                result = cufftPlan3d(&plan.plan, extents[0], extents[1], extents[2], FFTType::value);
+                result = cufftPlan3d(&plan.handle, extents[0], extents[1], extents[2], FFTType::value);
             if(result != CUFFT_SUCCESS)
                 throw std::runtime_error("Error creating plan: " + std::to_string(result));
         }

@@ -129,7 +129,7 @@ namespace policies {
                 pIn = plan.InDevicePtr.get();
             }
             auto pOut = (plan.OutDevicePtr) ? plan.OutDevicePtr.get() : safe_ptr_cast<LibOutType*>(output.getDataPtr());
-            cufftResult result = Executer()(plan.plan, pIn, pOut);
+            cufftResult result = Executer()(plan.handle, pIn, pOut);
             if(result != CUFFT_SUCCESS)
                 throw std::runtime_error("Error executing plan: " + std::to_string(result));
             if( plan.OutDevicePtr )
@@ -154,7 +154,7 @@ namespace policies {
                 copy.H2D(plan.InDevicePtr.get(), pIn, numElements * sizeof(LibInType));
                 pIn = plan.InDevicePtr.get();
             }
-            cufftResult result = Executer()(plan.plan, pIn, pIn);
+            cufftResult result = Executer()(plan.handle, pIn, pIn);
             if(result != CUFFT_SUCCESS)
                 throw std::runtime_error("Error executing plan: " + std::to_string(result));
             if( plan.InDevicePtr )
