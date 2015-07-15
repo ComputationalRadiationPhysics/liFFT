@@ -10,6 +10,7 @@
 #include "foobar/mem/RealValues.hpp"
 #include "foobar/mem/ComplexAoSValues.hpp"
 #include "foobar/mem/ComplexSoAValues.hpp"
+#include "foobar/mem/DataContainer.hpp"
 #include "foobar/traits/DefaultAccessor.hpp"
 #include "foobar/c++14_types.hpp"
 #include "foobar/FFT_Memory.hpp"
@@ -100,8 +101,9 @@ namespace foobar {
         using Accessor = FFT_DataAccessor;
         friend Accessor;
 
-        using InstanceType = std::conditional_t< hasInstance, Base, Base& >;
-        using ParamType = std::conditional_t< hasInstance, Base&&, Base& >;
+        using RefType = typename std::add_lvalue_reference<Base>::type;
+        using InstanceType = std::conditional_t< hasInstance, Base, RefType >;
+        using ParamType = typename std::conditional_t< hasInstance, std::add_rvalue_reference<Base>, std::add_lvalue_reference<Base> >::type;
     private:
         InstanceType base_;
         BaseAccessor acc_;
@@ -139,6 +141,12 @@ namespace foobar {
         operator()(const IdxType& idx) const
         {
             return acc_(idx, const_cast<const Base&>(base_));
+        }
+
+        RefType
+        getBase()
+        {
+            return base_;
         }
 
         /**
