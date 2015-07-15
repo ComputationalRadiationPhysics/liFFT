@@ -6,6 +6,8 @@
 #include <boost/utility.hpp>
 #include "libTiff/ImageFormat.hpp"
 #include "libTiff/FormatTraits.hpp"
+#include <memory>
+#include "foobar/AllocatorWrapper.hpp"
 
 namespace libTiff
 {
@@ -34,7 +36,7 @@ namespace libTiff
      * \tparam T_Allocator Allocator(::malloc, ::free) used for managing the raw memory
      */
     template< ImageFormat T_imgFormat = ImageFormat::ARGB, class T_Allocator = TiffAllocator >
-    class Image: private boost::noncopyable
+    class Image
     {
         using Allocator = T_Allocator;
         static constexpr ImageFormat imgFormat = T_imgFormat;
@@ -44,10 +46,9 @@ namespace libTiff
         using Ref = DataType&;
         using ConstRef = const DataType&;
 
-        Allocator alloc_;
         std::string filepath_;
-        TIFF* handle_;
-        DataType* data_;
+        std::unique_ptr<TIFF, void(*)(TIFF*)> handle_;
+        std::unique_ptr<DataType[], void(*)(DataType*)> data_;
         bool isReadable_, isWriteable_, dataWritten_;
         unsigned width_, height_;
         uint16 samplesPerPixel, bitsPerSample, tiffSampleFormat, photometric;
@@ -63,29 +64,24 @@ namespace libTiff
         void
         convert(char* tmp);
 
+        Image(const Image&) = delete;
+        Image& operator=(const Image&) = delete;
     public:
 
         /**
          * Creates an invalid image using the standard allocator.
          * Before accessing it you need to call \ref open(..)
          */
-        Image(): Image(Allocator()){}
-
-        /**
-         * Creates an invalid image using the provided allocator.
-         * Before accessing it you need to call \ref open(..)
-         *
-         * @param alloc Allocator to use
-         */
-        Image(const Allocator& alloc):
-            alloc_(alloc),
+        Image():
             filepath_(""),
-            handle_(nullptr),
-            data_(nullptr),
+            handle_(nullptr, TIFFClose),
+            data_(nullptr, [](DataType* p){ Allocator().free(p);}),
             isReadable_(false),
             isWriteable_(false),
             dataWritten_(false)
         {}
+        Image(Image&&) = default;
+        Image& operator=(Image&&) = default;
 
         /**
          * Opens the image at the given filePath for reading
@@ -94,7 +90,7 @@ namespace libTiff
          * @param loadData True if the image data should be loaded or only its memory allocated.
          *          The data can be (re)loaded with \ref load()
          */
-        Image(const std::string& filePath, bool loadData = true): Image(Allocator())
+        Image(const std::string& filePath, bool loadData = true): Image()
         {
             open(filePath, loadData);
         }
@@ -107,7 +103,7 @@ namespace libTiff
          * @param w Width of the new image
          * @param h Height of the new image
          */
-        Image(const std::string& filePath, unsigned w, unsigned h): Image(Allocator())
+        Image(const std::string& filePath, unsigned w, unsigned h): Image()
         {
             open(filePath, w, h);
         }

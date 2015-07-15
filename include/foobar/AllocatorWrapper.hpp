@@ -16,7 +16,7 @@ namespace foobar {
 
         Allocator alloc_;
 
-        AllocatorWrapper(Allocator alloc = Allocator()): alloc_(alloc) {}
+        AllocatorWrapper(const Allocator& alloc = Allocator()): alloc_(alloc) {}
 
         pointer
         allocate(size_type n, const void* = 0)
@@ -32,5 +32,12 @@ namespace foobar {
             alloc_.free(p);
         }
     };
+
+    template< typename T, class T_Allocator >
+    AllocatorWrapper<T, T_Allocator>
+    wrapAllocator(const T_Allocator& alloc)
+    {
+        return AllocatorWrapper<T, T_Allocator>(alloc);
+    }
 
 }  // namespace foobar
