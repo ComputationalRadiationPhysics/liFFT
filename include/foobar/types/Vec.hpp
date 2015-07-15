@@ -17,6 +17,7 @@ namespace types{
         static constexpr unsigned numDims = T_numDims;
         using type = T;
         using Ptr = T*;
+        using ConstPtr = const T*;
         using Ref = T&;
         using ConstRef = const T&;
         using Storage = std::array< T, numDims >;
@@ -68,6 +69,12 @@ namespace types{
 
         Ptr
         data()
+        {
+            return values_.data();
+        }
+
+        ConstPtr
+        data() const
         {
             return values_.data();
         }

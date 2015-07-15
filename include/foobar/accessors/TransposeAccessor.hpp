@@ -30,11 +30,11 @@ namespace accessors {
         }
     public:
 
-        explicit TransposeAccessor(BaseAccessor acc = BaseAccessor()): acc_(acc){}
+        explicit TransposeAccessor(const BaseAccessor& acc = BaseAccessor()): acc_(acc){}
 
         template< class T_Index, class T_Data >
         auto
-        operator()(const T_Index& idx, const T_Data& data) const
+        operator()(const T_Index& idx, T_Data& data) const
         -> decltype(acc_(idx, data))
         {
             T_Index transposedIdx;
