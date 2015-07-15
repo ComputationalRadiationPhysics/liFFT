@@ -32,7 +32,7 @@ namespace libTiff {
     void
     Image< T_imgFormat, T_Allocator >::open(const std::string& filePath, bool loadData)
     {
-        close();
+        closeHandle();
         openHandle(filePath, "r");
         isReadable_ = true;
         uint32 w, h;
@@ -40,6 +40,8 @@ namespace libTiff {
             throw InfoMissingException("Width");
         if(!TIFFGetField(handle_.get(), TIFFTAG_IMAGELENGTH, &h))
             throw InfoMissingException("Height");
+        if(w*h != width_*height_)
+            data_.reset(); // Reset data only if we need a differently sized chunk
         width_ = w; height_ = h;
         if(loadData)
             this->loadData();
