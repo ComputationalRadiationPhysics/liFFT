@@ -7,6 +7,8 @@
 #include "libTiff/image.hpp"
 #include "libTiff/traitsAndPolicies.hpp"
 #include "foobar/FFT.hpp"
+#include "generateData.hpp"
+#include "foobar/accessors/TransposeAccessor.hpp"
 
 namespace foobarTest {
 
@@ -28,6 +30,42 @@ namespace foobarTest {
             std::cerr << "Error for R2C with file input: " << res.second << std::endl;
         else
             std::cout << "R2C with file input passed" << std::endl;
+    }
+
+    void testTiffCp(const std::string& filePath)
+    {
+        std::string filePath2 = filePath+"2.tif";
+        libTiff::FloatImage<> img(filePath);
+        img.saveTo(filePath2);
+        img.close();
+        libTiff::FloatImage<> img1(filePath);
+        libTiff::FloatImage<> img2(filePath2);
+        auto res = compare(img1, img2, CmpError(1e-8, 1e-8));
+        if(!res.first)
+            std::cerr << "Tiff copy failed" << std::endl;
+        else
+            std::cout << "Tiff copy passed" << std::endl;
+        std::remove(filePath2.c_str());
+    }
+
+    void testTiffModify(const std::string& filePath)
+    {
+        std::string filePath2 = filePath+"2.tif";
+        libTiff::FloatImage<> img(filePath);
+        foobar::mem::RealContainer<2, float> data(foobar::types::Vec<2>(img.getHeight(), img.getWidth()));
+        generateData(data, Circle<float>(50, img.getHeight()/2));
+        auto acc = foobar::accessors::makeTransposeAccessorFor(img);
+        foobar::policies::copy(data, img, foobar::traits::getDefaultAccessor(data), acc);
+        img.saveTo(filePath2);
+        img.close();
+        libTiff::FloatImage<> img2(filePath2);
+        auto accData = foobar::accessors::makeTransposeAccessorFor(data);
+        auto res = compare(data, img2, CmpError(1e-8, 1e-8), accData);
+        if(!res.first)
+            std::cerr << "Tiff modify failed" << std::endl;
+        else
+            std::cout << "Tiff modify passed" << std::endl;
+        std::remove(filePath2.c_str());
     }
 
     void testTiffFile(const std::string& filePath)
@@ -60,6 +98,8 @@ namespace foobarTest {
         FileType myFile("rect.tif");
         testFile(myFile);
         testTiffFile("input1.tif");
+        testTiffCp("input1.tif");
+        testTiffModify("input1.tif");
     }
 
 }  // namespace foobarTest

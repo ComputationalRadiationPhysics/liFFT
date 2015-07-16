@@ -9,11 +9,10 @@ int main(int argc, char** argv) {
     init();
     visualizeBase();
 
-    testZip();
-
-    testCustomTypes();
     testFile();
+    testCustomTypes();
     testPlainPtr();
+    testZip();
 
     finalize();
     return 0;
