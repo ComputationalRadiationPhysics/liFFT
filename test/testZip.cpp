@@ -1,5 +1,3 @@
-#pragma once
-
 #include "testZip.hpp"
 #include "testUtils.hpp"
 #include "foobar/accessors/ZipAccessor.hpp"

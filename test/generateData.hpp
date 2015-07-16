@@ -46,7 +46,7 @@ template<typename T>
 struct Cosinus{
     const size_t middle_;
     const T factor_;
-    Cosinus(size_t period, size_t middle):factor_(2 * M_PI / period), middle_(middle){}
+    Cosinus(size_t period, size_t middle):middle_(middle), factor_(2 * M_PI / period){}
 
     T
     operator()(size_t x, size_t y, size_t z) const{

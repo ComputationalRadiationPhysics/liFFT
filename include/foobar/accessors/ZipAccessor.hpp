@@ -18,10 +18,10 @@ namespace accessors {
         using DataFirst= T_DataFirst;
         using Func = T_Func;
 
-        AccFirst accFirst_;
-        AccSecond accSecond_;
         DataFirst& dataFirst_;
         Func func_;
+        AccSecond accSecond_;
+        AccFirst accFirst_;
 
         ZipAccessor(DataFirst& dataFirst, const Func& func = Func(), const AccSecond& accSecond = AccSecond(), const AccFirst& accFirst = AccFirst()):
             dataFirst_(dataFirst), func_(func), accSecond_(accSecond), accFirst_(accFirst)

@@ -30,8 +30,6 @@ namespace detail {
     template< typename T, bool T_ownsPointer = true >
     class AoSValues
     {
-    private:
-        size_t numElements_;
     public:
         using type = typename traits::IntegralType<T>::type;
         static constexpr bool ownsPointer = T_ownsPointer;
@@ -109,6 +107,7 @@ namespace detail {
 
     private:
         Data data_;
+        size_t numElements_;
     };
 
 }  // namespace detail

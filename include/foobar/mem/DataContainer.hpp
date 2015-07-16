@@ -159,9 +159,8 @@ namespace foobar {
              }
 
         protected:
-             IdxType extents;
              Memory data;
-
+             IdxType extents;
         };
 
         template< unsigned T_numDims, class T_Memory, class T_BaseAccessor, bool T_isFlatMemory >
