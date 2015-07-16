@@ -16,6 +16,7 @@ using FFT_LIB = foobar::libraries::fftw::FFTW<>;
 #include "foobar/accessors/TransformAccessor.hpp"
 #include "foobar/accessors/TransposeAccessor.hpp"
 #include "foobar/policies/CalcIntensityFunctor.hpp"
+#include <chrono>
 
 namespace po = boost::program_options;
 using std::string;
@@ -68,8 +69,8 @@ void
 copy2Data(const T_Img& img, T_Data& data, unsigned zDim, const T_Acc& acc = T_Acc())
 {
     foobar::types::Vec<3> idx(zDim, 0u, 0u);
-    for(; idx[1] < img.getHeight(); ++idx[1])
-        for(; idx[2] < img.getWidth(); ++idx[2])
+    for(idx[1] = 0; idx[1] < img.getHeight(); ++idx[1])
+        for(idx[2] = 0; idx[2] < img.getWidth(); ++idx[2])
             acc(idx, data) = img(idx[2], idx[1]);
 }
 
@@ -90,8 +91,8 @@ void
 copy2Img(const T_Data& data, T_Img& img, unsigned zDim, const T_AccData& accData = T_AccData(), const T_AccImg& accImg = T_AccImg())
 {
     foobar::types::Vec<3> idx(zDim, 0u, 0u);
-    for(; idx[1] < img.getHeight(); ++idx[1])
-        for(; idx[2] < img.getWidth(); ++idx[2])
+    for(idx[1] = 0; idx[1] < img.getHeight(); ++idx[1])
+        for(idx[2] = 0; idx[2] < img.getWidth(); ++idx[2])
             accImg(foobar::types::Vec<2>(idx[1], idx[2]), img) = accData(idx, data);
 }
 
@@ -107,7 +108,8 @@ getFilledNumber(unsigned num, unsigned minSize, char filler)
 int
 main(int argc, char** argv)
 {
-    unsigned firstIdx, lastIdx, minSize;
+    unsigned firstIdx, lastIdx, minSize, x0, y0;
+    int size;
     char filler;
     string inFilePath, outFilePath;
     desc.add_options()
@@ -116,8 +118,11 @@ main(int argc, char** argv)
         ("output-file,o", po::value<string>(&outFilePath)->default_value("output.tif"), "Output file to write to")
         ("firstIdx", po::value<unsigned>(&firstIdx)->default_value(0), "first index to use")
         ("lastIdx", po::value<unsigned>(&lastIdx)->default_value(0), "last index to use")
-        ("minSize,s", po::value<unsigned>(&minSize)->default_value(0), "Minimum size of the string replaced for %i")
+        ("minSize,m", po::value<unsigned>(&minSize)->default_value(0), "Minimum size of the string replaced for %i")
         ("fillChar,f", po::value<char>(&filler)->default_value('0'), "Char used to fill the string to the minimum size")
+        ("xStart,x", po::value<unsigned>(&x0)->default_value(0), "Offset in x-Direction")
+        ("yStart,y", po::value<unsigned>(&y0)->default_value(0), "Offset in y-Direction")
+        ("size,s", po::value<int>(&size)->default_value(-1), "Size of the image to use (-1=all)")
     ;
 
     po::variables_map vm;
@@ -146,6 +151,7 @@ main(int argc, char** argv)
 
     // Multiple images --> 3D FFT
     // Assume all images have the same size --> load the first one to get extents and create FFT Data
+    auto start = std::chrono::high_resolution_clock::now();
     string curFilePath = replace(inFilePath, "%i", getFilledNumber(firstIdx, minSize, filler));
     libTiff::FloatImage<> img(curFilePath);
     using FFT = foobar::FFT_3D_R2C_F;
@@ -155,8 +161,19 @@ main(int argc, char** argv)
                     )
                  );
     auto output = FFT::getNewFFT_Output(input);
-    auto fft = foobar::makeFFT<FFT_LIB, false>(input, output);
+    auto diff = std::chrono::high_resolution_clock::now() - start;
+    auto sec = std::chrono::duration_cast<std::chrono::seconds>(diff);
+    std::cout << "Init done: " << sec.count() << "s" << std::endl;
+
+    // Init FFT
+    start = std::chrono::high_resolution_clock::now();
+    auto fft = foobar::makeFFT<FFT_LIB>(input, output);
+    diff = std::chrono::high_resolution_clock::now() - start;
+    sec = std::chrono::duration_cast<std::chrono::seconds>(diff);
+    std::cout << "FFT initialized: " << sec.count() << "s" << std::endl;
+
     // Now copy all the data into one memory region
+    start = std::chrono::high_resolution_clock::now();
     copy2Data(img, input, 0);
     for(unsigned i=firstIdx+1; i<=lastIdx; ++i)
     {
@@ -164,13 +181,27 @@ main(int argc, char** argv)
         img.open(curFilePath);
         copy2Data(img, input, i-firstIdx);
     }
+    diff = std::chrono::high_resolution_clock::now() - start;
+    sec = std::chrono::duration_cast<std::chrono::seconds>(diff);
+    std::cout << "Data loaded: " << sec.count() << "s" << std::endl;
+
     // Do the FFT
+    start = std::chrono::high_resolution_clock::now();
     fft(input, output);
+    diff = std::chrono::high_resolution_clock::now() - start;
+    sec = std::chrono::duration_cast<std::chrono::seconds>(diff);
+    std::cout << "FFT done: " << sec.count() << "s" << std::endl;
+
     // Copy the intensities to the img and save it
-    auto acc = foobar::accessors::makeTransformAccessorFor(foobar::policies::CalcIntensityFunc(), output);
+    start = std::chrono::high_resolution_clock::now();
+    auto fullOutput = foobar::getFullData(output);
+    auto acc = foobar::accessors::makeTransformAccessorFor(foobar::policies::CalcIntensityFunc(), fullOutput);
     auto accImg = foobar::accessors::makeTransposeAccessorFor(img);
-    copy2Img(output, img, 0, acc, accImg);
+    copy2Img(fullOutput, img, 0, acc, accImg);
     img.saveTo(outFilePath);
+    diff = std::chrono::high_resolution_clock::now() - start;
+    sec = std::chrono::duration_cast<std::chrono::seconds>(diff);
+    std::cout << "Image saved: " << sec.count() << "s" << std::endl;
 
     return 0;
 }
