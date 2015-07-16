@@ -19,10 +19,10 @@ namespace policies {
         static constexpr unsigned numDims = traits::NumDims<T_Data>::value;
         using Extents = GetExtents< T_Data >;
 
-        unsigned operator()(const T_Data& data){
+        size_t operator()(const T_Data& data){
             Extents extents(data);
             static_assert(numDims>0, "No dimensions?");
-            unsigned result = 1;
+            size_t result = 1;
             for(unsigned i=0; i<numDims; ++i)
                 result *= extents[i];
             return result;
@@ -36,7 +36,7 @@ namespace policies {
         using Extents = GetExtents< T_Data >;
         using Strides = GetStrides< T_Data >;
 
-        unsigned operator()(const T_Data& data){
+        size_t operator()(const T_Data& data){
             Extents extents(data);
             Strides strides(data);
             static_assert(numDims>0, "No dimensions?");
@@ -52,7 +52,7 @@ namespace policies {
      * \param justActualElements True if just existing elements should be counted, false to account for strides (e.g. to get total mem size)
      */
     template< typename T_Data>
-    unsigned getNumElements(const T_Data& data, bool justActualElements = true){
+    size_t getNumElements(const T_Data& data, bool justActualElements = true){
         if(justActualElements)
             return GetNumElements< T_Data, true >()(data);
         else
