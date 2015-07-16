@@ -54,6 +54,7 @@ namespace detail {
         void
         reset(Ptr data, size_t numElements)
         {
+            assert(numElements || !data);
             data_.reset(data);
             numElements_ = numElements;
         }
@@ -61,6 +62,7 @@ namespace detail {
         void
         allocData(size_t numElements)
         {
+            assert(numElements);
             data_.reset(new Value[numElements]);
             numElements_ = numElements;
         }
