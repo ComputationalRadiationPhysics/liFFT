@@ -16,6 +16,7 @@ using FFT_LIB = foobar::libraries::fftw::FFTW<>;
 #include "foobar/accessors/TransformAccessor.hpp"
 #include "foobar/accessors/TransposeAccessor.hpp"
 #include "foobar/policies/CalcIntensityFunctor.hpp"
+#include "foobar/types/SliceView.hpp"
 #include <chrono>
 
 namespace po = boost::program_options;
@@ -55,45 +56,6 @@ do2D_FFT(const string& inFilePath, const string& outFilePath)
                         );
     policies::copy(fullOutput, outImg, transformAcc);
     outImg.save();
-}
-
-/**
- * Copies data from an image to a 3D container using the slice at the specified z-offset
- * @param img  Image to copy
- * @param data Datacontainer to copy to
- * @param zDim z-Index
- * @param acc  Accessor to use to access the data
- */
-template< class T_Img, class T_Data, class T_Acc = foobar::traits::DefaultAccessor_t<T_Data> >
-void
-copy2Data(const T_Img& img, T_Data& data, unsigned zDim, const T_Acc& acc = T_Acc())
-{
-    foobar::types::Vec<3> idx(zDim, 0u, 0u);
-    for(idx[1] = 0; idx[1] < img.getHeight(); ++idx[1])
-        for(idx[2] = 0; idx[2] < img.getWidth(); ++idx[2])
-            acc(idx, data) = img(idx[2], idx[1]);
-}
-
-/**
- * Copies data from a 3D container to an image using the slice at the specified z-offset
- * @param data Datacontainer to copy from
- * @param img  Image to copy to
- * @param zDim z-Index
- * @param accData  Accessor to use to access the data
- * @param accImg  Accessor to use to access the image
- */
-template<
-    class T_Data,
-    class T_Img,
-    class T_AccData = foobar::traits::DefaultAccessor_t<T_Data>,
-    class T_AccImg = foobar::traits::DefaultAccessor_t<T_Img> >
-void
-copy2Img(const T_Data& data, T_Img& img, unsigned zDim, const T_AccData& accData = T_AccData(), const T_AccImg& accImg = T_AccImg())
-{
-    foobar::types::Vec<3> idx(zDim, 0u, 0u);
-    for(idx[1] = 0; idx[1] < img.getHeight(); ++idx[1])
-        for(idx[2] = 0; idx[2] < img.getWidth(); ++idx[2])
-            accImg(foobar::types::Vec<2>(idx[1], idx[2]), img) = accData(idx, data);
 }
 
 string
@@ -165,7 +127,7 @@ main(int argc, char** argv)
     auto sec = std::chrono::duration_cast<std::chrono::seconds>(diff);
     std::cout << "Init done: " << sec.count() << "s" << std::endl;
 
-    // Init FFT
+    // Init FFT, makeRange(foobar::types::Origin)
     start = std::chrono::high_resolution_clock::now();
     auto fft = foobar::makeFFT<FFT_LIB>(input, output);
     diff = std::chrono::high_resolution_clock::now() - start;
@@ -174,12 +136,17 @@ main(int argc, char** argv)
 
     // Now copy all the data into one memory region
     start = std::chrono::high_resolution_clock::now();
-    copy2Data(img, input, 0);
+    using foobar::types::Vec2;
+    using foobar::types::Vec3;
+    using foobar::types::makeRange;
+    auto view = foobar::types::makeSliceView<0>(input, makeRange());
+    foobar::policies::copy(img, view);
     for(unsigned i=firstIdx+1; i<=lastIdx; ++i)
     {
         curFilePath = replace(inFilePath, "%i", getFilledNumber(i, minSize, filler));
         img.open(curFilePath);
-        copy2Data(img, input, i-firstIdx);
+        auto view = foobar::types::makeSliceView<0>(input, makeRange(Vec3(i-firstIdx, 0u, 0u)));
+        foobar::policies::copy(img, view);
     }
     diff = std::chrono::high_resolution_clock::now() - start;
     sec = std::chrono::duration_cast<std::chrono::seconds>(diff);
@@ -194,10 +161,10 @@ main(int argc, char** argv)
 
     // Copy the intensities to the img and save it
     start = std::chrono::high_resolution_clock::now();
-    auto fullOutput = foobar::getFullData(output);
-    auto acc = foobar::accessors::makeTransformAccessorFor(foobar::policies::CalcIntensityFunc(), fullOutput);
+    auto outView = foobar::types::makeSliceView<0>(foobar::getFullData(output), makeRange());
+    auto acc = foobar::accessors::makeTransformAccessorFor(foobar::policies::CalcIntensityFunc(), outView);
     auto accImg = foobar::accessors::makeTransposeAccessorFor(img);
-    copy2Img(fullOutput, img, 0, acc, accImg);
+    foobar::policies::copy(outView, img, acc, accImg);
     img.saveTo(outFilePath);
     diff = std::chrono::high_resolution_clock::now() - start;
     sec = std::chrono::duration_cast<std::chrono::seconds>(diff);
