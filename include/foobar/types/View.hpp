@@ -17,12 +17,18 @@ namespace types {
      */
     template<
         class T_Base,
+        typename T_HasInstance,
         class T_BaseAccessor = traits::DefaultAccessor_t<T_Base>
     >
     class View
     {
         using Base = T_Base;
+        static constexpr bool hasInstance = T_HasInstance::value;
         using BaseAccessor = T_BaseAccessor;
+
+        using RefType = typename std::add_lvalue_reference<Base>::type;
+        using InstanceType = std::conditional_t< hasInstance, Base, RefType >;
+        using ParamType = typename std::conditional_t< hasInstance, std::add_rvalue_reference<Base>, std::add_lvalue_reference<Base> >::type;
 
     public:
         static constexpr unsigned numDims = traits::NumDims<Base>::value;
@@ -30,8 +36,8 @@ namespace types {
         using Accessor = accessors::ArrayAccessor<true>;
 
     private:
-        Base& base_;
-        const BaseAccessor& acc_;
+        InstanceType base_;
+        BaseAccessor acc_;
         Extents offsets_, extents;
         friend class policies::GetExtents<View>;
 
@@ -46,8 +52,8 @@ namespace types {
          * @param extents New extents
          * @param acc Accessor to access the base class
          */
-        View(Base& base, const Extents& offsets, const Extents& extents, const BaseAccessor& acc = BaseAccessor()):
-            base_(base), acc_(acc), offsets_(offsets), extents(extents)
+        View(ParamType base, const Extents& offsets, const Extents& extents, const BaseAccessor& acc = BaseAccessor()):
+            base_(static_cast<ParamType>(base)), acc_(acc), offsets_(offsets), extents(extents)
         {
             policies::GetExtents<Base> bExtents(base_);
             for(unsigned i=0; i<numDims; ++i)
@@ -81,15 +87,15 @@ namespace types {
 
     template<
             class T_Base,
-            class T_BaseAccessor = traits::DefaultAccessor_t<T_Base>,
+            class T_BaseAccessor = traits::DefaultAccessor_t<std::remove_reference_t<T_Base>>,
             class T_Range
         >
-    View< T_Base, T_BaseAccessor >
-    makeView(T_Base& base, const T_Range& range, const T_BaseAccessor& acc = T_BaseAccessor())
+    View< std::remove_reference_t<T_Base>, negate< std::is_lvalue_reference<T_Base> >, T_BaseAccessor >
+    makeView(T_Base&& base, const T_Range& range, const T_BaseAccessor& acc = T_BaseAccessor())
     {
-        using Base = std::remove_cv_t<T_Base>;
-        return View< T_Base, T_BaseAccessor >(
-                base,
+        using Base = std::remove_cv_t<std::remove_reference_t<T_Base>>;
+        return View< std::remove_reference_t<T_Base>, negate< std::is_lvalue_reference<T_Base> >, T_BaseAccessor >(
+                std::forward<T_Base>(base),
                 GetRangeOffset<T_Range, Base>::get(range),
                 GetRangeExtents<T_Range, Base>::get(range, base),
                 acc);

@@ -18,25 +18,30 @@ namespace types {
     template<
         class T_Base,
         unsigned T_fixedDim,
+        typename T_HasInstance,
         class T_BaseAccessor = traits::DefaultAccessor_t<T_Base>
     >
     class SliceView
     {
         using Base = T_Base;
-        using BaseAccessor = T_BaseAccessor;
         static constexpr unsigned fixedDim = T_fixedDim;
+        static constexpr bool hasInstance = T_HasInstance::value;
+        using BaseAccessor = T_BaseAccessor;
         static constexpr unsigned baseNumDims = traits::NumDims<Base>::value;
         static_assert(baseNumDims > 1, "Cannot remove last dimension");
         static_assert(fixedDim < baseNumDims, "Fixed dimension does not exist");
 
+        using RefType = typename std::add_lvalue_reference<Base>::type;
+        using InstanceType = std::conditional_t< hasInstance, Base, RefType >;
+        using ParamType = typename std::conditional_t< hasInstance, std::add_rvalue_reference<Base>, std::add_lvalue_reference<Base> >::type;
     public:
         static constexpr unsigned numDims = baseNumDims - 1;
         using Extents = Vec<numDims>;
         using BaseExtents = Vec<baseNumDims>;
 
     private:
-        Base& base_;
-        const BaseAccessor& acc_;
+        InstanceType base_;
+        BaseAccessor acc_;
         BaseExtents offsets_;
         Extents extents;
 
@@ -70,8 +75,8 @@ namespace types {
          * @param extents New extents
          * @param acc Accessor to access the base class
          */
-        SliceView(Base& base, const BaseExtents& offsets, const Extents& extents, const BaseAccessor& acc = BaseAccessor()):
-            base_(base), acc_(acc), offsets_(offsets), extents(extents)
+        SliceView(ParamType base, const BaseExtents& offsets, const Extents& extents, const BaseAccessor& acc = BaseAccessor()):
+            base_(static_cast<ParamType>(base)), acc_(acc), offsets_(offsets), extents(extents)
         {
             policies::GetExtents<Base> bExtents(base_);
             for(unsigned i=0; i<baseNumDims; ++i)
@@ -96,12 +101,12 @@ namespace types {
          * @param extents New extents
          * @param acc Accessor to access the base class
          */
-        SliceView(Base& base, const BaseExtents& offsets, const BaseExtents& extents, const BaseAccessor& acc = BaseAccessor()):
-            SliceView(base, offsets, removeDimFromVec(extents), acc)
+        SliceView(ParamType base, const BaseExtents& offsets, const BaseExtents& extents, const BaseAccessor& acc = BaseAccessor()):
+            SliceView(static_cast<ParamType>(base), offsets, removeDimFromVec(extents), acc)
         {}
 
         template<typename T_Idx>
-        std::result_of_t< BaseAccessor(const T_Idx&, Base&) >
+        std::result_of_t< BaseAccessor(const BaseExtents&, Base&) >
         operator()(const T_Idx& idx)
         {
             static_assert(traits::NumDims<T_Idx>::value == numDims, "Wrong Idx dimensions");
@@ -112,10 +117,10 @@ namespace types {
         }
 
         template<typename T_Idx>
-        std::result_of_t< BaseAccessor(const T_Idx&, const Base&) >
+        std::result_of_t< BaseAccessor(const BaseExtents&, const Base&) >
         operator()(const T_Idx& idx) const
         {
-            static_assert(traits::NumDims<T_Idx>::value == baseNumDims, "Wrong Idx dimensions");
+            static_assert(traits::NumDims<T_Idx>::value == numDims, "Wrong Idx dimensions");
             BaseExtents idxNew;
             for(unsigned i=0; i<baseNumDims; ++i)
                 idxNew[i] = (i==fixedDim) ? offsets_[i] : offsets_[i] + idx[getIdx(i)];
@@ -127,15 +132,15 @@ namespace types {
     template<
             unsigned T_fixedDim,
             class T_Base,
-            class T_BaseAccessor = traits::DefaultAccessor_t<T_Base>,
+            class T_BaseAccessor = traits::DefaultAccessor_t<std::remove_reference_t<T_Base>>,
             class T_Range
         >
-    SliceView< T_Base, T_fixedDim, T_BaseAccessor >
-    makeSliceView(T_Base& base, const T_Range& range, const T_BaseAccessor& acc = T_BaseAccessor())
+    SliceView< std::remove_reference_t<T_Base>, T_fixedDim, negate< std::is_lvalue_reference<T_Base> >, T_BaseAccessor >
+    makeSliceView(T_Base&& base, const T_Range& range, const T_BaseAccessor& acc = T_BaseAccessor())
     {
-        using Base = std::remove_cv_t<T_Base>;
-        return SliceView< T_Base, T_fixedDim, T_BaseAccessor >(
-                base,
+        using Base = std::remove_cv_t<std::remove_reference_t<T_Base>>;
+        return SliceView< std::remove_reference_t<T_Base>, T_fixedDim, negate< std::is_lvalue_reference<T_Base> >, T_BaseAccessor >(
+                std::forward<T_Base>(base),
                 GetRangeOffset<T_Range, Base>::get(range),
                 GetRangeExtents<T_Range, Base>::get(range, base),
                 acc);
