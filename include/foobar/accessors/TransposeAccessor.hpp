@@ -43,8 +43,9 @@ namespace accessors {
         }
 
         template< class T_Index, class T_Data, typename T_Value >
-        void
+        auto
         operator()(const T_Index& idx, T_Data& data, T_Value&& value)
+        -> decltype( acc_(idx, data, std::forward<T_Value>(value)) )
         {
             T_Index transposedIdx;
             transposeIdx(idx, transposedIdx, data);
