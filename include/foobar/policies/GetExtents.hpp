@@ -14,6 +14,7 @@ namespace policies {
     struct GetExtents: private boost::noncopyable
     {
         using Data = T_Data;
+        static constexpr unsigned numDims = traits::NumDims<Data>::value;
 
         GetExtents(const Data& data): data_(data){}
 

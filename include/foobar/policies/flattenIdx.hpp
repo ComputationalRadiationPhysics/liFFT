@@ -5,6 +5,7 @@
 #include "foobar/traits/NumDims.hpp"
 #include "foobar/traits/IsStrided.hpp"
 #include "foobar/c++14_types.hpp"
+#include <cassert>
 
 namespace foobar {
 namespace policies {
@@ -28,6 +29,7 @@ namespace policies {
         {
             static constexpr unsigned numDims = traits::NumDims<T_Data>::value;
             GetExtents<T_Data> extents(data);
+            assert(checkSizes(idx, extents));
             unsigned flatIdx = idx[0];
             for(unsigned i=1; i<numDims; ++i)
                 flatIdx = flatIdx*extents[i] + idx[i];
@@ -50,6 +52,10 @@ namespace policies {
         operator()(T_Index&& idx, const T_Data& data) const
         {
             static constexpr unsigned numDims = traits::NumDims<T_Data>::value;
+#ifndef _NDEBUG
+            GetExtents<T_Data> extents(data);
+            assert(checkSizes(idx, extents));
+#endif
             GetStrides<T_Data> strides(data);
             unsigned flatIdx = 0;
             for(unsigned i=0; i<numDims; ++i)
