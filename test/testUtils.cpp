@@ -53,6 +53,51 @@ namespace foobarTest {
         write2File(name, data, foobar::accessors::makeTransformAccessor(acc, foobar::policies::CalcIntensityFunc()));
     }
 
+    void
+    testDataWrappers()
+    {
+        const unsigned size = 100u;
+        using Extents = foobar::types::Vec<3>;
+        using FFT = foobar::FFT_3D_R2C_F;
+        auto input = FFT::wrapFFT_Input(
+                        foobar::mem::RealContainer<3, float>(
+                                Extents(size, size, size)
+                        )
+                     );
+        auto data = foobar::mem::RealContainer<3, float>(
+                Extents(size, size, size)
+        );
+        auto output = FFT::wrapFFT_Input(data);
+
+        Extents idx = Extents::all(0u);
+        const float val = 1337;
+        const float val2 = 1338;
+        bool error = false;
+        auto acc = foobar::traits::getDefaultAccessor(input);
+        auto acc2 = foobar::traits::getDefaultAccessor(output);
+        auto acc3 = foobar::traits::getDefaultAccessor(data);
+        for(unsigned i=0; i<4; i++){
+            input(idx) = val;
+            output(idx) = val;
+            if(input(idx) != val)
+                error = true;
+            if(output(idx) != val || acc3(idx, data) != val)
+                error = true;
+            acc(idx, input) = val2;
+            acc2(idx, output) = val2;
+            if(acc(idx, input) != val2 || input(idx)!=val2)
+                error = true;
+            if(acc2(idx, output) != val2 || acc3(idx, data) != val2 || output(idx)!=val2)
+                error = true;
+            if(i<3)
+                idx[i] = size/2;
+        }
+        if(error)
+            std::cerr << "Datawrapper test failed" << std::endl;
+        else
+            std::cout << "Datawrapper test passed" << std::endl;
+    }
+
     void init()
     {
         TestExtents size = TestExtents::all(testSize);
@@ -77,7 +122,7 @@ namespace foobarTest {
             fftC2C = static_cast<decltype(fftC2C)>(malloc(sizeof(FFT)));
             new(fftC2C)auto(FFT(input, output));
         }
-
+        testDataWrappers();
     }
 
     void finalize()
