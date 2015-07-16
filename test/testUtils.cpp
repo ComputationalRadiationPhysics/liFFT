@@ -9,6 +9,8 @@
 #include "foobar/accessors/StreamAccessor.hpp"
 #include "foobar/types/AddDimsWrapper.hpp"
 #include "foobar/policies/CalcIntensityFunctor.hpp"
+#include "foobar/types/View.hpp"
+#include "foobar/types/SliceView.hpp"
 #include <iostream>
 #include <fstream>
 
@@ -51,6 +53,67 @@ namespace foobarTest {
     template< typename T, class T_Accessor = foobar::traits::DefaultAccessor_t<T> >
     void writeIntensity2File(const std::string& name, T& data, T_Accessor acc = T_Accessor()){
         write2File(name, data, foobar::accessors::makeTransformAccessor(acc, foobar::policies::CalcIntensityFunc()));
+    }
+
+    void
+    testView()
+    {
+        using Extents = foobar::types::Vec<2>;
+        const Extents size(100u, 120u);
+        const Extents offset(10u, 5u);
+        const Extents viewSize(40u, 65u);
+        auto data = foobar::mem::RealContainer<2, float>(size);
+        auto view = foobar::types::makeView(data, foobar::types::makeRange(offset, viewSize));
+        Extents idx, viewIdx;
+        bool error = false;
+        for(idx[0] = offset[0], viewIdx[0] = 0; viewIdx[0] < viewSize[0]; ++idx[0], ++viewIdx[0])
+            for(idx[1] = offset[1], viewIdx[1] = 0; viewIdx[1] < viewSize[1]; ++idx[1], ++viewIdx[1])
+            {
+                float value = rand() / RAND_MAX;
+                view(viewIdx) = value;
+                if(data(idx) != view(viewIdx) || data(idx) != value)
+                    error = true;
+            }
+        if(error)
+            std::cerr << "View test failed" << std::endl;
+        else
+            std::cout << "View test passed" << std::endl;
+    }
+
+    unsigned getIdx(unsigned idx, unsigned fixedDim)
+    {
+        return idx >= fixedDim ? idx + 1 : idx;
+    }
+
+    template< unsigned fixedDim >
+    void
+    testSliceView()
+    {
+        using Extents3 = foobar::types::Vec<3>;
+        using Extents2 = foobar::types::Vec<2>;
+        const Extents3 size(100u, 120u, 214u);
+        const Extents3 offset(10u, 5u, 23u);
+        const Extents2 viewSize(40u, 65u);
+        auto data = foobar::mem::RealContainer<3, float>(size);
+        auto view = foobar::types::makeSliceView<fixedDim>(data, foobar::types::makeRange(offset, viewSize));
+        Extents3 idx;
+        Extents2 viewIdx;
+        bool error = false;
+        idx[fixedDim] = offset[fixedDim];
+        unsigned idxOut = getIdx(0, fixedDim);
+        unsigned idxIn = getIdx(1, fixedDim);
+        for(idx[idxOut] = offset[idxOut], viewIdx[0] = 0; viewIdx[0] < viewSize[0]; ++idx[idxOut], ++viewIdx[0])
+            for(idx[idxIn] = offset[idxIn], viewIdx[1] = 0; viewIdx[1] < viewSize[1]; ++idx[idxIn], ++viewIdx[1])
+            {
+                float value = rand() / RAND_MAX;
+                view(viewIdx) = value;
+                if(data(idx) != view(viewIdx) || data(idx) != value)
+                    error = true;
+            }
+        if(error)
+            std::cerr << "SliceView(" << fixedDim << ") test failed" << std::endl;
+        else
+            std::cout << "SliceView(" << fixedDim << ") test passed" << std::endl;
     }
 
     void
@@ -123,6 +186,10 @@ namespace foobarTest {
             new(fftC2C)auto(FFT(input, output));
         }
         testDataWrappers();
+        testView();
+        testSliceView<0>();
+        testSliceView<1>();
+        testSliceView<2>();
     }
 
     void finalize()
