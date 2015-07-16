@@ -86,6 +86,14 @@ namespace foobar {
         void operator()(Input& input, Output& output)
         {
             static_assert(!isInplace, "Must not be called for inplace transforms");
+            if(FFT_Def::kind == FFT_Kind::Complex2Real)
+                input.setRealExtents(output.getExtents());
+            else
+                input.setRealExtents(input.getExtents());
+            if(FFT_Def::kind == FFT_Kind::Real2Complex)
+                output.setRealExtents(input.getExtents());
+            else
+                output.setRealExtents(output.getExtents());
             input.preProcess();
             lib_(input, output);
             output.postProcess();

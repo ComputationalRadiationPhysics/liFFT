@@ -12,12 +12,56 @@
 #include "foobar/mem/ComplexSoAValues.hpp"
 #include "foobar/mem/DataContainer.hpp"
 #include "foobar/traits/DefaultAccessor.hpp"
+#include "foobar/types/SymmetricWrapper.hpp"
 #include "foobar/c++14_types.hpp"
 #include "foobar/FFT_Memory.hpp"
 #include <type_traits>
 #include <functional>
 
 namespace foobar {
+
+    // Fwd decl
+    template< class T1, class T2, class T3, bool t>
+    class FFT;
+
+    namespace detail {
+
+        template< class T_FFT_DataWrapper, bool T_isHalfData = T_FFT_DataWrapper::isHalfData >
+        struct GetFullData
+        {
+            types::SymmetricWrapper<T_FFT_DataWrapper>
+            operator()(T_FFT_DataWrapper& data) const
+            {
+                return types::makeSymmetricWrapper(data, data.realExtents_[data.numDims-1]);
+            }
+        };
+
+        template<class T_FFT_DataWrapper>
+        struct GetFullData< T_FFT_DataWrapper, false >
+        {
+            T_FFT_DataWrapper
+            operator()(T_FFT_DataWrapper& data) const
+            {
+                return data;
+            }
+        };
+
+    }  // namespace detail
+
+    /**
+     * Gets the complete dataset for a dataset of a C2R/R2C FFT
+     * Returns the same data for the real types or any wrapper used in a C2C FFT
+     * MUST be called AFTER the FFT was executed!
+     *
+     * @param data FFT_DataWrapper instance
+     * @return Complete dataset
+     */
+    template< class T_FFT_DataWrapper >
+    std::result_of_t<detail::GetFullData<T_FFT_DataWrapper>(T_FFT_DataWrapper&)>
+    getFullData(T_FFT_DataWrapper& data)
+    {
+        return detail::GetFullData<T_FFT_DataWrapper>()(data);
+    }
 
     /**
      * Wrapper for the data
@@ -82,12 +126,23 @@ namespace foobar {
         using RefType = typename std::add_lvalue_reference<Base>::type;
         using InstanceType = std::conditional_t< hasInstance, Base, RefType >;
         using ParamType = typename std::conditional_t< hasInstance, std::add_rvalue_reference<Base>, std::add_lvalue_reference<Base> >::type;
+        static constexpr bool isHalfData = (FFT_Def::kind == FFT_Kind::Complex2Real && isInput) ||
+                                           (FFT_Def::kind == FFT_Kind::Real2Complex && !isInput);
+        friend class detail::GetFullData<FFT_DataWrapper>;
     private:
         InstanceType base_;
         BaseAccessor acc_;
-        Extents extents_;
+        Extents extents_, realExtents_;
         Memory memory_;
-        MemoryFallback* memFallback_;
+        std::unique_ptr<MemoryFallback> memFallback_;
+
+        void
+        setRealExtents(const Extents& extents)
+        {
+            realExtents_ = extents;
+        }
+        template< class T1, class T2, class T3, bool t>
+        friend class FFT;
     public:
 
         FFT_DataWrapper(ParamType data):
@@ -104,23 +159,37 @@ namespace foobar {
                 memFallback_ = nullptr;
             else
             {
-                memFallback_ = new MemoryFallback();
+                memFallback_.reset(new MemoryFallback());
                 memFallback_->init(extents_);
             }
         }
 
+        /**
+         * Returns an element from the base class
+         * @param idx Index
+         * @return    Element
+         */
         std::result_of_t< BaseAccessor(const IdxType&, Base&) >
         operator()(const IdxType& idx)
         {
             return acc_(idx, base_);
         }
 
+        /**
+         * Returns an element from the base class
+         * @param idx Index
+         * @return    Element
+         */
         std::result_of_t< BaseAccessor(const IdxType&, const Base&) >
         operator()(const IdxType& idx) const
         {
             return acc_(idx, const_cast<const Base&>(base_));
         }
 
+        /**
+         * Returns a reference to the base class
+         * @return Reference to base data
+         */
         RefType
         getBase()
         {
