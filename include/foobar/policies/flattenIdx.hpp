@@ -52,7 +52,7 @@ namespace policies {
         operator()(T_Index&& idx, const T_Data& data) const
         {
             static constexpr unsigned numDims = traits::NumDims<T_Data>::value;
-#ifndef _NDEBUG
+#ifndef NDEBUG
             GetExtents<T_Data> extents(data);
             assert(checkSizes(idx, extents));
 #endif
