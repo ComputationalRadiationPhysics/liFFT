@@ -83,6 +83,22 @@ namespace types {
             const Base& cBase = const_cast<const Base&>(base_);
             return acc_(idx, cBase);
         }
+
+        /**
+         * Returns a reference to the base class
+         * @return Reference to base data
+         */
+        RefType
+        getBase()
+        {
+            return base_;
+        }
+
+        const Extents&
+        getExtents() const
+        {
+            return extents;
+        }
     };
 
     template<
