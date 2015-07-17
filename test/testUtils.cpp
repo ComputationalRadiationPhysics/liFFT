@@ -209,7 +209,7 @@ namespace foobarTest {
         execBaseR2C();
         execBaseC2C();
         auto fullR2COutput = foobar::types::makeSymmetricWrapper(baseR2COutput, baseC2CInput.getExtents()[baseR2CInput.numDims-1]);
-        auto e = compare(fullR2COutput, baseC2COutput);
+        auto e = compare(baseC2COutput, fullR2COutput);
         if(!e.first)
             std::cerr << "Test output mismatch: " << e.second << std::endl;
         else
