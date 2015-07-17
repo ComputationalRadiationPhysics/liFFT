@@ -9,9 +9,9 @@
 
 template< typename T = double >
 class Volume{
+    const size_t xDim_, yDim_, zDim_;
     T* data_;
     bool isOwned_;
-    const size_t xDim_, yDim_, zDim_;
     Volume(const Volume&) = delete;
     Volume& operator=(const Volume&) = delete;
 public:
