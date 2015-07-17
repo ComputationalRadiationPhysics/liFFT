@@ -6,6 +6,10 @@
 #include "foobar/accessors/ArrayAccessor.hpp"
 #include "foobar/policies/GetExtents.hpp"
 #include "foobar/types/Range.hpp"
+#include "foobar/traits/IntegralType.hpp"
+#include "foobar/traits/IsComplex.hpp"
+#include "foobar/traits/IsStrided.hpp"
+#include "foobar/traits/IsAoS.hpp"
 
 namespace foobar {
 namespace types {

@@ -6,6 +6,10 @@
 #include "foobar/accessors/ArrayAccessor.hpp"
 #include "foobar/policies/GetExtents.hpp"
 #include "foobar/types/Range.hpp"
+#include "foobar/traits/IntegralType.hpp"
+#include "foobar/traits/IsComplex.hpp"
+#include "foobar/traits/IsStrided.hpp"
+#include "foobar/traits/IsAoS.hpp"
 
 namespace foobar {
 namespace types {
@@ -149,10 +153,10 @@ namespace types {
             unsigned T_fixedDim,
             class T_Base,
             class T_BaseAccessor = traits::IdentityAccessor_t<std::remove_reference_t<T_Base>>,
-            class T_Range
+            class T_Range = Range<>
         >
     SliceView< std::remove_reference_t<T_Base>, T_fixedDim, negate< std::is_lvalue_reference<T_Base> >, T_BaseAccessor >
-    makeSliceView(T_Base&& base, const T_Range& range, const T_BaseAccessor& acc = T_BaseAccessor())
+    makeSliceView(T_Base&& base, const T_Range& range = T_Range(), const T_BaseAccessor& acc = T_BaseAccessor())
     {
         using Base = std::remove_cv_t<std::remove_reference_t<T_Base>>;
         return SliceView< std::remove_reference_t<T_Base>, T_fixedDim, negate< std::is_lvalue_reference<T_Base> >, T_BaseAccessor >(
