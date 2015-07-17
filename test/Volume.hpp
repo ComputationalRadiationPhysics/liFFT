@@ -12,6 +12,8 @@ class Volume{
     T* data_;
     bool isOwned_;
     const size_t xDim_, yDim_, zDim_;
+    Volume(const Volume&) = delete;
+    Volume& operator=(const Volume&) = delete;
 public:
     using value_type = T;
     using Ref = T&;
@@ -25,6 +27,28 @@ public:
         data_ = data;
         isOwned_ = false;
     }
+
+    Volume(Volume&& obj): xDim_(obj.xDim_), yDim_(obj.yDim_), zDim_(obj.zDim_), data_(obj.data_), isOwned_(obj.isOwned_){
+        if(isOwned_)
+            obj.data_ = nullptr;
+    }
+
+    Volume& operator=(Volume&& obj){
+        if(this == &obj)
+            return *this;
+        if(isOwned_)
+            delete[] data_;
+        data_ = nullptr;
+        xDim_ = obj.xDim_;
+        yDim_ = obj.yDim_;
+        zDim_ = obj.zDim_;
+        data_ = obj.data_;
+        isOwned_ = obj.isOwned_;
+        if(isOwned_)
+            obj.data_ = nullptr;
+        return *this;
+    }
+
     ~Volume(){
         if(isOwned_)
             delete[] data_;

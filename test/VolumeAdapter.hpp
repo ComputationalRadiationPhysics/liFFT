@@ -1,7 +1,5 @@
 #pragma once
 
-#include "foobar/types/DimOffsetWrapper.hpp"
-
 #include "Volume.hpp"
 #include "foobar/traits/NumDims.hpp"
 #include "foobar/policies/GetExtents.hpp"
@@ -66,12 +64,6 @@ template<typename T> inline
 TransposeAdapter<T>
 makeTransposeAdapter(T& obj){
     return TransposeAdapter<T>(obj);
-}
-
-template<typename T, unsigned T_offset> inline
-foobar::types::DimOffsetWrapper<TransposeAdapter<T> , T_offset>
-makeTransposeAdapter(foobar::types::DimOffsetWrapper<T, T_offset>& obj){
-    return foobar::types::DimOffsetWrapper<TransposeAdapter<T> , T_offset>(obj);
 }
 
 namespace foobar{

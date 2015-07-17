@@ -163,4 +163,21 @@ namespace types {
     }
 
 }  // namespace types
+
+namespace traits {
+
+    template< class T_Base, unsigned u, class... T >
+    struct IntegralType< types::SliceView< T_Base, u, T... > >: IntegralType<T_Base>{};
+
+    template< class T_Base, unsigned u, class... T >
+    struct IsComplex< types::SliceView< T_Base, u, T... > >: IsComplex<T_Base>{};
+
+    template< class T_Base, unsigned u, class... T >
+    struct IsStrided< types::SliceView< T_Base, u, T... > >: IsStrided<T_Base>{};
+
+    template< class T_Base, unsigned u, class... T >
+    struct IsAoS< types::SliceView< T_Base, u, T... > >: IsAoS<T_Base>{};
+
+}  // namespace traits
+
 }  // namespace foobar

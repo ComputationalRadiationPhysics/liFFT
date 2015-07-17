@@ -117,4 +117,21 @@ namespace types {
                 acc);
     }
 }  // namespace types
+
+namespace traits {
+
+    template< class T_Base, class... T >
+    struct IntegralType< types::View< T_Base, T... > >: IntegralType<T_Base>{};
+
+    template< class T_Base, class... T >
+    struct IsComplex< types::View< T_Base, T... > >: IsComplex<T_Base>{};
+
+    template< class T_Base, class... T >
+    struct IsStrided< types::View< T_Base, T... > >: IsStrided<T_Base>{};
+
+    template< class T_Base, class... T >
+    struct IsAoS< types::View< T_Base, T... > >: IsAoS<T_Base>{};
+
+}  // namespace traits
+
 }  // namespace foobar
