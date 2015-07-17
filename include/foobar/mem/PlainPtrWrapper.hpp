@@ -11,6 +11,7 @@
 #include "foobar/c++14_types.hpp"
 #include "foobar/traits/IntegralType.hpp"
 #include "foobar/traits/IsComplex.hpp"
+#include "foobar/traits/IsDeviceMemory.hpp"
 
 namespace foobar {
 namespace mem {
@@ -19,7 +20,7 @@ namespace mem {
      * Wrapper to use plain pointers in the framework
      * This adds dimensions, extents and strides
      */
-    template< class T_NumDims, typename T_Pointer, class T_IsStrided >
+    template< class T_NumDims, typename T_Pointer, class T_IsStrided, class T_IsDevicePtr >
     class PlainPtrWrapper: protected DataContainer< T_NumDims::value, T_Pointer*, void, T_IsStrided::value>
     {
     protected:
@@ -27,8 +28,9 @@ namespace mem {
     public:
         static constexpr unsigned numDims = T_NumDims::value;
         using Pointer = T_Pointer;
-        using IntegralType = typename traits::IntegralType<Pointer>::type;
         static constexpr bool isStrided = T_IsStrided::value;
+        static constexpr bool isDevicePtr = T_IsDevicePtr::value;
+        using IntegralType = typename traits::IntegralType<Pointer>::type;
         static constexpr bool isComplex = traits::IsComplex<T_Pointer>::value;
         static constexpr bool isAoS = true;
 
@@ -94,47 +96,27 @@ namespace mem {
 
     // Following are the convenience functions for wrapping pointers
 
-    template< bool T_isComplex, typename T >
-    PlainPtrWrapper<UnsignedConst<1>, RealOrComplex_t< T_isComplex, T >, std::false_type>
-    wrapPtr(T* ptr, unsigned size)
+    template< bool T_isComplex, bool T_isDevicePtr = false, typename T = float, unsigned numDims = 1 >
+    PlainPtrWrapper< UnsignedConst<numDims>, RealOrComplex_t< T_isComplex, T >, std::false_type, BoolConst<T_isDevicePtr> >
+    wrapPtr(T* ptr, const types::Vec<numDims>& size)
     {
-        return PlainPtrWrapper<UnsignedConst<1>, RealOrComplex_t< T_isComplex, T >, std::false_type>(ptr, types::Idx1D(size));
+        return PlainPtrWrapper< UnsignedConst<numDims>, RealOrComplex_t< T_isComplex, T >, std::false_type, BoolConst<T_isDevicePtr> >(ptr, size);
     }
 
-    template< bool T_isComplex, typename T >
-    PlainPtrWrapper<UnsignedConst<1>, RealOrComplex_t< T_isComplex, T >, std::true_type>
-    wrapPtrStrided(T* ptr, unsigned size, unsigned stride)
+    template< bool T_isComplex, bool T_isDevicePtr = false, typename T = float, unsigned numDims = 1 >
+    PlainPtrWrapper< UnsignedConst<numDims>, RealOrComplex_t< T_isComplex, T >, std::true_type, BoolConst<T_isDevicePtr> >
+    wrapPtrStrided(T* ptr, const types::Vec<numDims>& size, const types::Vec<numDims>& stride)
     {
-        return PlainPtrWrapper<UnsignedConst<1>, RealOrComplex_t< T_isComplex, T >, std::true_type>(ptr, types::Idx1D(size), types::Idx1D(stride));
-    }
-
-    template< bool T_isComplex, typename T >
-    PlainPtrWrapper<UnsignedConst<2>, RealOrComplex_t< T_isComplex, T >, std::false_type>
-    wrapPtr(T* ptr, unsigned sizeY, unsigned sizeX)
-    {
-        return PlainPtrWrapper<UnsignedConst<2>, RealOrComplex_t< T_isComplex, T >, std::false_type>(ptr, types::Idx2D(sizeY, sizeX));
-    }
-
-    template< bool T_isComplex, typename T >
-    PlainPtrWrapper<UnsignedConst<2>, RealOrComplex_t< T_isComplex, T >, std::true_type>
-    wrapPtrStrided(T* ptr, unsigned sizeY, unsigned sizeX, unsigned strideY, unsigned strideX)
-    {
-        return PlainPtrWrapper<UnsignedConst<2>, RealOrComplex_t< T_isComplex, T >, std::true_type>(ptr, types::Idx2D(sizeY, sizeX), types::Idx2D(strideY, strideX));
-    }
-
-    template< bool T_isComplex, typename T >
-    PlainPtrWrapper<UnsignedConst<3>, RealOrComplex_t< T_isComplex, T >, std::false_type>
-    wrapPtr(T* ptr, unsigned sizeZ, unsigned sizeY, unsigned sizeX)
-    {
-        return PlainPtrWrapper<UnsignedConst<3>, RealOrComplex_t< T_isComplex, T >, std::false_type>(ptr, types::Idx3D(sizeZ, sizeY, sizeX));
-    }
-
-    template< bool T_isComplex, typename T >
-    PlainPtrWrapper<UnsignedConst<3>, RealOrComplex_t< T_isComplex, T >, std::true_type>
-    wrapPtrStrided(T* ptr, unsigned sizeZ, unsigned sizeY, unsigned sizeX, unsigned strideZ, unsigned strideY, unsigned strideX)
-    {
-        return PlainPtrWrapper<UnsignedConst<3>, RealOrComplex_t< T_isComplex, T >, std::true_type>(ptr, types::Idx3D(sizeZ, sizeY, sizeX), types::Idx3D(strideZ, strideY, strideX));
+        return PlainPtrWrapper< UnsignedConst<numDims>, RealOrComplex_t< T_isComplex, T >, std::true_type, BoolConst<T_isDevicePtr> >(ptr, size, stride);
     }
 
 }  // namespace mem
+
+namespace traits {
+
+    template< class... T >
+    struct IsDeviceMemory< mem::PlainPtrWrapper<T... > >: std::integral_constant<bool, mem::PlainPtrWrapper<T... >::isDevicePtr>{};
+
+}  // namespace traits
+
 }  // namespace foobar

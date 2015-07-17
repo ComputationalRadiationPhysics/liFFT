@@ -12,6 +12,7 @@
 #include "foobar/mem/ComplexSoAValues.hpp"
 #include "foobar/mem/DataContainer.hpp"
 #include "foobar/traits/IdentityAccessor.hpp"
+#include "foobar/traits/IsDeviceMemory.hpp"
 #include "foobar/types/SymmetricWrapper.hpp"
 #include "foobar/c++14_types.hpp"
 #include "foobar/FFT_Memory.hpp"
@@ -105,6 +106,7 @@ namespace foobar {
         static constexpr bool needOwnMemoryPtr = !std::is_reference<AccRefType>::value || std::is_const<AccRefType>::value;
         static constexpr bool isAoS = needOwnMemoryPtr || traits::IsAoS< Base >::value;
         static constexpr bool isStrided = !needOwnMemoryPtr && traits::IsStrided< Base >::value;
+        using IsDeviceMemory = traits::IsDeviceMemory< Base >;
 
         using Memory_t = mem::DataContainer<
                              numDims,

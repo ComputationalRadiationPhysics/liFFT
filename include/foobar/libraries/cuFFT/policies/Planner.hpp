@@ -1,12 +1,13 @@
 #pragma once
 
-#include <cassert>
 #include <cufft.h>
 #include "foobar/types/TypePair.hpp"
 #include "foobar/libraries/cuFFT/Plan.hpp"
 #include "foobar/libraries/cuFFT/traits/FFTType.hpp"
 #include "foobar/libraries/cuFFT/traits/Sign.hpp"
 #include "foobar/libraries/cuFFT/traits/LibTypes.hpp"
+#include <cassert>
+#include <limits>
 
 namespace foobar {
 namespace libraries {
@@ -80,11 +81,17 @@ namespace policies {
             if(result != CUFFT_SUCCESS)
                 throw std::runtime_error("Error creating plan: " + std::to_string(result));
         }
+
+        void checkSize(size_t size)
+        {
+            if(size > std::numeric_limits<unsigned>::max())
+                throw std::runtime_error("Size is to big (cuFFT limitation) :" + std::to_string(size));
+        }
     public:
 
         template< class T_Plan, class T_Allocator >
         void
-        operator()(T_Plan& plan, Input& input, Output& output, const T_Allocator& alloc)
+        operator()(T_Plan& plan, Input& input, Output& output, bool useInplaceForHost, const T_Allocator& alloc)
         {
             static_assert(!isInplace, "Cannot be used for inplace transforms!");
             auto extents(input.getExtents());
@@ -102,10 +109,23 @@ namespace policies {
                     throw std::runtime_error("Dimension " + std::to_string(i) + ": Extents mismatch");
             }
             // Need 2 counts as they are different for C2R/R2C (maybe 1 element off)
-            unsigned numElementsIn = input.getNumElements();
-            unsigned numElementsOut = output.getNumElements();
-            plan.InDevicePtr.reset(alloc.template malloc<LibInType>(numElementsIn * sizeof(LibInType)));
-            plan.OutDevicePtr.reset(alloc.template malloc<LibOutType>(numElementsOut * sizeof(LibOutType)));
+            size_t numElementsIn = input.getNumElements();
+            size_t numElementsOut = output.getNumElements();
+
+            if(useInplaceForHost && !Input::IsDeviceMemory::value && !Output::IsDeviceMemory::value){
+                size_t size = std::max(numElementsIn * sizeof(LibInType), numElementsOut * sizeof(LibOutType));
+                checkSize(size);
+                plan.InDevicePtr.reset(alloc.template malloc<LibInType>(size));
+            }else{
+                size_t inSize = numElementsIn * sizeof(LibInType);
+                size_t outSize = numElementsOut * sizeof(LibOutType);
+                checkSize(inSize);
+                checkSize(outSize);
+                if(!Input::IsDeviceMemory::value)
+                    plan.InDevicePtr.reset(alloc.template malloc<LibInType>(inSize));
+                if(!Output::IsDeviceMemory::value)
+                    plan.OutDevicePtr.reset(alloc.template malloc<LibOutType>(outSize));
+            }
             createPlan(plan, extents);
         }
 
@@ -116,7 +136,10 @@ namespace policies {
             static_assert(isInplace, "Must be used for inplace transforms!");
             auto extents(inOut.getExtents());
             unsigned numElements = inOut.getNumElements();
-            plan.InDevicePtr.reset(alloc.template malloc<LibInType>(numElements * std::max(sizeof(LibInType), sizeof(LibOutType))));
+            size_t size = numElements * std::max(sizeof(LibInType), sizeof(LibOutType));
+            checkSize(size);
+            if(!Input::IsDeviceMemory::value)
+                plan.InDevicePtr.reset(alloc.template malloc<LibInType>(size));
             createPlan(plan, extents);
             return plan;
         }

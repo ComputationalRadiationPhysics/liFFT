@@ -1,9 +1,6 @@
 #pragma once
 
-#include <cufft.h>
-
 namespace foobar {
-namespace libraries {
 namespace traits{
 
         /**
@@ -14,5 +11,4 @@ namespace traits{
         struct IsDeviceMemory: std::false_type{};
 
 }  // namespace traits
-}  // namespace libraries
 }  // namespace foobar
