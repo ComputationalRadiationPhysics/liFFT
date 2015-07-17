@@ -11,7 +11,7 @@
 #include "foobar/libraries/fftw/fftw3Include.h"
 #include "generateData.hpp"
 #include "foobar/policies/Copy.hpp"
-#include "foobar/traits/DefaultAccessor.hpp"
+#include "foobar/traits/IdentityAccessor.hpp"
 #include <type_traits>
 #include <iostream>
 
@@ -86,7 +86,7 @@ namespace foobarTest {
         fft(input, output);
         foobar::policies::copy(aperture, baseC2CInput, VolumeAccessor());
         execBaseC2C();
-        auto res = compare(baseC2COutput, fftResult, CmpError(5e-5, 5e-5), foobar::traits::getDefaultAccessor(baseC2COutput), VolumeAccessor());
+        auto res = compare(baseC2COutput, fftResult, CmpError(5e-5, 5e-5), foobar::traits::getIdentityAccessor(baseC2COutput), VolumeAccessor());
         if(!res.first)
             std::cerr << "Error for C2C with custom types: " << res.second << std::endl;
         else
@@ -107,7 +107,7 @@ namespace foobarTest {
         fft(input, output);
         foobar::policies::copy(aperture, baseR2CInput, VolumeAccessor());
         execBaseR2C();
-        auto res = compare(baseR2COutput, fftResult, CmpError(5e-5, 5e-5), foobar::traits::getDefaultAccessor(baseR2COutput), VolumeAccessor());
+        auto res = compare(baseR2COutput, fftResult, CmpError(5e-5, 5e-5), foobar::traits::getIdentityAccessor(baseR2COutput), VolumeAccessor());
         if(!res.first)
             std::cerr << "Error for R2C with custom types: " << res.second << std::endl;
         else

@@ -33,7 +33,7 @@ namespace mem {
         static constexpr bool isAoS = true;
 
         using IdxType = types::Vec<numDims>;
-        using Accessor = accessors::ArrayAccessor< true >;
+        using IdentityAccessor = accessors::ArrayAccessor< true >;
 
         using Ref = Pointer&;
         using ConstRef = const Pointer&;

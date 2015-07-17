@@ -74,10 +74,10 @@ namespace accessors {
      * @return TransposeAccessor
      */
     template< class T>
-    TransposeAccessor< traits::DefaultAccessor_t<T> >
+    TransposeAccessor< traits::IdentityAccessor_t<T> >
     makeTransposeAccessorFor(const T& = T())
     {
-        return TransposeAccessor< traits::DefaultAccessor_t<T> >();
+        return TransposeAccessor< traits::IdentityAccessor_t<T> >();
     }
 
 }  // namespace accessors

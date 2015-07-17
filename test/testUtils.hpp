@@ -1,7 +1,7 @@
 #pragma once
 
 #include "testDefines.hpp"
-#include "foobar/traits/DefaultAccessor.hpp"
+#include "foobar/traits/IdentityAccessor.hpp"
 #include "foobar/traits/IsComplex.hpp"
 #include "foobar/policies/Loop.hpp"
 #include <iosfwd>
@@ -133,11 +133,11 @@ namespace foobarTest {
      * @param expected   Container with expected values
      * @param is         Container with actual values
      * @param allowedErr Maximum allowed error
-     * @param expAcc     Accessor for expected container [DefaultAccessor used]
-     * @param isAcc      Accessor for actual container [DefaultAccessor used]
+     * @param expAcc     Accessor for expected container [IdentityAccessor used]
+     * @param isAcc      Accessor for actual container [IdentityAccessor used]
      * @return Pair: 1: bool OK, 2: Maximum errors detected
      */
-    template< class T, class U, class T_AccessorT = foobar::traits::DefaultAccessor_t<T>, class T_AccessorU = foobar::traits::DefaultAccessor_t<U> >
+    template< class T, class U, class T_AccessorT = foobar::traits::IdentityAccessor_t<T>, class T_AccessorU = foobar::traits::IdentityAccessor_t<U> >
     std::pair< bool, CmpError >
     compare(const T& expected, const U& is, CmpError allowedErr = CmpError(1e-4, 5e-5), const T_AccessorT& expAcc = T_AccessorT(), const T_AccessorU& isAcc = T_AccessorU())
     {

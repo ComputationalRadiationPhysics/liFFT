@@ -23,7 +23,7 @@ namespace detail {
         using Ptr = std::result_of_t< decltype(&Memory::Memory::getData)(typename Memory::Memory) >;
         static constexpr unsigned numDims = traits::NumDims< Memory >::value;
 
-        using MemAcc = typename Memory::Accessor;
+        using MemAcc = traits::IdentityAccessor_t< Memory >;
         using DataType = std::remove_reference_t< std::result_of_t< MemAcc(types::Vec<numDims>&, Memory&) > >;
 
         Memory data_;
@@ -64,7 +64,7 @@ namespace detail {
         void
         copyFrom(T_Obj& obj, T_Acc&& acc)
         {
-            auto copy = policies::makeCopy(std::forward<T_Acc>(acc), typename Memory::Accessor());
+            auto copy = policies::makeCopy(std::forward<T_Acc>(acc), MemAcc());
             copy(obj, data_);
         }
 
@@ -86,7 +86,7 @@ namespace detail {
                     accessors::ConvertAccessor<PlainAcc, DataType>,
                     PlainAcc>;
 
-            auto copy = policies::makeCopy(typename Memory::Accessor(), AccSrc(std::forward<T_Acc>(acc)));
+            auto copy = policies::makeCopy(MemAcc(), AccSrc(std::forward<T_Acc>(acc)));
             copy(data_, obj);
         }
 

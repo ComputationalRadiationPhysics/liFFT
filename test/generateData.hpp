@@ -1,7 +1,7 @@
 #pragma once
 
 #include "foobar/traits/NumDims.hpp"
-#include "foobar/traits/DefaultAccessor.hpp"
+#include "foobar/traits/IdentityAccessor.hpp"
 #include "foobar/policies/Copy.hpp"
 #include "foobar/policies/GetExtents.hpp"
 #include "foobar/mem/DataContainer.hpp"
@@ -20,7 +20,7 @@ struct GeneratorAccessor
     }
 };
 
-template< typename T, class Generator, class T_Accessor = foobar::traits::DefaultAccessor_t<T> >
+template< typename T, class Generator, class T_Accessor = foobar::traits::IdentityAccessor_t<T> >
 void generateData(T& data, const Generator& generator, const T_Accessor& acc = T_Accessor()){
     static constexpr unsigned numDims = foobar::traits::NumDims<T>::value;
     foobar::types::Vec<numDims> extents;
@@ -28,7 +28,7 @@ void generateData(T& data, const Generator& generator, const T_Accessor& acc = T
     for(unsigned i=0; i<numDims; i++)
         extents[i] = extentsData[i];
     foobar::mem::DataContainer< numDims, const Generator*, GeneratorAccessor, false > genContainer(&generator, extents);
-    foobar::policies::makeCopy(typename decltype(genContainer)::Accessor(), acc)(genContainer, data);
+    foobar::policies::makeCopy(foobar::traits::IdentityAccessor_t< decltype(genContainer) >(), acc)(genContainer, data);
 }
 
 template<typename T>

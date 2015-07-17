@@ -2,7 +2,7 @@
 
 #include "libTiff/image.hpp"
 #include "foobar/traits/NumDims.hpp"
-#include "foobar/traits/DefaultAccessor.hpp"
+#include "foobar/traits/IdentityAccessor.hpp"
 #include "foobar/traits/IsComplex.hpp"
 #include "foobar/traits/IsStrided.hpp"
 #include "foobar/accessors/VolumeAccessor.hpp"
@@ -23,7 +23,7 @@ namespace traits {
     struct IsStrided< libTiff::Image< T_imgFormat, T_Allocator > >: BoolConst<false>{};
 
     template< libTiff::ImageFormat T_imgFormat, class T_Allocator >
-    struct DefaultAccessor< libTiff::Image< T_imgFormat, T_Allocator > >
+    struct IdentityAccessor< libTiff::Image< T_imgFormat, T_Allocator > >
     {
         using type = accessors::VolumeAccessor;
     };

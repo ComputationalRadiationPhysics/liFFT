@@ -256,8 +256,8 @@ namespace policies {
     template<
         class T_Src,
         class T_Dst,
-        class T_SrcAccessor = const foobar::traits::DefaultAccessor_t<T_Src>,
-        class T_DstAccessor = const foobar::traits::DefaultAccessor_t<T_Dst>
+        class T_SrcAccessor = const foobar::traits::IdentityAccessor_t<T_Src>,
+        class T_DstAccessor = const foobar::traits::IdentityAccessor_t<T_Dst>
     >
     void
     copy(const T_Src& src, T_Dst& dst, T_SrcAccessor&& accSrc = T_SrcAccessor(), T_DstAccessor&& accDst = T_DstAccessor())

@@ -70,7 +70,7 @@ namespace policies {
      */
     template<
         class T_Src,
-        class T_SrcAccessor = const foobar::traits::DefaultAccessor_t<T_Src>
+        class T_SrcAccessor = const foobar::traits::IdentityAccessor_t<T_Src>
     >
     struct Loop
     {
@@ -91,7 +91,7 @@ namespace policies {
     template<
         class T_Src,
         class T_Handler,
-        class T_SrcAccessor = const foobar::traits::DefaultAccessor_t<T_Src>,
+        class T_SrcAccessor = const foobar::traits::IdentityAccessor_t<T_Src>,
         class... T_Args
     >
     void
@@ -103,7 +103,7 @@ namespace policies {
     template<
         class T_Src,
         class T_Handler,
-        class T_SrcAccessor = const foobar::traits::DefaultAccessor_t<T_Src>
+        class T_SrcAccessor = const foobar::traits::IdentityAccessor_t<T_Src>
     >
     void
     loop(T_Src& src, T_Handler&& handler, T_SrcAccessor& accSrc = T_SrcAccessor())

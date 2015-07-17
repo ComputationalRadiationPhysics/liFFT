@@ -57,8 +57,8 @@ namespace foobar {
             static constexpr bool isComplex = T_isComplex;
             static constexpr unsigned numDims = T_numDims;
 
-            using Accessor = FileContainerAccessor;
-            friend Accessor;
+            using IdentityAccessor = FileContainerAccessor;
+            friend IdentityAccessor;
         private:
             using DataAccessor = accessors::DataContainerAccessor<>;
             using CopyPolicy = policies::Copy< FileAccessor, DataAccessor >;

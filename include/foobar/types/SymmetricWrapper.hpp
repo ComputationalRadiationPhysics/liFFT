@@ -1,7 +1,7 @@
 #pragma once
 
 #include "foobar/traits/NumDims.hpp"
-#include "foobar/traits/DefaultAccessor.hpp"
+#include "foobar/traits/IdentityAccessor.hpp"
 #include "foobar/policies/GetExtents.hpp"
 #include "foobar/accessors/ArrayAccessor.hpp"
 #include "foobar/types/Complex.hpp"
@@ -14,13 +14,13 @@ namespace foobar {
         /**
          * Wrapper class to access types that are symmetric in the last dimension
          */
-        template< class T_Base, class T_BaseAccessor = traits::DefaultAccessor_t<T_Base> >
+        template< class T_Base, class T_BaseAccessor = traits::IdentityAccessor_t<T_Base> >
         struct SymmetricWrapper
         {
             using Base = T_Base;
             using BaseAccessor = T_BaseAccessor;
 
-            using Accessor = accessors::ArrayAccessor<true>;
+            using IdentityAccessor = accessors::ArrayAccessor<true>;
 
             static constexpr unsigned numDims = traits::NumDims<Base>::value;
 
@@ -93,7 +93,7 @@ namespace foobar {
             friend struct policies::GetExtents<SymmetricWrapper>;
         };
 
-        template< class T_Base, class T_BaseAccessor = traits::DefaultAccessor_t<T_Base> >
+        template< class T_Base, class T_BaseAccessor = traits::IdentityAccessor_t<T_Base> >
         SymmetricWrapper< T_Base, T_BaseAccessor >
         makeSymmetricWrapper(T_Base& base, unsigned realSize)
         {

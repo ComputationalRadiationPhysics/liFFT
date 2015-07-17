@@ -1,6 +1,6 @@
 #pragma once
 
-#include "foobar/traits/DefaultAccessor.hpp"
+#include "foobar/traits/IdentityAccessor.hpp"
 
 namespace foobar {
 namespace accessors {
@@ -10,7 +10,7 @@ namespace accessors {
      * That is an access to (idx, data) will yield Func(AccFirst(idx, dataFirst), AccSecond(idx, data))
      * Therefore you MUST make sure, that the dimensions of dataFirst are at least as big as data!
      */
-    template< class T_DataFirst, class T_Func, class T_AccSecond, class T_AccFirst = traits::DefaultAccessor_t<T_DataFirst> >
+    template< class T_DataFirst, class T_Func, class T_AccSecond, class T_AccFirst = traits::IdentityAccessor_t<T_DataFirst> >
     struct ZipAccessor
     {
         using AccFirst = T_AccFirst;
@@ -36,7 +36,7 @@ namespace accessors {
         }
     };
 
-    template< class T_DataFirst, class T_Func, class T_AccSecond, class T_AccFirst = traits::DefaultAccessor_t<T_DataFirst> >
+    template< class T_DataFirst, class T_Func, class T_AccSecond, class T_AccFirst = traits::IdentityAccessor_t<T_DataFirst> >
     ZipAccessor< T_DataFirst, T_Func, T_AccSecond, T_AccFirst>
     makeZipAccessor(T_DataFirst& dataFirst, const T_Func& func, const T_AccSecond& accSecond, const T_AccFirst& accFirst = T_AccFirst())
     {

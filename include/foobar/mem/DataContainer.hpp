@@ -7,7 +7,7 @@
 #include "foobar/accessors/DataContainerAccessor.hpp"
 #include "foobar/policies/GetExtents.hpp"
 #include "foobar/policies/GetNumElements.hpp"
-#include "foobar/traits/DefaultAccessor.hpp"
+#include "foobar/traits/IdentityAccessor.hpp"
 #include "foobar/mem/RealValues.hpp"
 #include "foobar/mem/ComplexAoSValues.hpp"
 #include "foobar/void_t.hpp"
@@ -21,7 +21,7 @@ namespace foobar {
         /**
          * Container used to store data with its meta-data
          */
-        template< unsigned T_numDims, class T_Memory, class T_BaseAccessor = traits::DefaultAccessor_t<T_Memory>, bool T_isFlatMemory = true, bool T_isStrided=false >
+        template< unsigned T_numDims, class T_Memory, class T_BaseAccessor = traits::IdentityAccessor_t<T_Memory>, bool T_isFlatMemory = true, bool T_isStrided=false >
         struct DataContainer
         {
             static constexpr unsigned numDims = T_numDims;
@@ -30,7 +30,7 @@ namespace foobar {
             static constexpr bool isStrided = T_isStrided;
             static constexpr bool isFlatMemory = T_isFlatMemory;
 
-            using Accessor = accessors::DataContainerAccessor<T_isFlatMemory>;
+            using IdentityAccessor = accessors::DataContainerAccessor<T_isFlatMemory>;
             using IdxType = types::Vec< numDims >;
 
             friend struct accessors::DataContainerAccessor<isFlatMemory>;
@@ -69,19 +69,19 @@ namespace foobar {
             {}
 
             template< typename T_Idx >
-            std::result_of_t< Accessor(T_Idx&, DataContainer&) >
+            std::result_of_t< IdentityAccessor(T_Idx&, DataContainer&) >
             operator()(T_Idx& idx)
             {
                 assert(policies::checkSizes(idx, extents));
-                return Accessor()(idx, *this);
+                return IdentityAccessor()(idx, *this);
             }
 
             template< typename T_Idx >
-            std::result_of_t< Accessor(T_Idx&, const DataContainer&) >
+            std::result_of_t< IdentityAccessor(T_Idx&, const DataContainer&) >
             operator()(T_Idx& idx) const
             {
                 assert(policies::checkSizes(idx, extents));
-                return Accessor()(idx, *this);
+                return IdentityAccessor()(idx, *this);
             }
 
             void
@@ -209,13 +209,13 @@ namespace foobar {
          * A container storing real data with automatic memory management
          */
         template< unsigned T_numDims, typename T_Precision, bool T_isStrided = false >
-        using RealContainer = DataContainer< T_numDims, RealValues<T_Precision>, typename RealValues<T_Precision>::Accessor, true, false >;
+        using RealContainer = DataContainer< T_numDims, RealValues<T_Precision>, traits::IdentityAccessor_t< RealValues<T_Precision> >, true, false >;
 
         /**
          * A container storing complex data with automatic memory management
          */
         template< unsigned T_numDims, typename T_Precision, bool T_isStrided = false >
-        using ComplexContainer = DataContainer< T_numDims, ComplexAoSValues<T_Precision>, typename ComplexAoSValues<T_Precision>::Accessor, true, false >;
+        using ComplexContainer = DataContainer< T_numDims, ComplexAoSValues<T_Precision>, traits::IdentityAccessor_t< ComplexAoSValues<T_Precision> >, true, false >;
 
     }  // namespace mem
 

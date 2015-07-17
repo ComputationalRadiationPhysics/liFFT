@@ -4,7 +4,7 @@
 #include <string>
 #include "libTiff/image.hpp"
 #include "libTiff/traitsAndPolicies.hpp"
-#include "foobar/traits/DefaultAccessor.hpp"
+#include "foobar/traits/IdentityAccessor.hpp"
 #include "foobar/policies/Copy.hpp"
 #include "foobar/types/AddDimsWrapper.hpp"
 #include "foobar/accessors/StreamAccessor.hpp"
@@ -27,7 +27,7 @@ int main(int argc, char** argv) {
     libTiff::FloatImage<> img(srcFilePath);
     std::string tmpFilePath = srcFilePath + ".txt";
     foobar::types::AddDimsWrapper< std::ofstream, 2 > outFile(tmpFilePath);
-    foobar::policies::Copy< typename foobar::traits::DefaultAccessor<decltype(img)>::type, foobar::accessors::StringStreamAccessor<> > copy;
+    foobar::policies::Copy< typename foobar::traits::IdentityAccessor<decltype(img)>::type, foobar::accessors::StringStreamAccessor<> > copy;
 
     copy(img, outFile);
     outFile.close();

@@ -20,7 +20,7 @@ namespace foobar {
             using Value = types::Complex<T>;
             using Ref = types::ComplexRef<T>;
             using ConstRef = const types::ComplexRef<T, true>;
-            using Accessor = accessors::ArrayAccessor<>;
+            using IdentityAccessor = accessors::ArrayAccessor<>;
 
             ComplexSoAValues(){}
             ComplexSoAValues(Ptr realData, Ptr imagData, size_t numElements): real_(realData, numElements), imag_(imagData, numElements){}

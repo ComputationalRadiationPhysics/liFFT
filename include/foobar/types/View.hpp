@@ -1,7 +1,7 @@
 #pragma once
 
 #include "foobar/types/Vec.hpp"
-#include "foobar/traits/DefaultAccessor.hpp"
+#include "foobar/traits/IdentityAccessor.hpp"
 #include "foobar/traits/NumDims.hpp"
 #include "foobar/accessors/ArrayAccessor.hpp"
 #include "foobar/policies/GetExtents.hpp"
@@ -18,7 +18,7 @@ namespace types {
     template<
         class T_Base,
         typename T_HasInstance,
-        class T_BaseAccessor = traits::DefaultAccessor_t<T_Base>
+        class T_BaseAccessor = traits::IdentityAccessor_t<T_Base>
     >
     class View
     {
@@ -33,7 +33,7 @@ namespace types {
     public:
         static constexpr unsigned numDims = traits::NumDims<Base>::value;
         using Extents = Vec<numDims>;
-        using Accessor = accessors::ArrayAccessor<true>;
+        using IdentityAccessor = accessors::ArrayAccessor<true>;
 
     private:
         InstanceType base_;
@@ -103,7 +103,7 @@ namespace types {
 
     template<
             class T_Base,
-            class T_BaseAccessor = traits::DefaultAccessor_t<std::remove_reference_t<T_Base>>,
+            class T_BaseAccessor = traits::IdentityAccessor_t<std::remove_reference_t<T_Base>>,
             class T_Range
         >
     View< std::remove_reference_t<T_Base>, negate< std::is_lvalue_reference<T_Base> >, T_BaseAccessor >

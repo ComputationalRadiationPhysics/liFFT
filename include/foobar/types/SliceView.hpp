@@ -1,7 +1,7 @@
 #pragma once
 
 #include "foobar/types/Vec.hpp"
-#include "foobar/traits/DefaultAccessor.hpp"
+#include "foobar/traits/IdentityAccessor.hpp"
 #include "foobar/traits/NumDims.hpp"
 #include "foobar/accessors/ArrayAccessor.hpp"
 #include "foobar/policies/GetExtents.hpp"
@@ -19,7 +19,7 @@ namespace types {
         class T_Base,
         unsigned T_fixedDim,
         typename T_HasInstance,
-        class T_BaseAccessor = traits::DefaultAccessor_t<T_Base>
+        class T_BaseAccessor = traits::IdentityAccessor_t<T_Base>
     >
     class SliceView
     {
@@ -64,7 +64,7 @@ namespace types {
             return res;
         }
     public:
-        using Accessor = accessors::ArrayAccessor<true>;
+        using IdentityAccessor = accessors::ArrayAccessor<true>;
 
         /**
          * Creates a view with offsets and extents
@@ -148,7 +148,7 @@ namespace types {
     template<
             unsigned T_fixedDim,
             class T_Base,
-            class T_BaseAccessor = traits::DefaultAccessor_t<std::remove_reference_t<T_Base>>,
+            class T_BaseAccessor = traits::IdentityAccessor_t<std::remove_reference_t<T_Base>>,
             class T_Range
         >
     SliceView< std::remove_reference_t<T_Base>, T_fixedDim, negate< std::is_lvalue_reference<T_Base> >, T_BaseAccessor >

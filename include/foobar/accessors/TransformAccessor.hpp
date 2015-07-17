@@ -52,10 +52,10 @@ namespace accessors {
      * @return TransformAccessor
      */
     template< class T, class T_Func >
-    TransformAccessor< traits::DefaultAccessor_t<T>, T_Func >
+    TransformAccessor< traits::IdentityAccessor_t<T>, T_Func >
     makeTransformAccessorFor(T_Func&& func, const T& = T())
     {
-        return TransformAccessor< traits::DefaultAccessor_t<T>, T_Func >(traits::DefaultAccessor_t<T>(), std::forward<T_Func>(func));
+        return TransformAccessor< traits::IdentityAccessor_t<T>, T_Func >(traits::IdentityAccessor_t<T>(), std::forward<T_Func>(func));
     }
 
 }  // namespace accessors

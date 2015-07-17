@@ -11,7 +11,7 @@
 #include "foobar/mem/ComplexAoSValues.hpp"
 #include "foobar/mem/ComplexSoAValues.hpp"
 #include "foobar/mem/DataContainer.hpp"
-#include "foobar/traits/DefaultAccessor.hpp"
+#include "foobar/traits/IdentityAccessor.hpp"
 #include "foobar/types/SymmetricWrapper.hpp"
 #include "foobar/c++14_types.hpp"
 #include "foobar/FFT_Memory.hpp"
@@ -71,7 +71,7 @@ namespace foobar {
         class T_IsInput,
         typename T_Base,
         class T_HasInstance = std::false_type,
-        typename T_BaseAccessor = traits::DefaultAccessor_t<T_Base>
+        typename T_BaseAccessor = traits::IdentityAccessor_t<T_Base>
     >
     class FFT_DataWrapper
     {
@@ -121,7 +121,7 @@ namespace foobar {
         using Memory = detail::FFT_Memory< Memory_t, needOwnMemoryPtr >;
         using MemoryFallback = detail::FFT_Memory< Memory_t, true >;
 
-        using Accessor = accessors::ArrayAccessor<true>;
+        using IdentityAccessor = accessors::ArrayAccessor<true>;
 
         using RefType = typename std::add_lvalue_reference<Base>::type;
         using InstanceType = std::conditional_t< hasInstance, Base, RefType >;
@@ -275,10 +275,10 @@ namespace foobar {
         }
     };
 
-    template< class T_FFT_Def, typename T_Base, class T_HasInstance = std::false_type, typename T_BaseAccessor = traits::DefaultAccessor_t<T_Base> >
+    template< class T_FFT_Def, typename T_Base, class T_HasInstance = std::false_type, typename T_BaseAccessor = traits::IdentityAccessor_t<T_Base> >
     using FFT_InputDataWrapper = FFT_DataWrapper< T_FFT_Def, std::true_type, T_Base, T_HasInstance, T_BaseAccessor >;
 
-    template< class T_FFT_Def, typename T_Base, class T_HasInstance = std::false_type, typename T_BaseAccessor = traits::DefaultAccessor_t<T_Base> >
+    template< class T_FFT_Def, typename T_Base, class T_HasInstance = std::false_type, typename T_BaseAccessor = traits::IdentityAccessor_t<T_Base> >
     using FFT_OutputDataWrapper = FFT_DataWrapper< T_FFT_Def, std::false_type, T_Base, T_HasInstance, T_BaseAccessor >;
 
     namespace policies {

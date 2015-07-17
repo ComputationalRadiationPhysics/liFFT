@@ -52,7 +52,7 @@ namespace foobar {
          * @param acc Accessor used to access the elements in the container via ()-operator(index, base)
          * @return DataWrapper that can then be used as input for a FFT and provides a default Accessor to access the underlying data
          */
-        template<typename T_Base, typename T_BaseAccessor = traits::DefaultAccessor_t<T_Base> >
+        template<typename T_Base, typename T_BaseAccessor = traits::IdentityAccessor_t<T_Base> >
         static FFT_InputDataWrapper<
                 FFT_Definition,
                 std::remove_reference_t<T_Base>,
@@ -79,7 +79,7 @@ namespace foobar {
          * @param acc Accessor used to access the elements in the container via ()-operator(index, base)
          * @return DataWrapper that can then be used as input for a FFT and provides a default Accessor to access the underlying data
          */
-        template< typename T_Base, typename T_BaseAccessor = traits::DefaultAccessor_t<T_Base> >
+        template< typename T_Base, typename T_BaseAccessor = traits::IdentityAccessor_t<T_Base> >
         static FFT_OutputDataWrapper<
                 FFT_Definition,
                 std::remove_reference_t<T_Base>,

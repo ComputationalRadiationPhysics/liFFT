@@ -44,7 +44,7 @@ namespace detail {
                         std::unique_ptr< Value[] >,
                         std::unique_ptr< Value[], NopDeleter >
                      >;
-        using Accessor = accessors::ArrayAccessor<>;
+        using IdentityAccessor = accessors::ArrayAccessor<>;
 
         AoSValues(): AoSValues(nullptr, 0){}
         AoSValues(Ptr data, size_t numElements): data_(data), numElements_(numElements){}

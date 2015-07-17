@@ -55,7 +55,7 @@ namespace foobarTest {
         foobar::mem::RealContainer<2, float> data(foobar::types::Vec<2>(img.getHeight(), img.getWidth()));
         generateData(data, Circle<float>(50, img.getHeight()/2));
         auto acc = foobar::accessors::makeTransposeAccessorFor(img);
-        foobar::policies::copy(data, img, foobar::traits::getDefaultAccessor(data), acc);
+        foobar::policies::copy(data, img, foobar::traits::getIdentityAccessor(data), acc);
         img.saveTo(filePath2);
         img.close();
         libTiff::FloatImage<> img2(filePath2);

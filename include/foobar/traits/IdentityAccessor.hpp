@@ -9,15 +9,15 @@ namespace traits {
      * Returns the default accessor for the given type
      */
     template< typename T, typename T_SFINAE = void >
-    struct DefaultAccessor{
-        using type = typename T::Accessor;
+    struct IdentityAccessor{
+        using type = typename T::IdentityAccessor;
     };
 
     /**
      * Specialization for pointer types
      */
     template< typename T >
-    struct DefaultAccessor<T*>{
+    struct IdentityAccessor<T*>{
         using type = accessors::ArrayAccessor<false>;
     };
 
@@ -25,16 +25,16 @@ namespace traits {
      * Specialization for reference types
      */
     template< typename T >
-    struct DefaultAccessor<T&>: DefaultAccessor<T>{};
+    struct IdentityAccessor<T&>: IdentityAccessor<T>{};
 
     /**
      * Specialization for const types
      */
     template< typename T >
-    struct DefaultAccessor<const T>: DefaultAccessor<T>{};
+    struct IdentityAccessor<const T>: IdentityAccessor<T>{};
 
     template< typename T >
-    using DefaultAccessor_t = typename DefaultAccessor<T>::type;
+    using IdentityAccessor_t = typename IdentityAccessor<T>::type;
 
     /**
      * Returns an instance of the default accessor for the given container
@@ -43,9 +43,9 @@ namespace traits {
      * @return Instance of an accessor
      */
     template< typename T >
-    DefaultAccessor_t<T>
-    getDefaultAccessor(const T&){
-        return DefaultAccessor_t<T>();
+    IdentityAccessor_t<T>
+    getIdentityAccessor(const T&){
+        return IdentityAccessor_t<T>();
     }
 
 }  // namespace traits

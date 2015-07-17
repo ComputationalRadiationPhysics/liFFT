@@ -34,7 +34,7 @@ namespace foobarTest {
      * @param data Data to write
      * @param acc  Accessor to use
      */
-    template< typename T, class T_Accessor = foobar::traits::DefaultAccessor_t<T> >
+    template< typename T, class T_Accessor = foobar::traits::IdentityAccessor_t<T> >
     void write2File(const std::string& name, T& data, T_Accessor acc = T_Accessor()){
         auto copy = foobar::policies::makeCopy(acc, foobar::accessors::StringStreamAccessor<>());
 
@@ -50,7 +50,7 @@ namespace foobarTest {
      * @param data Data to write
      * @param acc  Accessor to use
      */
-    template< typename T, class T_Accessor = foobar::traits::DefaultAccessor_t<T> >
+    template< typename T, class T_Accessor = foobar::traits::IdentityAccessor_t<T> >
     void writeIntensity2File(const std::string& name, T& data, T_Accessor acc = T_Accessor()){
         write2File(name, data, foobar::accessors::makeTransformAccessor(acc, foobar::policies::CalcIntensityFunc()));
     }
@@ -136,9 +136,9 @@ namespace foobarTest {
         const float val = 1337;
         const float val2 = 1338;
         bool error = false;
-        auto acc = foobar::traits::getDefaultAccessor(input);
-        auto acc2 = foobar::traits::getDefaultAccessor(output);
-        auto acc3 = foobar::traits::getDefaultAccessor(data);
+        auto acc = foobar::traits::getIdentityAccessor(input);
+        auto acc2 = foobar::traits::getIdentityAccessor(output);
+        auto acc3 = foobar::traits::getIdentityAccessor(data);
         for(unsigned i=0; i<4; i++){
             input(idx) = val;
             output(idx) = val;
