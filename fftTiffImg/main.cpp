@@ -4,7 +4,7 @@
 #include "libTiff/image.hpp"
 #include "libTiff/traitsAndPolicies.hpp"
 #include "foobar/FFT.hpp"
-#if defined(WITH_CUDA) and false // Cuda memory is not enough
+#if defined(WITH_CUDA) and false
 #include "foobar/libraries/cuFFT/cuFFT.hpp"
 using FFT_LIB = foobar::libraries::cuFFT::CuFFT<>;
 #else
@@ -16,6 +16,7 @@ using FFT_LIB = foobar::libraries::fftw::FFTW<>;
 #include "foobar/accessors/TransformAccessor.hpp"
 #include "foobar/accessors/TransposeAccessor.hpp"
 #include "foobar/policies/CalcIntensityFunctor.hpp"
+#include "foobar/types/View.hpp"
 #include "foobar/types/SliceView.hpp"
 #include <chrono>
 
@@ -70,7 +71,7 @@ getFilledNumber(unsigned num, unsigned minSize, char filler)
 int
 main(int argc, char** argv)
 {
-    unsigned firstIdx, lastIdx, minSize, x0, y0;
+    unsigned firstIdx, lastIdx, minSize, x0, y0, actualSize;
     int size;
     char filler;
     string inFilePath, outFilePath;
@@ -111,15 +112,25 @@ main(int argc, char** argv)
         return 0;
     }
 
+    using foobar::types::Vec2;
+    using foobar::types::Vec3;
+    using foobar::types::makeRange;
+
     // Multiple images --> 3D FFT
     // Assume all images have the same size --> load the first one to get extents and create FFT Data
     auto start = std::chrono::high_resolution_clock::now();
     string curFilePath = replace(inFilePath, "%i", getFilledNumber(firstIdx, minSize, filler));
     libTiff::FloatImage<> img(curFilePath);
+    if(size < 0 )
+        actualSize = std::min(img.getWidth(), img.getHeight());
+    else
+        actualSize = size;
+    std::cout << "Processing " << (lastIdx - firstIdx + 1) << " images with region: [" << x0 << ", " << y0 << "] size " << actualSize << std::endl;
+    auto imgView = foobar::types::makeView(img, makeRange(Vec2(x0, y0), Vec2(actualSize, actualSize)));
     using FFT = foobar::FFT_3D_R2C_F;
     auto input = FFT::wrapFFT_Input(
                     foobar::mem::RealContainer<3, float>(
-                            foobar::types::Vec<3>(lastIdx-firstIdx+1, img.getHeight(), img.getWidth())
+                            foobar::types::Vec<3>(lastIdx-firstIdx+1, actualSize, actualSize)
                     )
                  );
     auto output = FFT::getNewFFT_Output(input);
@@ -136,18 +147,16 @@ main(int argc, char** argv)
 
     // Now copy all the data into one memory region
     start = std::chrono::high_resolution_clock::now();
-    using foobar::types::Vec2;
-    using foobar::types::Vec3;
-    using foobar::types::makeRange;
-    auto view = foobar::types::makeSliceView<0>(input, makeRange());
-    foobar::policies::copy(img, view);
+    auto inputView = foobar::types::makeSliceView<0>(input, makeRange());
+    foobar::policies::copy(imgView, inputView);
     for(unsigned i=firstIdx+1; i<=lastIdx; ++i)
     {
         curFilePath = replace(inFilePath, "%i", getFilledNumber(i, minSize, filler));
-        img.open(curFilePath);
+        imgView.getBase().open(curFilePath);
         auto view = foobar::types::makeSliceView<0>(input, makeRange(Vec3(i-firstIdx, 0u, 0u)));
-        foobar::policies::copy(img, view);
+        foobar::policies::copy(imgView, view);
     }
+    img.close();
     diff = std::chrono::high_resolution_clock::now() - start;
     sec = std::chrono::duration_cast<std::chrono::seconds>(diff);
     std::cout << "Data loaded: " << sec.count() << "s" << std::endl;
@@ -161,11 +170,12 @@ main(int argc, char** argv)
 
     // Copy the intensities to the img and save it
     start = std::chrono::high_resolution_clock::now();
+    libTiff::FloatImage<> outImg(outFilePath, actualSize, actualSize);
     auto outView = foobar::types::makeSliceView<0>(foobar::getFullData(output), makeRange());
     auto acc = foobar::accessors::makeTransformAccessorFor(foobar::policies::CalcIntensityFunc(), outView);
-    auto accImg = foobar::accessors::makeTransposeAccessorFor(img);
-    foobar::policies::copy(outView, img, acc, accImg);
-    img.saveTo(outFilePath);
+    auto accImg = foobar::accessors::makeTransposeAccessorFor(outImg);
+    foobar::policies::copy(outView, outImg , acc, accImg);
+    outImg.save();
     diff = std::chrono::high_resolution_clock::now() - start;
     sec = std::chrono::duration_cast<std::chrono::seconds>(diff);
     std::cout << "Image saved: " << sec.count() << "s" << std::endl;
