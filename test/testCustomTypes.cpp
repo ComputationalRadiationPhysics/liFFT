@@ -52,6 +52,12 @@ namespace foobar {
         struct IsBinaryCompatibleImpl< fftw_complex, foobar::types::Complex<double> >: std::true_type{};
         template<>
         struct IsBinaryCompatibleImpl< fftwf_complex, foobar::types::Complex<float> >: std::true_type{};
+
+        template<typename T>
+        struct IdentityAccessor< Volume<T> >
+        {
+            using type = accessors::VolumeAccessor;
+        };
     }  // namespace traits
 
 }  // namespace foobar
@@ -74,17 +80,17 @@ namespace foobarTest {
     void testComplex()
     {
         using foobar::accessors::VolumeAccessor;
-        auto aperture = makeSliceView<0>(ComplexVol(testSize, testSize), makeRange(), VolumeAccessor());
-        auto fftResult = makeSliceView<0>(ComplexVol(aperture.getBase().xDim(), aperture.getBase().yDim(), aperture.getBase().zDim()), makeRange(), VolumeAccessor());
+        auto aperture = ComplexVol(testSize, testSize);
+        auto fftResult = ComplexVol(aperture.xDim(), aperture.yDim(), aperture.zDim());
         using FFT_Type = foobar::FFT_2D_C2C<TestPrecision>;
-        auto input = FFT_Type::wrapFFT_Input(aperture);
-        auto output = FFT_Type::wrapFFT_Output(fftResult);
+        auto input = FFT_Type::wrapFFT_Input(makeSliceView<0>(aperture));
+        auto output = FFT_Type::wrapFFT_Output(makeSliceView<0>(fftResult));
         auto fft = foobar::makeFFT<TestLibrary>(input, output);
         generateData(aperture, Rect<TestPrecision>(20,testSize/2));
         fft(input, output);
-        foobar::policies::copy(aperture, baseC2CInput);
+        foobar::policies::copy(makeSliceView<0>(aperture), baseC2CInput);
         execBaseC2C();
-        auto res = compare(baseC2COutput, fftResult, CmpError(5e-5, 5e-5));
+        auto res = compare(baseC2COutput, makeSliceView<0>(fftResult), CmpError(5e-5, 5e-5));
         if(!res.first)
             std::cerr << "Error for C2C with custom types: " << res.second << std::endl;
         else
@@ -94,18 +100,17 @@ namespace foobarTest {
     void testReal()
     {
         using foobar::accessors::VolumeAccessor;
-        auto aperture = makeSliceView<0>(RealVol(testSize, testSize), makeRange(), VolumeAccessor());
-        auto fftResult = makeSliceView<0>(ComplexVolFFTW(aperture.getBase().xDim()/2+1, aperture.getBase().yDim(), aperture.getBase().zDim()), makeRange(), VolumeAccessor());
-        auto intensity = makeSliceView<0>(RealVol(aperture.getBase().xDim(), aperture.getBase().yDim(), aperture.getBase().zDim()), makeRange(), VolumeAccessor());
+        auto aperture = RealVol(testSize, testSize);
+        auto fftResult = ComplexVolFFTW(aperture.xDim()/2+1, aperture.yDim(), aperture.zDim());
         using FFT_Type = foobar::FFT_2D_R2C<TestPrecision>;
-        auto input = FFT_Type::wrapFFT_Input(aperture);
-        auto output = FFT_Type::wrapFFT_Output(fftResult);
+        auto input = FFT_Type::wrapFFT_Input(makeSliceView<0>(aperture));
+        auto output = FFT_Type::wrapFFT_Output(makeSliceView<0>(fftResult));
         auto fft = foobar::makeFFT<TestLibrary>(input, output);
         generateData(aperture, Rect<TestPrecision>(20,testSize/2));
         fft(input, output);
-        foobar::policies::copy(aperture, baseR2CInput);
+        foobar::policies::copy(makeSliceView<0>(aperture), baseR2CInput);
         execBaseR2C();
-        auto res = compare(baseR2COutput, fftResult, CmpError(5e-5, 5e-5));
+        auto res = compare(baseR2COutput, makeSliceView<0>(fftResult), CmpError(5e-5, 5e-5));
         if(!res.first)
             std::cerr << "Error for R2C with custom types: " << res.second << std::endl;
         else
