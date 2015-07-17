@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
 
     int result = 0;
 
-    std::string cmd = "python writeData.py -s -i " + tmpFilePath + " -o " + destFilePath;
+    std::string cmd = "python writeData.py -s -i \"" + tmpFilePath + "\" -o \"" + destFilePath + "\"";
     if(std::system(cmd.c_str())){
         std::cerr << "Error converting txt to pdf" << std::endl;
         result = 2;

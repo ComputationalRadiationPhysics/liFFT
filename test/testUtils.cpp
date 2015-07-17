@@ -242,7 +242,7 @@ namespace foobarTest {
         default:
             throw std::runtime_error("Invalid value");
         }
-        std::string cmd = "python writeData.py -i " + txtFile + " -o " + filePath;
+        std::string cmd = "python writeData.py -i \"" + txtFile + "\" -o \"" + filePath + "\"";
         if(std::system(cmd.c_str()))
             std::cout << "Error converting txt to pdf for " << filePath << "\n";
     }
