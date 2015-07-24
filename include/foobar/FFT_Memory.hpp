@@ -95,7 +95,7 @@ namespace detail {
          * @return
          */
         template< class T_Obj, class T_Acc >
-        bool checkPtr(const T_Obj&, const T_Acc&) const {
+        bool checkPtr(const T_Obj&, const T_Acc&, bool) const {
             return true;
         }
     };
@@ -131,7 +131,7 @@ namespace detail {
         }
 
         template< class T_Obj, class T_Acc >
-        bool checkPtr(T_Obj& obj, T_Acc& acc) const
+        bool checkPtr(T_Obj& obj, T_Acc& acc, bool isR2CInplaceInput) const
         {
             static constexpr unsigned numDims = traits::NumDims< T_Obj >::value;
             auto idx = types::Vec<numDims>::all(0);
@@ -143,7 +143,10 @@ namespace detail {
             {
                 unsigned j = i-1;
                 startPtr += (extents[j]-1) * factor;
-                factor *= extents[j];
+                if(isR2CInplaceInput && i == numDims)
+                    factor *= (extents[j] / 2 + 1) * 2;
+                else
+                    factor *= extents[j];
                 idx[j] = extents[j]-1;
                 Ptr isPtr = doGetPtr(obj, acc, idx);
                 if(startPtr != isPtr)

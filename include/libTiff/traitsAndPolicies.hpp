@@ -33,11 +33,11 @@ namespace traits {
 namespace policies {
 
     template< libTiff::ImageFormat T_imgFormat, class T_Allocator >
-    struct GetExtents< libTiff::Image< T_imgFormat, T_Allocator > >
+    struct GetExtentsImpl< libTiff::Image< T_imgFormat, T_Allocator > >
     {
         using type = libTiff::Image< T_imgFormat, T_Allocator >;
 
-        GetExtents(const type& data): extents_(data.getHeight(), data.getWidth()){}
+        GetExtentsImpl(const type& data): extents_(data.getHeight(), data.getWidth()){}
 
         unsigned
         operator[](unsigned dim) const

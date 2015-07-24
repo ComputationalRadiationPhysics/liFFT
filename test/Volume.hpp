@@ -117,7 +117,7 @@ namespace foobar {
         };
 
         template<typename T>
-        struct GetExtents< Volume<T> >: GetVolumeExtents< Volume<T> >
+        struct GetExtentsImpl< Volume<T> >: GetVolumeExtents< Volume<T> >
         {
             using Parent = GetVolumeExtents< Volume<T> >;
             using Parent::Parent;

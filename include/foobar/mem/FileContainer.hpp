@@ -133,6 +133,12 @@ namespace foobar {
                 return data_.getData();
             }
 
+            size_t
+            getMemSize() const
+            {
+                return data_.getMemSize();
+            }
+
             Data&
             getData()
             {
@@ -169,31 +175,5 @@ namespace foobar {
         : std::integral_constant< bool, false>{};
 
     }  // namespace traits
-
-    namespace policies {
-
-        template<
-            typename T_FileHandler,
-            typename T_FileReaderPolicy,
-            typename T_Accuracy,
-            bool T_isComplex,
-            unsigned T_numDims
-        >
-        struct GetExtents< mem::FileContainer< T_FileHandler, T_FileReaderPolicy, T_Accuracy, T_isComplex, T_numDims > >
-        {
-            using type = mem::FileContainer< T_FileHandler, T_FileReaderPolicy, T_Accuracy, T_isComplex, T_numDims >;
-
-            GetExtents(const type& data): extents_(data.getExtents()){}
-
-            unsigned
-            operator[](unsigned dim) const
-            {
-                return extents_[dim];
-            }
-        private:
-            types::Vec<T_numDims> extents_;
-        };
-
-    }  // namespace policies
 
 }  // namespace foobar

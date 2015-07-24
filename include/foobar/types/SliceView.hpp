@@ -147,6 +147,12 @@ namespace types {
         {
             return extents;
         }
+
+        size_t
+        getMemSize() const
+        {
+            return traits::getMemSize(base_);
+        }
     };
 
     template<

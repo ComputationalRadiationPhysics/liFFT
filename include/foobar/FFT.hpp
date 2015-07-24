@@ -54,7 +54,7 @@ namespace foobar {
     class FFT:
             public std::conditional_t<
                 T_InputWrapper::FFT_Def::isInplace,
-                FFT_Interface_Inplace< T_InputWrapper, T_OutputWrapper >,
+                FFT_Interface_Inplace< T_InputWrapper, T_InputWrapper >,
                 FFT_Interface_Outplace< T_InputWrapper, T_OutputWrapper >
             >
     {
@@ -114,10 +114,21 @@ namespace foobar {
         typename T_InputWrapper,
         typename T_OutputWrapper
         >
-    FFT< T_Library, std::decay_t<T_InputWrapper>, std::decay_t<T_OutputWrapper>, T_constructWithReadOnly >
-    makeFFT(T_InputWrapper&& input, T_OutputWrapper&& output)
+    FFT< T_Library, T_InputWrapper, T_OutputWrapper, T_constructWithReadOnly >
+    makeFFT(T_InputWrapper& input, T_OutputWrapper& output)
     {
-        return FFT< T_Library, std::decay_t<T_InputWrapper>, std::decay_t<T_OutputWrapper>, T_constructWithReadOnly >(input, output);
+        return FFT< T_Library, T_InputWrapper, T_OutputWrapper, T_constructWithReadOnly >(input, output);
+    }
+
+    template<
+        class T_Library,
+        bool T_constructWithReadOnly = true,
+        typename T_DataWrapper
+        >
+    FFT< T_Library, T_DataWrapper, T_DataWrapper, T_constructWithReadOnly >
+    makeFFT(T_DataWrapper& input)
+    {
+        return FFT< T_Library, T_DataWrapper, T_DataWrapper, T_constructWithReadOnly >(input);
     }
 
 }  // namespace foobar

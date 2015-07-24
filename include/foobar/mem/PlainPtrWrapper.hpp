@@ -20,44 +20,49 @@ namespace mem {
      * Wrapper to use plain pointers in the framework
      * This adds dimensions, extents and strides
      */
-    template< class T_NumDims, typename T_Pointer, class T_IsStrided, class T_IsDevicePtr >
-    class PlainPtrWrapper: protected DataContainer< T_NumDims::value, T_Pointer*, void, T_IsStrided::value>
+    template< class T_NumDims, typename T_Type, class T_IsStrided, class T_IsDevicePtr >
+    class PlainPtrWrapper: protected DataContainer< T_NumDims::value, T_Type*, void, T_IsStrided::value>
     {
     protected:
-        using Parent = DataContainer< T_NumDims::value, T_Pointer*, void, T_IsStrided::value>;
+        using Parent = DataContainer< T_NumDims::value, T_Type*, void, T_IsStrided::value>;
     public:
         static constexpr unsigned numDims = T_NumDims::value;
-        using Pointer = T_Pointer;
+        using Type = T_Type;
         static constexpr bool isStrided = T_IsStrided::value;
         static constexpr bool isDevicePtr = T_IsDevicePtr::value;
-        using IntegralType = typename traits::IntegralType<Pointer>::type;
-        static constexpr bool isComplex = traits::IsComplex<T_Pointer>::value;
+        using IntegralType = typename traits::IntegralType<Type>::type;
+        static constexpr bool isComplex = traits::IsComplex<Type>::value;
         static constexpr bool isAoS = true;
+
+        static_assert(std::is_same< Type, types::Real<IntegralType> >::value ||
+                std::is_same< Type, types::Complex<IntegralType> >::value,
+                "You must use build-in types!");
 
         using IdxType = types::Vec<numDims>;
         using IdentityAccessor = accessors::ArrayAccessor< true >;
 
-        using Ref = Pointer&;
-        using ConstRef = const Pointer&;
+        using Pointer = Type*;
+        using Ref = Type&;
+        using ConstRef = const Type&;
 
         friend struct policies::GetExtents<PlainPtrWrapper>;
 
-        PlainPtrWrapper(Pointer* ptr, const IdxType& extents): Parent(ptr, extents)
+        PlainPtrWrapper(Pointer ptr, const IdxType& extents): Parent(ptr, extents)
         {
             static_assert(!isStrided, "You need to specify the strides!");
         }
 
         PlainPtrWrapper(IntegralType* ptr, const IdxType& extents):
-            PlainPtrWrapper(policies::safe_ptr_cast<Pointer*>(ptr), extents)
+            PlainPtrWrapper(policies::safe_ptr_cast<Pointer>(ptr), extents)
         {}
 
-        PlainPtrWrapper(Pointer* ptr, const IdxType& extents, const IdxType& strides): Parent(ptr, extents, strides)
+        PlainPtrWrapper(Pointer ptr, const IdxType& extents, const IdxType& strides): Parent(ptr, extents, strides)
         {
             static_assert(isStrided, "You cannot specify strides!!");
         }
 
         PlainPtrWrapper(IntegralType* ptr, const IdxType& extents, const IdxType& strides):
-            PlainPtrWrapper(policies::safe_ptr_cast<Pointer*>(ptr), extents, strides)
+            PlainPtrWrapper(policies::safe_ptr_cast<Pointer>(ptr), extents, strides)
         {}
 
         template< class T_Index >
@@ -77,6 +82,14 @@ namespace mem {
             unsigned flatIdx = policies::flattenIdx(idx, *this);
             return this->data[flatIdx];
         }
+
+        size_t
+        getMemSize() const
+        {
+            return policies::getNumElements(*this, false) * sizeof(Type);
+        }
+
+        using Parent::getExtents;
     };
 
     /**

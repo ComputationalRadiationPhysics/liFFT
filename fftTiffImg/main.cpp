@@ -44,7 +44,7 @@ void
 do2D_FFT(const string& inFilePath, const string& outFilePath)
 {
     using namespace foobar;
-    using FFT = FFT_2D_R2C_F;
+    using FFT = FFT_2D_R2C_F<>;
     auto input = FFT::wrapFFT_Input(libTiff::FloatImage<>(inFilePath, false));
     auto output = FFT::getNewFFT_Output(input);
     auto fft = makeFFT<FFT_LIB, false>(input, output);
@@ -127,7 +127,7 @@ main(int argc, char** argv)
         actualSize = size;
     std::cout << "Processing " << (lastIdx - firstIdx + 1) << " images with region: [" << x0 << ", " << y0 << "] size " << actualSize << std::endl;
     auto imgView = foobar::types::makeView(img, makeRange(Vec2(x0, y0), Vec2(actualSize, actualSize)));
-    using FFT = foobar::FFT_3D_R2C_F;
+    using FFT = foobar::FFT_3D_R2C_F<>;
     auto input = FFT::wrapFFT_Input(
                     foobar::mem::RealContainer<3, float>(
                             foobar::types::Vec<3>(lastIdx-firstIdx+1, actualSize, actualSize)

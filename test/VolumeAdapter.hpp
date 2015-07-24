@@ -70,14 +70,14 @@ namespace foobar{
     namespace policies {
 
         template<typename T>
-        struct GetExtents< SymetricAdapter<T> >: GetVolumeExtents< SymetricAdapter<T> >
+        struct GetExtentsImpl< SymetricAdapter<T> >: GetVolumeExtents< SymetricAdapter<T> >
         {
             using Parent = GetVolumeExtents< SymetricAdapter<T> >;
             using Parent::Parent;
         };
 
         template<typename T>
-        struct GetExtents< TransposeAdapter<T> >: GetVolumeExtents< TransposeAdapter<T> >
+        struct GetExtentsImpl< TransposeAdapter<T> >: GetVolumeExtents< TransposeAdapter<T> >
         {
             using Parent = GetVolumeExtents< TransposeAdapter<T> >;
             using Parent::Parent;

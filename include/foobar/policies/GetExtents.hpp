@@ -10,13 +10,13 @@ namespace policies {
      * Provides a []-operator to get the extents in the specified dimension of the data object given in the constructor
      * Row-Major order assumed, that is last dimension varies fastest
      */
-    template< typename T_Data >
-    struct GetExtents: private boost::noncopyable
+    template< typename T_Data, typename T_SFINAE = void >
+    struct GetExtentsImpl: private boost::noncopyable
     {
         using Data = T_Data;
         static constexpr unsigned numDims = traits::NumDims<Data>::value;
 
-        GetExtents(const Data& data): data_(data){}
+        GetExtentsImpl(const Data& data): data_(data){}
 
         unsigned operator[](unsigned dimIdx) const
         {
@@ -27,7 +27,29 @@ namespace policies {
     };
 
     template< typename T_Data >
-    struct GetExtents< const T_Data >: GetExtents< T_Data >
+    struct GetExtentsImpl< T_Data, void_t< decltype(&T_Data::getExtents) > >
+    {
+        using Data = T_Data;
+        static constexpr unsigned numDims = traits::NumDims<Data>::value;
+        GetExtentsImpl(const Data& data): data_(data){}
+
+        unsigned operator[](unsigned dimIdx) const
+        {
+            return data_.getExtents()[dimIdx];
+        }
+    protected:
+        const Data& data_;
+    };
+
+    template< typename T_Data >
+    struct GetExtents: GetExtentsImpl< T_Data >
+    {
+        using Parent = GetExtentsImpl< T_Data >;
+        using Parent::Parent;
+    };
+
+    template< typename T_Data >
+    struct GetExtents< const T_Data>: GetExtents< T_Data >
     {
         using Parent = GetExtents< T_Data >;
         using Parent::Parent;

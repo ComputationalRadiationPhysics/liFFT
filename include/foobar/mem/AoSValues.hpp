@@ -91,6 +91,12 @@ namespace detail {
             return numElements_;
         }
 
+        size_t
+        getMemSize() const
+        {
+            return numElements_ * sizeof(T);
+        }
+
         ConstRef
         operator[](size_t idx) const
         {

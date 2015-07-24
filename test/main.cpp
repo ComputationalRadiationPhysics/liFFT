@@ -1,4 +1,5 @@
 #include "testUtils.hpp"
+#include "testInplace.hpp"
 #include "testCustomTypes.hpp"
 #include "testFile.hpp"
 #include "testPlainPtr.hpp"
@@ -9,6 +10,7 @@ int main(int argc, char** argv) {
     init();
     visualizeBase();
 
+    testInplace();
     testFile();
     testCustomTypes();
     testPlainPtr();

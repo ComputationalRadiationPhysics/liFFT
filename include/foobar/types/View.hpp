@@ -98,6 +98,12 @@ namespace types {
             return base_;
         }
 
+        size_t
+        getMemSize() const
+        {
+            return traits::getMemSize(base_);
+        }
+
         const Extents&
         getExtents() const
         {

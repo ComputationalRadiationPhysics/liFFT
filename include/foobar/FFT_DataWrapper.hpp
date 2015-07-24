@@ -24,6 +24,7 @@ namespace foobar {
     // Fwd decl
     template< class T1, class T2, class T3, bool t>
     class FFT;
+    template< class > class FFT_InplaceOutput;
 
     namespace detail {
 
@@ -45,6 +46,43 @@ namespace foobar {
             {
                 return data;
             }
+        };
+
+        struct IInplaceOutput
+        {
+            virtual void preProcess() = 0;
+            virtual void postProcess() = 0;
+        protected:
+            IInplaceOutput(){}
+            virtual ~IInplaceOutput(){}
+        };
+
+        template< bool T_isInplace = false >
+        class FFT_DataWrapperBase
+        {
+        protected:
+            void preProcess(){}
+            void postProcess(){}
+            FFT_DataWrapperBase(){}
+            ~FFT_DataWrapperBase(){}
+        };
+
+        template<>
+        class FFT_DataWrapperBase<true>
+        {
+        protected:
+            void preProcess(){
+                if(inplaceOutput_)
+                    inplaceOutput_->preProcess();
+            }
+            void postProcess(){
+                if(inplaceOutput_)
+                    inplaceOutput_->postProcess();
+            }
+            detail::IInplaceOutput* inplaceOutput_;
+
+            FFT_DataWrapperBase(): inplaceOutput_(nullptr){}
+            ~FFT_DataWrapperBase(){}
         };
 
     }  // namespace detail
@@ -74,7 +112,7 @@ namespace foobar {
         class T_HasInstance = std::false_type,
         typename T_BaseAccessor = traits::IdentityAccessor_t<T_Base>
     >
-    class FFT_DataWrapper
+    class FFT_DataWrapper: public detail::FFT_DataWrapperBase<T_FFT_Def::isInplace>
     {
     public:
         using FFT_Def =  T_FFT_Def;
@@ -83,7 +121,9 @@ namespace foobar {
         using BaseAccessor = T_BaseAccessor;
         static constexpr bool hasInstance = T_HasInstance::value;
 
-        static_assert(!FFT_Def::isInplace, "Use the FFT_InplaceDataWrapper for inplace transforms");
+        using Parent = detail::FFT_DataWrapperBase<T_FFT_Def::isInplace>;
+
+        static_assert(!FFT_Def::isInplace || isInput, "Only the input container must be specified for inplace transforms");
         static constexpr unsigned numDims = traits::NumDims< Base >::value;
         static_assert(numDims == FFT_Def::numDims, "Wrong number of dimensions");
         using IdxType = types::Vec<numDims>;
@@ -104,6 +144,7 @@ namespace foobar {
         static_assert(std::is_same<PrecisionType, typename FFT_Def::PrecisionType>::value, "Wrong precision type");
 
         static constexpr bool needOwnMemoryPtr = !std::is_reference<AccRefType>::value || std::is_const<AccRefType>::value;
+        static_assert(!FFT_Def::isInplace || !needOwnMemoryPtr, "Memory used is not writable");
         static constexpr bool isAoS = needOwnMemoryPtr || traits::IsAoS< Base >::value;
         static constexpr bool isStrided = !needOwnMemoryPtr && traits::IsStrided< Base >::value;
         using IsDeviceMemory = traits::IsDeviceMemory< Base >;
@@ -131,6 +172,7 @@ namespace foobar {
         static constexpr bool isHalfData = (FFT_Def::kind == FFT_Kind::Complex2Real && isInput) ||
                                            (FFT_Def::kind == FFT_Kind::Real2Complex && !isInput);
         friend class detail::GetFullData<FFT_DataWrapper>;
+        friend class FFT_InplaceOutput<FFT_DataWrapper>;
     private:
         InstanceType base_;
         BaseAccessor acc_;
@@ -146,19 +188,55 @@ namespace foobar {
         template< class T1, class T2, class T3, bool t>
         friend class FFT;
     public:
+        FFT_DataWrapper(ParamType data, BaseAccessor acc = BaseAccessor()):
+            base_(static_cast<ParamType>(data)), acc_(std::move(acc))
+        {
+            static_assert(!FFT_Def::isInplace || FFT_Def::kind != FFT_Kind::Complex2Real, "No real extents set");
 
-        FFT_DataWrapper(ParamType data):
-            FFT_DataWrapper(static_cast<ParamType>(data), BaseAccessor()){}
+            policies::GetExtents<Base> extents(base_);
+            for(unsigned i=0; i<numDims; ++i)
+                extents_[i] = extents[i];
+            memory_.init(extents_);
+            if(memory_.checkPtr(base_, acc_, FFT_Def::isInplace && !isComplex))
+                memFallback_ = nullptr;
+            else if(FFT_Def::isInplace)
+                throw std::runtime_error("Cannot use given memory as the strides/indexing is wrong!");
+            else
+            {
+                memFallback_.reset(new MemoryFallback());
+                memFallback_->init(extents_);
+            }
+        }
 
-        FFT_DataWrapper(ParamType data, BaseAccessor acc):
+        FFT_DataWrapper(ParamType data, unsigned realSizeLastDim, BaseAccessor acc = BaseAccessor()):
             base_(static_cast<ParamType>(data)), acc_(std::move(acc))
         {
             policies::GetExtents<Base> extents(base_);
             for(unsigned i=0; i<numDims; ++i)
                 extents_[i] = extents[i];
+            if((FFT_Def::kind == FFT_Kind::Complex2Real && isInput) ||
+                    (FFT_Def::kind == FFT_Kind::Real2Complex && !isInput) ||
+                    FFT_Def::kind == FFT_Kind::Complex2Complex)
+            {
+                if(extents_[numDims - 1] != realSizeLastDim)
+                    throw std::runtime_error("Invalid size given");
+            }else if((FFT_Def::kind == FFT_Kind::Complex2Real && !isInput) ||
+                    (FFT_Def::kind == FFT_Kind::Real2Complex && isInput))
+            {
+                if(extents_[numDims - 1] != realSizeLastDim / 2 + 1)
+                    throw std::runtime_error("Invalid size given");
+            }
+            if(FFT_Def::isInplace)
+            {
+                realExtents_ = extents_;
+                realExtents_[numDims - 1] = realSizeLastDim;
+            }
+
             memory_.init(extents_);
-            if(memory_.checkPtr(base_, acc_))
+            if(memory_.checkPtr(base_, acc_, FFT_Def::isInplace && !isComplex))
                 memFallback_ = nullptr;
+            else if(FFT_Def::isInplace)
+                throw std::runtime_error("Cannot use given memory as the strides/indexing is wrong!");
             else
             {
                 memFallback_.reset(new MemoryFallback());
@@ -238,10 +316,10 @@ namespace foobar {
         /**
          * Returns the number of actual elements (ignoring strides)
          */
-        unsigned
+        size_t
         getNumElements() const
         {
-            return std::accumulate(extents_.cbegin(), extents_.cend(), 1u, std::multiplies<unsigned>());
+            return std::accumulate(extents_.cbegin(), extents_.cend(), 1u, std::multiplies<size_t>());
         }
 
         /**
@@ -258,6 +336,7 @@ namespace foobar {
                 else
                     memory_.copyFrom(base_, acc_);
             }
+            Parent::preProcess();
         }
 
         /**
@@ -274,6 +353,7 @@ namespace foobar {
                 else
                     memory_.copyTo(base_, acc_);
             }
+            Parent::postProcess();
         }
     };
 
@@ -282,23 +362,5 @@ namespace foobar {
 
     template< class T_FFT_Def, typename T_Base, class T_HasInstance = std::false_type, typename T_BaseAccessor = traits::IdentityAccessor_t<T_Base> >
     using FFT_OutputDataWrapper = FFT_DataWrapper< T_FFT_Def, std::false_type, T_Base, T_HasInstance, T_BaseAccessor >;
-
-    namespace policies {
-
-        template< class... T >
-        struct GetExtents< FFT_DataWrapper< T... > >
-        {
-            using Data = FFT_DataWrapper< T... >;
-            GetExtents(const Data& data): data_(data){}
-
-            unsigned operator[](unsigned dimIdx) const
-            {
-                return data_.getExtents()[dimIdx];
-            }
-        private:
-            const Data& data_;
-        };
-
-    }  // namespace policies
 
 }  // namespace foobar

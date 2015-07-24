@@ -7,6 +7,7 @@
 #include "foobar/types/Complex.hpp"
 #include "foobar/c++14_types.hpp"
 #include "foobar/traits/IsComplex.hpp"
+#include "foobar/traits/GetMemSize.hpp"
 
 namespace foobar {
     namespace types {
@@ -86,11 +87,17 @@ namespace foobar {
                 }else
                     return acc_(idx, base_);
             }
+
+            size_t
+            getMemSize() const
+            {
+                return traits::getMemSize(base_);
+            }
         private:
             Base& base_;
             BaseAccessor acc_;
             unsigned realSize_;
-            friend struct policies::GetExtents<SymmetricWrapper>;
+            friend struct policies::GetExtentsImpl<SymmetricWrapper>;
         };
 
         template< class T_Base, class T_BaseAccessor = traits::IdentityAccessor_t<T_Base> >
@@ -105,13 +112,13 @@ namespace foobar {
     namespace policies {
 
         template< class T_Base, class T_Accessor >
-        struct GetExtents< types::SymmetricWrapper< T_Base, T_Accessor> >: private boost::noncopyable
+        struct GetExtentsImpl< types::SymmetricWrapper< T_Base, T_Accessor> >: private boost::noncopyable
         {
             using Data = types::SymmetricWrapper< T_Base, T_Accessor>;
             using Extents = GetExtents<T_Base>;
             static constexpr unsigned numDims = traits::NumDims<Data>::value;
 
-            GetExtents(const Data& data): data_(data){}
+            GetExtentsImpl(const Data& data): data_(data){}
 
             unsigned operator[](unsigned dimIdx) const
             {
