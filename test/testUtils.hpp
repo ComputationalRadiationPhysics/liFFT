@@ -4,8 +4,8 @@
 #include "foobar/traits/IdentityAccessor.hpp"
 #include "foobar/traits/IsComplex.hpp"
 #include "foobar/policies/Loop.hpp"
-#include <iosfwd>
 #include <cmath>
+#include <iostream>
 
 namespace foobarTest {
 
@@ -144,6 +144,26 @@ namespace foobarTest {
         CompareFunc result(allowedErr);
         foobar::policies::loop(expected, result, expAcc, is, isAcc);
         return std::make_pair(result.ok, result.e);
+    }
+
+    /**
+     * Checks if the results match and prints a message about the result
+     *
+     * @param baseRes   Result from base execution (assumed valid)
+     * @param res       Data to compare against
+     * @param testDescr String the identifies the test
+     * @param maxErr    Maximum allowed error
+     * @return True on success
+     */
+    template< class T_BaseResult, class T_Result >
+    bool checkResult(const T_BaseResult& baseRes, const T_Result& res, const std::string& testDescr, CmpError maxErr = CmpError(5e-5, 5e-5))
+    {
+        auto cmpRes = compare(baseRes, res, maxErr);
+        if(!cmpRes.first)
+            std::cerr << "Error for " << testDescr << ": " << cmpRes.second << std::endl;
+        else
+            std::cout << testDescr << " passed" << std::endl;
+        return cmpRes.first;
     }
 
 }  // namespace foobarTest

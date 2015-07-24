@@ -90,11 +90,7 @@ namespace foobarTest {
         fft(input, output);
         foobar::policies::copy(makeSliceView<0>(aperture), baseC2CInput);
         execBaseC2C();
-        auto res = compare(baseC2COutput, makeSliceView<0>(fftResult), CmpError(5e-5, 5e-5));
-        if(!res.first)
-            std::cerr << "Error for C2C with custom types: " << res.second << std::endl;
-        else
-            std::cout << "C2C with custom types passed" << std::endl;
+        checkResult(baseC2COutput, makeSliceView<0>(fftResult), "C2C with custom types");
     }
 
     void testReal()
@@ -110,11 +106,7 @@ namespace foobarTest {
         fft(input, output);
         foobar::policies::copy(makeSliceView<0>(aperture), baseR2CInput);
         execBaseR2C();
-        auto res = compare(baseR2COutput, makeSliceView<0>(fftResult), CmpError(5e-5, 5e-5));
-        if(!res.first)
-            std::cerr << "Error for R2C with custom types: " << res.second << std::endl;
-        else
-            std::cout << "R2C with custom types passed" << std::endl;
+        checkResult(baseR2COutput, makeSliceView<0>(fftResult), "R2C with custom types");
     }
 
     void testCustomTypes()

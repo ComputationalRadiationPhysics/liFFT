@@ -25,11 +25,7 @@ namespace foobarTest {
         fft(inWrapped, outWrapped);
         foobar::policies::copy(inWrapped, baseR2CInput);
         execBaseR2C();
-        auto res = compare(baseR2COutput, outWrapped);
-        if(!res.first)
-            std::cerr << "Error for R2C with PlainPtrWrapper: " << res.second << std::endl;
-        else
-            std::cout << "R2C with PlainPtrWrapper passed" << std::endl;
+        checkResult(baseR2COutput, outWrapped, "R2C with PlainPtrWrapper");
     }
 
 }  // namespace foobarTest

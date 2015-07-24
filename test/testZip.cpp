@@ -33,11 +33,7 @@ namespace foobarTest {
         fft(input, output);
         foobar::policies::copy(inputProd, baseR2CInput);
         execBaseR2C();
-        auto res = compare(baseR2COutput, output, CmpError(5e-5, 5e-5));
-        if(!res.first)
-            std::cerr << "Error for R2C with zip accessor: " << res.second << std::endl;
-        else
-            std::cout << "R2C with zip accessor passed" << std::endl;
+        checkResult(baseR2COutput, output, "R2C with zip accessor");
     }
 
     void testZipFile(const std::string& filePath1, const std::string& filePath2)
@@ -45,7 +41,7 @@ namespace foobarTest {
         libTiff::FloatImage<> img1(filePath1, false);
         libTiff::FloatImage<> img2(filePath2, false);
         auto acc = foobar::accessors::makeZipAccessor(img1, std::multiplies<foobar::types::Real<TestPrecision>>(), foobar::traits::getIdentityAccessor(img2));
-        using FFT_Type = foobar::FFT_2D_R2C_F;
+        using FFT_Type = foobar::FFT_2D_R2C_F<>;
         auto input = FFT_Type::wrapFFT_Input(img2, acc);
         auto output = FFT_Type::getNewFFT_Output(input);
         auto fft = foobar::makeFFT< TestLibrary, false >(input, output);
@@ -53,11 +49,7 @@ namespace foobarTest {
         foobar::policies::copy(img2, baseR2CInput, acc);
         fft(input, output);
         execBaseR2C();
-        auto res = compare(baseR2COutput, output);
-        if(!res.first)
-            std::cerr << "Error in TIFF-ZIP test: " << res.second << std::endl;
-        else
-            std::cout << "TIFF-ZIP test passed" << std::endl;
+        checkResult(baseR2COutput, output, "TIFF-ZIP test");
         visualizeOutput(BaseInstance::OutR2C, "Tiff-Zip.pdf");
     }
 

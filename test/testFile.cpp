@@ -25,11 +25,7 @@ namespace foobarTest {
         fft(input, output);
         foobar::policies::copy(file, baseR2CInput);
         execBaseR2C();
-        auto res = compare(baseR2COutput, fftResult);
-        if(!res.first)
-            std::cerr << "Error for R2C with file input: " << res.second << std::endl;
-        else
-            std::cout << "R2C with file input passed" << std::endl;
+        checkResult(baseR2COutput, fftResult, "R2C with file input");
     }
 
     void testTiffCp(const std::string& filePath)
@@ -40,11 +36,7 @@ namespace foobarTest {
         img.close();
         libTiff::FloatImage<> img1(filePath);
         libTiff::FloatImage<> img2(filePath2);
-        auto res = compare(img1, img2, CmpError(1e-8, 1e-8));
-        if(!res.first)
-            std::cerr << "Tiff copy failed" << std::endl;
-        else
-            std::cout << "Tiff copy passed" << std::endl;
+        checkResult(img1, img2, "TIFF copy");
         std::remove(filePath2.c_str());
     }
 
@@ -71,7 +63,7 @@ namespace foobarTest {
     void testTiffFile(const std::string& filePath)
     {
         libTiff::FloatImage<> img(filePath, false);
-        using FFT_Type = foobar::FFT_2D_R2C_F;
+        using FFT_Type = foobar::FFT_2D_R2C_F<>;
         auto input = FFT_Type::wrapFFT_Input(img);
         auto output = FFT_Type::getNewFFT_Output(input);
         auto fft = foobar::makeFFT< TestLibrary, false >(input, output);
@@ -79,11 +71,7 @@ namespace foobarTest {
         foobar::policies::copy(img, baseR2CInput);
         fft(input, output);
         execBaseR2C();
-        auto res = compare(baseR2COutput, output);
-        if(!res.first)
-            std::cerr << "Error in TIFF test: " << res.second << std::endl;
-        else
-            std::cout << "TIFF test passed" << std::endl;
+        checkResult(baseR2COutput, output, "TIFF test");
         visualizeOutput(BaseInstance::OutR2C, "outputTiff.pdf");
     }
 

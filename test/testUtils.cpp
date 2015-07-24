@@ -121,7 +121,7 @@ namespace foobarTest {
     {
         const unsigned size = 100u;
         using Extents = foobar::types::Vec<3>;
-        using FFT = foobar::FFT_3D_R2C_F;
+        using FFT = foobar::FFT_3D_R2C_F<>;
         auto input = FFT::wrapFFT_Input(
                         foobar::mem::RealContainer<3, float>(
                                 Extents(size, size, size)
@@ -209,11 +209,8 @@ namespace foobarTest {
         execBaseR2C();
         execBaseC2C();
         auto fullR2COutput = foobar::types::makeSymmetricWrapper(baseR2COutput, baseC2CInput.getExtents()[baseR2CInput.numDims-1]);
-        auto e = compare(baseC2COutput, fullR2COutput);
-        if(!e.first)
-            std::cerr << "Test output mismatch: " << e.second << std::endl;
-        else
-            std::cout << "Self-check passed" << std::endl;
+        checkResult(baseC2COutput, fullR2COutput, "Self check");
+
         visualizeOutput(BaseInstance::InC2C, "inputC2C.pdf");
         visualizeOutput(BaseInstance::InR2C, "inputR2C.pdf");
         visualizeOutput(BaseInstance::OutC2C, "outputC2C.pdf");
