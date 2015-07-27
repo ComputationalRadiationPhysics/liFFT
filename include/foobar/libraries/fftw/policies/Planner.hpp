@@ -81,7 +81,7 @@ namespace policies {
             }
             return policies::CreatePlan<Precision>().Create(
                     numDims,
-                    reinterpret_cast<const int*>(input.getExtentsPtr()),
+                    reinterpret_cast<const int*>(input.getFullExtents().data()),
                     safe_ptr_cast<LibInType>(input.getDataPtr()),
                     safe_ptr_cast<LibOutType>(output.getDataPtr()),
                     traits::Sign<isFwd>::value,
@@ -96,7 +96,7 @@ namespace policies {
             static_assert(isInplace, "Must be used for inplace transforms!");
             return policies::CreatePlan<Precision>().Create(
                     numDims,
-                    reinterpret_cast<const int*>(inOut.getExtentsPtr()),
+                    reinterpret_cast<const int*>(inOut.getFullExtents().data()),
                     safe_ptr_cast<LibInType>(inOut.getDataPtr()),
                     reinterpret_cast<LibOutType>(safe_ptr_cast<LibInType>(inOut.getDataPtr())),
                     traits::Sign<isFwd>::value,

@@ -3,6 +3,7 @@
 #include <cassert>
 #include <type_traits>
 #include <cufft.h>
+#include <string>
 #include "foobar/types/TypePair.hpp"
 #include "foobar/libraries/cuFFT/Plan.hpp"
 #include "foobar/libraries/cuFFT/traits/FFTType.hpp"
@@ -113,6 +114,28 @@ namespace policies {
 
         using Executer = detail::ExecutePlan< Precision, isComplexIn, isComplexOut, isFwd >;
 
+        template< class T_Extents, typename T_Ptr, class T_Copier >
+        void
+        copyIn(const T_Extents& inExtents, const T_Extents& outExtents, T_Ptr dest, T_Ptr src, bool inPlace, const T_Copier& copy)
+        {
+            size_t numElements = foobar::policies::getNumElementsFromExtents(inExtents);
+            size_t w = inExtents[numDims-1] * sizeof(LibInType);
+            size_t h = numElements * sizeof(LibInType) / w;
+            size_t pitch = (inPlace && !isComplexIn) ? outExtents[numDims-1] * sizeof(LibOutType) : w;
+            copy.H2D(dest, src, w, h, pitch, w);
+        }
+
+        template< class T_Extents, typename T_Ptr, class T_Copier >
+        void
+        copyOut(const T_Extents& inExtents, const T_Extents& outExtents, T_Ptr dest, T_Ptr src, bool inPlace, const T_Copier& copy)
+        {
+            size_t numElements = foobar::policies::getNumElementsFromExtents(outExtents);
+            size_t w = outExtents[numDims-1] * sizeof(LibOutType);
+            size_t h = numElements * sizeof(LibOutType) / w;
+            size_t pitch = (inPlace && !isComplexOut) ? inExtents[numDims-1] * sizeof(LibInType) : w;
+            copy.D2H(dest, src, w, h, pitch, w);
+        }
+
     public:
         template< class T_Plan, class T_Copier >
         void
@@ -124,11 +147,7 @@ namespace policies {
             auto pIn = safe_ptr_cast<LibInType*>(input.getDataPtr());
             if( plan.InDevicePtr )
             {
-                size_t numElements = input.getNumElements();
-                size_t w = input.getExtents()[numDims-1] * sizeof(LibInType);
-                size_t h = numElements * sizeof(LibInType) / w;
-                size_t pitch = (useInplaceForHost && !isComplexIn) ? output.getExtents()[numDims-1] * sizeof(LibOutType) : w;
-                copy.H2D(plan.InDevicePtr.get(), pIn, w, h, pitch, w);
+                copyIn(input.getExtents(), output.getExtents(), plan.InDevicePtr.get(), pIn, useInplaceForHost, copy);
                 pIn = plan.InDevicePtr.get();
             }
             LibOutType* pOut;
@@ -145,37 +164,37 @@ namespace policies {
                 throw std::runtime_error("Error executing plan: " + std::to_string(result));
             if( plan.OutDevicePtr || !Output::IsDeviceMemory::value)
             {
-                size_t numElements = output.getNumElements();
-                size_t w = output.getExtents()[numDims-1] * sizeof(LibOutType);
-                size_t h = numElements * sizeof(LibOutType) / w;
-                size_t pitch = (useInplaceForHost && !isComplexOut) ? input.getExtents()[numDims-1] * sizeof(LibInType) : w;
-                LibOutType* pOut_h = safe_ptr_cast<LibOutType*>(output.getDataPtr());
-                copy.D2H(pOut_h, pOut, w, h, pitch, w);
+                copyOut(input.getExtents(), output.getExtents(), safe_ptr_cast<LibOutType*>(output.getDataPtr()), pOut, useInplaceForHost, copy);
             }
         }
 
         template< class T_Plan, class T_Copier >
         void
-        operator()(T_Plan& plan, Input& inOut, bool useInplaceForHost, const T_Copier& copy)
+        operator()(T_Plan& plan, Input& inOut, const T_Copier& copy)
         {
             using foobar::policies::safe_ptr_cast;
             static_assert(isInplace, "Must be used for inplace transforms!");
 
+            const auto& inExtents = inOut.getExtents();
+            auto outExtents = inOut.getFullExtents();
+            // For R2C we have to adjust the out extents
+            if(isComplexOut && !isComplexIn)
+                outExtents[numDims - 1] = outExtents[numDims - 1] / 2 + 1;
+
             auto pIn = safe_ptr_cast<LibInType*>(inOut.getDataPtr());
             if( plan.InDevicePtr )
             {
-                size_t numElements = inOut.getNumElements();
-                copy.H2D(plan.InDevicePtr.get(), pIn, numElements * sizeof(LibInType));
+                copyIn(inExtents, outExtents, plan.InDevicePtr.get(), pIn, true, copy);
                 pIn = plan.InDevicePtr.get();
             }
-            cufftResult result = Executer()(plan.handle, pIn, pIn);
+            LibOutType* pOut = reinterpret_cast<LibOutType*>(pIn);
+            cufftResult result = Executer()(plan.handle, pIn, pOut);
             if(result != CUFFT_SUCCESS)
                 throw std::runtime_error("Error executing plan: " + std::to_string(result));
             if( plan.InDevicePtr )
             {
-                size_t numElements = inOut.getNumElements();
-                auto pOut = safe_ptr_cast<LibOutType*>(inOut.getDataPtr());
-                copy.D2H(pOut, plan.InDevicePtr.get(), numElements * sizeof(LibOutType));
+                LibInType* pOutHost = safe_ptr_cast<LibInType*>(inOut.getDataPtr());
+                copyOut(inExtents, outExtents, reinterpret_cast<LibOutType*>(pOutHost), pOut, true, copy);
             }
         }
     };

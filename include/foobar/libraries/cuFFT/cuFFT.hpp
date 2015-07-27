@@ -85,7 +85,7 @@ namespace cuFFT {
 
         explicit CuFFT(Input& inOut)
         {
-            Planner()(plan_, inOut, inplaceForHost, Allocator());
+            Planner()(plan_, inOut, Allocator());
         }
 
         CuFFT(CuFFT&& obj) = default;
@@ -98,7 +98,7 @@ namespace cuFFT {
 
         void operator()(Input& inOut)
         {
-            Executer()(plan_, inOut, inplaceForHost, Copier());
+            Executer()(plan_, inOut, Copier());
         }
     };
 

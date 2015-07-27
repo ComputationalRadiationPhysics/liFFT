@@ -126,7 +126,9 @@ namespace policies {
                 if(!Output::IsDeviceMemory::value)
                     plan.OutDevicePtr.reset(alloc.template malloc<LibOutType>(outSize));
             }
-            createPlan(plan, extents);
+            // Always use fullExtents, that is the extents of the real container for R2C/C2R
+            // For C2C it does not matter
+            createPlan(plan, isComplexIn ? extentsOut : extents);
         }
 
         template< class T_Plan, class T_Allocator >
@@ -134,14 +136,18 @@ namespace policies {
         operator()(T_Plan& plan, Input& inOut, const T_Allocator& alloc)
         {
             static_assert(isInplace, "Must be used for inplace transforms!");
-            auto extents(inOut.getExtents());
-            unsigned numElements = inOut.getNumElements();
-            size_t size = numElements * std::max(sizeof(LibInType), sizeof(LibOutType));
+            // ATTENTION: Complex values take up more space then real values. Make sure we have enough!
+            // Get the extents from the complex values (also for C2R/R2C)
+            auto extents(inOut.getFullExtents());
+            if(!isComplexIn || !isComplexOut)
+                extents[numDims - 1] = extents[numDims - 1] / 2 + 1;
+            // Get number of complex elements
+            unsigned numElements = foobar::policies::getNumElementsFromExtents(extents);
+            size_t size = numElements * (isComplexIn ? sizeof(LibInType) : sizeof(LibOutType));
             checkSize(size);
             if(!Input::IsDeviceMemory::value)
                 plan.InDevicePtr.reset(alloc.template malloc<LibInType>(size));
-            createPlan(plan, extents);
-            return plan;
+            createPlan(plan, inOut.getFullExtents());
         }
     };
 

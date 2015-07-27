@@ -335,21 +335,15 @@ namespace foobar {
         }
 
         /**
-         * Returns the plain ptr to the extents
+         * Returns the full extents object
+         * Supports iterators
+         *
+         * @return Extents object
          */
-        const unsigned*
-        getExtentsPtr() const
+        const Extents&
+        getFullExtents() const
         {
-            return extents_.data();
-        }
-
-        /**
-         * Returns the plain ptr to the full extents
-         */
-        const unsigned*
-        getFullExtentsPtr() const
-        {
-            return fullExtents_.data();
+            return fullExtents_;
         }
 
         /**
