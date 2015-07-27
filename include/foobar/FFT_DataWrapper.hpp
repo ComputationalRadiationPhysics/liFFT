@@ -34,7 +34,7 @@ namespace foobar {
             types::SymmetricWrapper<T_FFT_DataWrapper>
             operator()(T_FFT_DataWrapper& data) const
             {
-                return types::makeSymmetricWrapper(data, data.realExtents_[data.numDims-1]);
+                return types::makeSymmetricWrapper(data, data.fullExtents_[data.numDims-1]);
             }
         };
 
@@ -176,14 +176,14 @@ namespace foobar {
     private:
         InstanceType base_;
         BaseAccessor acc_;
-        Extents extents_, realExtents_;
+        Extents extents_, fullExtents_;
         Memory memory_;
         std::unique_ptr<MemoryFallback> memFallback_;
 
         void
-        setRealExtents(const Extents& extents)
+        setFullExtents(const Extents& extents)
         {
-            realExtents_ = extents;
+            fullExtents_ = extents;
         }
         template< class T1, class T2, class T3, bool t>
         friend class FFT;
@@ -197,6 +197,14 @@ namespace foobar {
             for(unsigned i=0; i<numDims; ++i)
                 extents_[i] = extents[i];
             memory_.init(extents_);
+            // Set full extents for real data or for C2C transforms
+            // The others are set to 0 here and updated during FFT execution
+            if(FFT_Def::kind == FFT_Kind::Complex2Complex ||
+                    (FFT_Def::kind == FFT_Kind::Complex2Real && !isInput) ||
+                    (FFT_Def::kind == FFT_Kind::Real2Complex && isInput) )
+                fullExtents_ = extents_;
+            else
+                fullExtents_ = fullExtents_.all(0);
             if(memory_.checkPtr(base_, acc_, FFT_Def::isInplace && !isComplex))
                 memFallback_ = nullptr;
             else if(FFT_Def::isInplace)
@@ -228,8 +236,8 @@ namespace foobar {
             }
             if(FFT_Def::isInplace)
             {
-                realExtents_ = extents_;
-                realExtents_[numDims - 1] = realSizeLastDim;
+                fullExtents_ = extents_;
+                fullExtents_[numDims - 1] = realSizeLastDim;
             }
 
             memory_.init(extents_);
@@ -290,6 +298,16 @@ namespace foobar {
                 return memFallback_->getPtr(base_, acc_);
             else
                 return memory_.getPtr(base_, acc_);
+        }
+
+        size_t getMemSize() const
+        {
+            if(FFT_Def::isInplace)
+                return traits::getMemSize(base_);
+            else if(memFallback_)
+                return traits::getMemSize(*memFallback_);
+            else
+                return traits::getMemSize(memory_);
         }
 
         /**

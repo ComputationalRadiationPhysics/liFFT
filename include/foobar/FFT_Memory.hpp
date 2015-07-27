@@ -3,6 +3,7 @@
 #include "foobar/policies/Copy.hpp"
 #include "foobar/policies/SafePtrCast.hpp"
 #include "foobar/traits/NumDims.hpp"
+#include "foobar/traits/GetMemSize.hpp"
 #include "foobar/policies/GetExtents.hpp"
 #include "foobar/accessors/ConvertAccessor.hpp"
 #include <algorithm>
@@ -97,6 +98,12 @@ namespace detail {
         template< class T_Obj, class T_Acc >
         bool checkPtr(const T_Obj&, const T_Acc&, bool) const {
             return true;
+        }
+
+        size_t
+        getMemSize() const
+        {
+            return traits::getMemSize(data_);
         }
     };
 
@@ -228,6 +235,12 @@ namespace detail {
 
         template< class T_Obj, class T_Acc >
         void copyTo(T_Obj&, T_Acc&){}
+
+        size_t
+        getMemSize() const
+        {
+            return 0;
+        }
     };
 
 }  // namespace detail

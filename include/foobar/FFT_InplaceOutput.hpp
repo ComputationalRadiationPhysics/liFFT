@@ -79,8 +79,10 @@ namespace foobar {
         Data data_;
 
         void updateData(){
-            size_t numElements =  std::accumulate(input_.realExtents_.cbegin(), input_.realExtents_.cend(), 1u, std::multiplies<size_t>());
-            data_.setData(input_.realExtents_, Values(input_.getDataPtr(), numElements));
+            size_t numElements =  std::accumulate(input_.fullExtents_.cbegin(), input_.fullExtents_.cend(), 1u, std::multiplies<size_t>());
+            if(traits::getMemSize(input_) < numElements * sizeof(typename Values::Value))
+                throw std::runtime_error("Number of elements is wrong or not enough memory allocated");
+            data_.setData(input_.fullExtents_, Values(input_.getDataPtr(), numElements));
         }
     };
 

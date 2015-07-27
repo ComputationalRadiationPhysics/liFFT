@@ -8,6 +8,7 @@
 #include "foobar/policies/GetExtents.hpp"
 #include "foobar/policies/GetNumElements.hpp"
 #include "foobar/traits/IdentityAccessor.hpp"
+#include "foobar/traits/GetMemSize.hpp"
 #include "foobar/mem/RealValues.hpp"
 #include "foobar/mem/ComplexAoSValues.hpp"
 #include "foobar/void_t.hpp"
@@ -107,7 +108,13 @@ namespace foobar {
              allocData(const IdxType& extents)
              {
                  this->extents = extents;
-                 data.allocData(policies::getNumElements(*this, true));
+                 data.allocData(policies::getNumElements(*this, false));
+             }
+
+             size_t
+             getMemSize() const
+             {
+                 return MemoryPolicy<Memory>::getMemSize(*this, data);
              }
 
              /**
@@ -121,23 +128,35 @@ namespace foobar {
              }
 
              template<class T>
-             struct GetData
+             struct MemoryPolicy
              {
                  static auto
-                 getData(Memory& data)
+                 getData(T& data)
                  -> decltype(data.getData())
                  {
                      return data.getData();
                  }
+
+                 static size_t
+                 getMemSize(const DataContainer& container, const T& data)
+                 {
+                     return traits::getMemSize(data);
+                 }
              };
 
              template<class T>
-             struct GetData<T*>
+             struct MemoryPolicy<T*>
              {
-                 static Memory
-                 getData(Memory data)
+                 static T*
+                 getData(T* data)
                  {
                      return data;
+                 }
+
+                 static size_t
+                 getMemSize(const DataContainer& container, const T* data)
+                 {
+                     return policies::getNumElements(container, false) * sizeof(T);
                  }
              };
 
@@ -146,10 +165,10 @@ namespace foobar {
               * That is if Memory is a pointer type, data is returned, otherwise data.getData() is returned
               * @return Pointer to memory
               */
-             std::result_of_t< decltype(&GetData<Memory>::getData)(Memory&) >
+             std::result_of_t< decltype(&MemoryPolicy<Memory>::getData)(Memory&) >
              getData()
              {
-                 return GetData<Memory>::getData(data);
+                 return MemoryPolicy<Memory>::getData(data);
              }
 
              const IdxType&
