@@ -156,7 +156,7 @@ namespace foobarTest {
      * @return True on success
      */
     template< class T_BaseResult, class T_Result >
-    bool checkResult(const T_BaseResult& baseRes, const T_Result& res, const std::string& testDescr, CmpError maxErr = CmpError(5e-5, 5e-5))
+    bool checkResult(const T_BaseResult& baseRes, const T_Result& res, const std::string& testDescr, CmpError maxErr = CmpError(1e-4, 5e-5))
     {
         auto cmpRes = compare(baseRes, res, maxErr);
         if(!cmpRes.first)
