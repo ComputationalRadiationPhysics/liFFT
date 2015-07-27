@@ -1,5 +1,7 @@
 #pragma once
 
+#include "foobar/FFT_Kind.hpp"
+
 namespace foobar {
 namespace detail {
 
@@ -19,6 +21,7 @@ namespace detail {
     struct FFT_Properties: public T_FFT_Def
     {
     public:
+        using FFT_Def = T_FFT_Def;
         using Input = T_Input;
         using Output = T_Output;
         static constexpr bool constructWithReadOnly = T_constructWithReadOnly;
@@ -27,7 +30,8 @@ namespace detail {
         static constexpr bool isAoSIn = Input::isAoS;
         static constexpr bool isStridedIn = Input::isStrided;
 
-        static constexpr bool isComplexOut = Output::isComplex;
+        static constexpr bool isComplexOut = (!FFT_Def::isInplace && Output::isComplex) ||
+                                             ( FFT_Def::isInplace && FFT_Def::kind != FFT_Kind::Complex2Real);
         static constexpr bool isAoSOut = Output::isAoS;
         static constexpr bool isStridedOut = Output::isStrided;
 

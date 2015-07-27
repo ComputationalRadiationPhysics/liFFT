@@ -98,7 +98,7 @@ namespace policies {
                     numDims,
                     reinterpret_cast<const int*>(inOut.getExtentsPtr()),
                     safe_ptr_cast<LibInType>(inOut.getDataPtr()),
-                    safe_ptr_cast<LibOutType>(inOut.getDataPtr()),
+                    reinterpret_cast<LibOutType>(safe_ptr_cast<LibInType>(inOut.getDataPtr())),
                     traits::Sign<isFwd>::value,
                     flags
                     );
