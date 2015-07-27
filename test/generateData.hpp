@@ -79,9 +79,11 @@ struct Circle{
 };
 
 template<typename T>
-struct Nullify{
+struct SetToConst{
+    const T val_;
+    SetToConst(T val): val_(val){}
     T
     operator()(size_t x, size_t y, size_t z) const{
-        return 0;
+        return val_;
     }
 };

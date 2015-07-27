@@ -20,7 +20,7 @@ namespace foobarTest {
         BaseR2CInput inputProd(extents);
         generateData(input1, Rect<TestPrecision>(20, testSize/2));
         generateData(input2, Cosinus<TestPrecision>(testSize, testSize/2));
-        generateData(inputProd, Nullify<TestPrecision>());
+        generateData(inputProd, SetToConst<TestPrecision>(0));
         TestExtents idx = TestExtents::all(0);
         for(idx[0] = 0; idx[0]<testSize; idx[0]++)
             for(idx[1] = 0; idx[1]<testSize; idx[1]++)
