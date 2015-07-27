@@ -174,14 +174,14 @@ namespace foobarTest {
         {
             auto input = FFT_R2C::wrapFFT_Input(baseR2CInput);
             auto output = FFT_R2C::wrapFFT_Output(baseR2COutput);
-            using FFT = decltype(foobar::makeFFT<TestLibrary>(input, output));
+            using FFT = decltype(foobar::makeFFT<TestLibrary, false>(input, output));
             fftR2C = static_cast<decltype(fftR2C)>(malloc(sizeof(FFT)));
             new(fftR2C)auto(FFT(input, output));
         }
         {
             auto input = FFT_C2C::wrapFFT_Input(baseC2CInput);
             auto output = FFT_C2C::wrapFFT_Output(baseC2COutput);
-            using FFT = decltype(foobar::makeFFT<TestLibrary>(input, output));
+            using FFT = decltype(foobar::makeFFT<TestLibrary, false>(input, output));
             fftC2C = static_cast<decltype(fftC2C)>(malloc(sizeof(FFT)));
             new(fftC2C)auto(FFT(input, output));
         }
