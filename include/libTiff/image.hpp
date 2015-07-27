@@ -78,7 +78,8 @@ namespace libTiff
             data_(nullptr, [](DataType* p){ Allocator().free(p);}),
             isReadable_(false),
             isWriteable_(false),
-            dataWritten_(false)
+            dataWritten_(false),
+            width_(0), height_(0)
         {}
         Image(Image&&) = default;
         Image& operator=(Image&&) = default;
