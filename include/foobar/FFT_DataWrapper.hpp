@@ -161,8 +161,20 @@ namespace foobar {
                                  mem::RealValues<PrecisionType, needOwnMemoryPtr>
                              >
                          >;
+        using MemoryFallback_t = mem::DataContainer<
+                             numDims,
+                             std::conditional_t<
+                                 isComplex,
+                                 std::conditional_t<
+                                     isAoS,
+                                     mem::ComplexAoSValues<PrecisionType>,
+                                     mem::ComplexSoAValues<PrecisionType>
+                                 >,
+                                 mem::RealValues<PrecisionType>
+                             >
+                         >;
         using Memory = detail::FFT_Memory< Memory_t, needOwnMemoryPtr >;
-        using MemoryFallback = detail::FFT_Memory< Memory_t, true >;
+        using MemoryFallback = detail::FFT_Memory< MemoryFallback_t, true >;
 
         using IdentityAccessor = accessors::ArrayAccessor<true>;
 
