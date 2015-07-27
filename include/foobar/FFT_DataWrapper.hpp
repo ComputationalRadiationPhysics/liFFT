@@ -344,12 +344,21 @@ namespace foobar {
         }
 
         /**
+         * Returns the plain ptr to the full extents
+         */
+        const unsigned*
+        getFullExtentsPtr() const
+        {
+            return fullExtents_.data();
+        }
+
+        /**
          * Returns the number of actual elements (ignoring strides)
          */
         size_t
         getNumElements() const
         {
-            return std::accumulate(extents_.cbegin(), extents_.cend(), 1u, std::multiplies<size_t>());
+            return policies::getNumElementsFromExtents(extents_);
         }
 
         /**

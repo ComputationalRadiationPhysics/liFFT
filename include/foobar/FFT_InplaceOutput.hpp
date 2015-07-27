@@ -119,7 +119,7 @@ namespace foobar {
                 default:
                     throw std::logic_error("Wrong FFT kind!");
             }
-            size_t numElements =  std::accumulate(extents.cbegin(), extents.cend(), 1u, std::multiplies<size_t>());
+            size_t numElements = policies::getNumElementsFromExtents(extents);
             if(traits::getMemSize(input_) < numElements * sizeof(Value))
                 throw std::runtime_error("Number of elements is wrong or not enough memory allocated");
             data_ = Data(convertPtr(input_.getDataPtr()), extents);

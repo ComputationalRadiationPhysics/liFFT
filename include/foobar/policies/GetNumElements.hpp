@@ -7,6 +7,10 @@
 namespace foobar {
 namespace policies {
 
+    // Fwd decl
+    template< class T_Extents>
+    size_t getNumElementsFromExtents(const T_Extents& extents);
+
     /**
      * Returns the total number of elements for a given data structure
      *
@@ -21,11 +25,7 @@ namespace policies {
 
         size_t operator()(const T_Data& data){
             Extents extents(data);
-            static_assert(numDims>0, "No dimensions?");
-            size_t result = 1;
-            for(unsigned i=0; i<numDims; ++i)
-                result *= extents[i];
-            return result;
+            return getNumElementsFromExtents(extents);
         }
     };
 
@@ -57,6 +57,22 @@ namespace policies {
             return GetNumElements< T_Data, true >()(data);
         else
             return GetNumElements< T_Data, false >()(data);
+    }
+
+    /**
+     * Convenience function to get the number of elements from the extents
+     * This ignores any strides etc. !
+     *
+     */
+    template< class T_Extents>
+    size_t getNumElementsFromExtents(const T_Extents& extents)
+    {
+        static constexpr unsigned numDims = traits::NumDims<T_Extents>::value;
+        static_assert(numDims>0, "No dimensions?");
+        size_t result = 1;
+        for(unsigned i=0; i<numDims; ++i)
+            result *= extents[i];
+        return result;
     }
 
 }  // namespace policies
