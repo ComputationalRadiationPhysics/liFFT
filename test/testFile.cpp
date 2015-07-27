@@ -65,7 +65,7 @@ namespace foobarTest {
         libTiff::FloatImage<> img(filePath, false);
         using FFT_Type = foobar::FFT_2D_R2C_F<>;
         auto input = FFT_Type::wrapFFT_Input(img);
-        auto output = FFT_Type::getNewFFT_Output(input);
+        auto output = FFT_Type::createNewFFT_Output(input);
         auto fft = foobar::makeFFT< TestLibrary, false >(input, output);
         img.load();
         foobar::policies::copy(img, baseR2CInput);

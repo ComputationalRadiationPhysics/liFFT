@@ -8,7 +8,7 @@
 int main(int argc, char** argv) {
     using namespace foobarTest;
     init();
-    visualizeBase();
+    //visualizeBase();
 
     testInplace();
     testFile();

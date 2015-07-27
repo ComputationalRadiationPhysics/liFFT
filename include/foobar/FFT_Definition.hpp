@@ -6,10 +6,78 @@
 #include "foobar/util.hpp"
 #include "foobar/FFT_DataWrapper.hpp"
 #include "foobar/FFT_InplaceOutput.hpp"
+#include "foobar/types/View.hpp"
+#include "foobar/mem/DataContainer.hpp"
+#include "foobar/mem/RealValues.hpp"
+#include "foobar/mem/ComplexAoSValues.hpp"
 
 namespace foobar {
 
     namespace detail {
+
+        // Real inplace input
+        template<
+            class T_FFT_Def,
+            bool T_isReal = T_FFT_Def::kind == FFT_Kind::Real2Complex,
+            bool T_isInplace = T_FFT_Def::isInplace
+        >
+        struct CreateFFT_Input
+        {
+            using FFT_Def = T_FFT_Def;
+            using Precision = typename FFT_Def::PrecisionType;
+            static constexpr unsigned numDims = FFT_Def::numDims;
+
+            using Data = mem::DataContainer<numDims, mem::RealValues<Precision> >;
+
+            template<class T_Extents>
+            static types::View< Data, std::integral_constant<bool, true> >
+            create(const T_Extents& extents)
+            {
+                T_Extents bigExtents = extents;
+                // We need some padding: row size is (n / 2 + 1) complex elements. 1 complex element = 2 real elements
+                bigExtents[numDims - 1] = (bigExtents[numDims - 1] / 2 + 1) * 2;
+                return types::makeView(Data(bigExtents), types::makeRange(types::Origin(), extents));
+            }
+        };
+
+        // Real outplace input
+        template< class T_FFT_Def >
+        struct CreateFFT_Input< T_FFT_Def, true, false >
+        {
+            using FFT_Def = T_FFT_Def;
+            using Precision = typename FFT_Def::PrecisionType;
+            static constexpr unsigned numDims = FFT_Def::numDims;
+
+            using Data = mem::DataContainer<numDims, mem::RealValues<Precision> >;
+
+            template<class T_Extents>
+            static Data
+            create(const T_Extents& extents)
+            {
+                return Data(extents);
+            }
+        };
+
+        // Complex input
+        template<
+            class T_FFT_Def,
+            bool T_isInplace
+        >
+        struct CreateFFT_Input< T_FFT_Def, false, T_isInplace >
+        {
+            using FFT_Def = T_FFT_Def;
+            using Precision = typename FFT_Def::PrecisionType;
+            static constexpr unsigned numDims = FFT_Def::numDims;
+
+            using Data = mem::DataContainer<numDims, mem::ComplexAoSValues<Precision> >;
+
+            template<class T_Extents>
+            static Data
+            create(const T_Extents& extents)
+            {
+                return Data(extents);
+            }
+        };
 
         template<class T_FFT_Def, bool T_isInplace = T_FFT_Def::isInplace>
         struct CreateFFT_Output
@@ -20,7 +88,7 @@ namespace foobar {
 
             /**
              * The type of the output wrapper for a given input wrapper type
-             * Use \ref getNewFFT_Output to get an instance of this!
+             * Use \ref createNewFFT_Output to get an instance of this!
              */
             template< typename T_Wrapper >
             using OutputWrapper = FFT_OutputDataWrapper<
@@ -40,10 +108,10 @@ namespace foobar {
              */
             template< typename T_Wrapper >
             static OutputWrapper<T_Wrapper>
-            getNewFFT_Output(const T_Wrapper& fftInput)
+            create(const T_Wrapper& fftInput)
             {
                 static_assert(kind != FFT_Kind::Complex2Real, "Missing argument for the full size of the last dimension");
-                return getNewFFT_Output(fftInput, fftInput.getExtents()[T_Wrapper::numDims - 1]);
+                return create(fftInput, fftInput.getExtents()[T_Wrapper::numDims - 1]);
             }
 
             /**
@@ -54,7 +122,7 @@ namespace foobar {
              */
             template< typename T_Wrapper >
             static OutputWrapper<T_Wrapper>
-            getNewFFT_Output(const T_Wrapper& fftInput, unsigned fullSizeLastDim)
+            create(const T_Wrapper& fftInput, unsigned fullSizeLastDim)
             {
                 static_assert(std::is_same< typename T_Wrapper::FFT_Def, FFT_Def >::value, "Wrong wrapper passed in!");
                 using Base = typename OutputWrapper<T_Wrapper>::Base;
@@ -89,10 +157,10 @@ namespace foobar {
              */
             template< typename T_Wrapper >
             static FFT_InplaceOutput<T_Wrapper>
-            getNewFFT_Output(T_Wrapper& fftInput)
+            create(T_Wrapper& fftInput)
             {
                 static_assert(kind != FFT_Kind::Complex2Real, "Missing argument for the full size of the last dimension");
-                return getNewFFT_Output(fftInput, fftInput.getExtents()[T_Wrapper::numDims - 1]);
+                return create(fftInput, fftInput.getExtents()[T_Wrapper::numDims - 1]);
             }
 
             /**
@@ -103,7 +171,7 @@ namespace foobar {
              */
             template< typename T_Wrapper >
             static FFT_InplaceOutput<T_Wrapper>
-            getNewFFT_Output(T_Wrapper& fftInput, unsigned fullSizeLastDim)
+            create(T_Wrapper& fftInput, unsigned fullSizeLastDim)
             {
                 static_assert(std::is_same< typename T_Wrapper::FFT_Def, FFT_Def >::value, "Wrong wrapper passed in!");
 
@@ -200,7 +268,16 @@ namespace foobar {
                     >(std::forward<T_Base>(base), std::forward<T_BaseAccessor>(acc));
         }
 
+        using CreateFFT_Input = detail::CreateFFT_Input<FFT_Definition>;
         using CreateFFT_Output = detail::CreateFFT_Output<FFT_Definition>;
+
+        template< typename T_Extents >
+        static auto
+        createNewFFT_Input(const T_Extents& extents)
+        -> decltype(wrapFFT_Input(CreateFFT_Input::create(extents)))
+        {
+            return wrapFFT_Input(CreateFFT_Input::create(extents));
+        }
 
         /**
          * Gets an instance of a FFT_OutputDataWrapper for the given
@@ -209,10 +286,10 @@ namespace foobar {
          */
         template< typename T_Wrapper >
         static auto
-        getNewFFT_Output(T_Wrapper& fftInput)
-        -> decltype(CreateFFT_Output::getNewFFT_Output(fftInput))
+        createNewFFT_Output(T_Wrapper& fftInput)
+        -> decltype(CreateFFT_Output::create(fftInput))
         {
-            return CreateFFT_Output::getNewFFT_Output(fftInput);
+            return CreateFFT_Output::create(fftInput);
         }
 
         /**
@@ -223,10 +300,10 @@ namespace foobar {
          */
         template< typename T_Wrapper >
         static auto
-        getNewFFT_Output(T_Wrapper& fftInput, unsigned fullSizeLastDim)
-        -> decltype(CreateFFT_Output::getNewFFT_Output(fftInput, fullSizeLastDim))
+        createNewFFT_Output(T_Wrapper& fftInput, unsigned fullSizeLastDim)
+        -> decltype(CreateFFT_Output::create(fftInput, fullSizeLastDim))
         {
-            return CreateFFT_Output::getNewFFT_Output(fftInput, fullSizeLastDim);
+            return CreateFFT_Output::create(fftInput, fullSizeLastDim);
         }
 
     };

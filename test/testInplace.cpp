@@ -11,7 +11,7 @@ namespace foobarTest {
         auto aperture = ComplexContainer(TestExtents::all(testSize));
         using FFT_Type = foobar::FFT_2D_C2C<TestPrecision, true>;
         auto input = FFT_Type::wrapFFT_Input(aperture);
-        auto output = FFT_Type::getNewFFT_Output(input);
+        auto output = FFT_Type::createNewFFT_Output(input);
         auto fft = foobar::makeFFT<TestLibrary>(input);
         generateData(input, Rect<TestPrecision>(20,testSize/2));
         foobar::policies::copy(aperture, baseC2CInput);
@@ -28,7 +28,7 @@ namespace foobarTest {
         auto aperture = makeView(RealContainer(ext), makeRange(Origin(), TestExtents::all(testSize)));
         using FFT_Type = foobar::FFT_2D_R2C<TestPrecision, true>;
         auto input = FFT_Type::wrapFFT_Input(aperture);
-        auto output = FFT_Type::getNewFFT_Output(input);
+        auto output = FFT_Type::createNewFFT_Output(input);
         auto fft = foobar::makeFFT<TestLibrary>(input);
         generateData(input, Rect<TestPrecision>(20,testSize/2));
         foobar::policies::copy(aperture, baseR2CInput);
