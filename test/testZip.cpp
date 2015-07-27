@@ -27,8 +27,8 @@ namespace foobarTest {
                 inputProd(idx) = input1(idx) * input2(idx);
         auto acc = foobar::accessors::makeZipAccessor(input1, std::multiplies<foobar::types::Real<TestPrecision>>(), foobar::traits::getIdentityAccessor(input2));
         using FFT_Type = foobar::FFT_2D_R2C<TestPrecision>;
-        auto input = FFT_Type::wrapFFT_Input(input2, acc);
-        auto output = FFT_Type::createNewFFT_Output(input);
+        auto input = FFT_Type::wrapInput(input2, acc);
+        auto output = FFT_Type::createNewOutput(input);
         auto fft = foobar::makeFFT<TestLibrary>(input, output);
         fft(input, output);
         foobar::policies::copy(inputProd, baseR2CInput);
@@ -42,8 +42,8 @@ namespace foobarTest {
         libTiff::FloatImage<> img2(filePath2, false);
         auto acc = foobar::accessors::makeZipAccessor(img1, std::multiplies<foobar::types::Real<TestPrecision>>(), foobar::traits::getIdentityAccessor(img2));
         using FFT_Type = foobar::FFT_2D_R2C_F<>;
-        auto input = FFT_Type::wrapFFT_Input(img2, acc);
-        auto output = FFT_Type::createNewFFT_Output(input);
+        auto input = FFT_Type::wrapInput(img2, acc);
+        auto output = FFT_Type::createNewOutput(input);
         auto fft = foobar::makeFFT< TestLibrary, false >(input, output);
         img1.load(); img2.load();
         foobar::policies::copy(img2, baseR2CInput, acc);

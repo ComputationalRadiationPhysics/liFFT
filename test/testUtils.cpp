@@ -24,8 +24,8 @@ namespace foobarTest {
     using FFT_R2C = foobar::FFT_Definition< foobar::FFT_Kind::Real2Complex, testNumDims, TestPrecision, std::true_type>;
     using FFT_C2C = foobar::FFT_Definition< foobar::FFT_Kind::Complex2Complex, testNumDims, TestPrecision, std::true_type>;
 
-    foobar::FFT_Interface_Outplace<decltype(FFT_R2C::wrapFFT_Input(baseR2CInput)), decltype(FFT_R2C::wrapFFT_Output(baseR2COutput))>* fftR2C;
-    foobar::FFT_Interface_Outplace<decltype(FFT_C2C::wrapFFT_Input(baseC2CInput)), decltype(FFT_C2C::wrapFFT_Output(baseC2COutput))>* fftC2C;
+    foobar::FFT_Interface_Outplace<decltype(FFT_R2C::wrapInput(baseR2CInput)), decltype(FFT_R2C::wrapOutput(baseR2COutput))>* fftR2C;
+    foobar::FFT_Interface_Outplace<decltype(FFT_C2C::wrapInput(baseC2CInput)), decltype(FFT_C2C::wrapOutput(baseC2COutput))>* fftC2C;
 
     /**
      * Writes nD data to a file as strings
@@ -122,7 +122,7 @@ namespace foobarTest {
         const unsigned size = 100u;
         using Extents = foobar::types::Vec<3>;
         using FFT = foobar::FFT_3D_R2C_F<>;
-        auto input = FFT::wrapFFT_Input(
+        auto input = FFT::wrapInput(
                         foobar::mem::RealContainer<3, float>(
                                 Extents(size, size, size)
                         )
@@ -130,7 +130,7 @@ namespace foobarTest {
         auto data = foobar::mem::RealContainer<3, float>(
                 Extents(size, size, size)
         );
-        auto output = FFT::wrapFFT_Input(data);
+        auto output = FFT::wrapInput(data);
 
         Extents idx = Extents::all(0u);
         const float val = 1337;
@@ -172,15 +172,15 @@ namespace foobarTest {
         baseC2COutput.allocData(size);
 
         {
-            auto input = FFT_R2C::wrapFFT_Input(baseR2CInput);
-            auto output = FFT_R2C::wrapFFT_Output(baseR2COutput);
+            auto input = FFT_R2C::wrapInput(baseR2CInput);
+            auto output = FFT_R2C::wrapOutput(baseR2COutput);
             using FFT = decltype(foobar::makeFFT<TestLibrary, false>(input, output));
             fftR2C = static_cast<decltype(fftR2C)>(malloc(sizeof(FFT)));
             new(fftR2C)auto(FFT(input, output));
         }
         {
-            auto input = FFT_C2C::wrapFFT_Input(baseC2CInput);
-            auto output = FFT_C2C::wrapFFT_Output(baseC2COutput);
+            auto input = FFT_C2C::wrapInput(baseC2CInput);
+            auto output = FFT_C2C::wrapOutput(baseC2COutput);
             using FFT = decltype(foobar::makeFFT<TestLibrary, false>(input, output));
             fftC2C = static_cast<decltype(fftC2C)>(malloc(sizeof(FFT)));
             new(fftC2C)auto(FFT(input, output));
@@ -246,15 +246,15 @@ namespace foobarTest {
 
     void execBaseR2C()
     {
-        auto input  = FFT_R2C::wrapFFT_Input( baseR2CInput);
-        auto output = FFT_R2C::wrapFFT_Output(baseR2COutput);
+        auto input  = FFT_R2C::wrapInput( baseR2CInput);
+        auto output = FFT_R2C::wrapOutput(baseR2COutput);
         (*fftR2C)(input, output);
     }
 
     void execBaseC2C()
     {
-        auto input  = FFT_C2C::wrapFFT_Input( baseC2CInput);
-        auto output = FFT_C2C::wrapFFT_Output(baseC2COutput);
+        auto input  = FFT_C2C::wrapInput( baseC2CInput);
+        auto output = FFT_C2C::wrapOutput(baseC2COutput);
         (*fftC2C)(input, output);
     }
 

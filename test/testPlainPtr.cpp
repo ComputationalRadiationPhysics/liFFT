@@ -19,8 +19,8 @@ namespace foobarTest {
         for(unsigned i=0; i<testSize*testSize; ++i)
             input[i] = std::rand() / RAND_MAX;
         using FFT_TYPE = foobar::FFT_2D_R2C<TestPrecision>;
-        auto inWrapped = FFT_TYPE::wrapFFT_Input( foobar::mem::wrapPtr<false>(input.get(), TestExtents(testSize, testSize)) );
-        auto outWrapped = FFT_TYPE::wrapFFT_Output(foobar::mem::wrapPtr<true>(output.get(), TestExtents(testSize, testSize/2+1)));
+        auto inWrapped = FFT_TYPE::wrapInput( foobar::mem::wrapPtr<false>(input.get(), TestExtents(testSize, testSize)) );
+        auto outWrapped = FFT_TYPE::wrapOutput(foobar::mem::wrapPtr<true>(output.get(), TestExtents(testSize, testSize/2+1)));
         auto fft = foobar::makeFFT<TestLibrary>(inWrapped, outWrapped);
         fft(inWrapped, outWrapped);
         foobar::policies::copy(inWrapped, baseR2CInput);

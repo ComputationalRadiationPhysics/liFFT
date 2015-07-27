@@ -18,8 +18,8 @@ namespace foobarTest {
         using FFTResult_t = foobar::mem::ComplexContainer<2, TestPrecision>;
         FFTResult_t fftResult(foobar::types::Idx2D(file.getExtents()[1], file.getExtents()[0]/2+1));
         using FFT_Type = foobar::FFT_2D_R2C<TestPrecision>;
-        auto input = FFT_Type::wrapFFT_Input(file);
-        auto output = FFT_Type::wrapFFT_Output(fftResult);
+        auto input = FFT_Type::wrapInput(file);
+        auto output = FFT_Type::wrapOutput(fftResult);
         auto fft = foobar::makeFFT<TestLibrary>(input, output);
         file.loadData(true);
         fft(input, output);
@@ -64,8 +64,8 @@ namespace foobarTest {
     {
         libTiff::FloatImage<> img(filePath, false);
         using FFT_Type = foobar::FFT_2D_R2C_F<>;
-        auto input = FFT_Type::wrapFFT_Input(img);
-        auto output = FFT_Type::createNewFFT_Output(input);
+        auto input = FFT_Type::wrapInput(img);
+        auto output = FFT_Type::createNewOutput(input);
         auto fft = foobar::makeFFT< TestLibrary, false >(input, output);
         img.load();
         foobar::policies::copy(img, baseR2CInput);

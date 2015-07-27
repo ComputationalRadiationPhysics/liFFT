@@ -88,7 +88,7 @@ namespace foobar {
 
             /**
              * The type of the output wrapper for a given input wrapper type
-             * Use \ref createNewFFT_Output to get an instance of this!
+             * Use \ref createNewOutput to get an instance of this!
              */
             template< typename T_Wrapper >
             using OutputWrapper = FFT_OutputDataWrapper<
@@ -231,7 +231,7 @@ namespace foobar {
                 negate< std::is_lvalue_reference<T_Base> >,
                 std::remove_reference_t<T_BaseAccessor>
             >
-        wrapFFT_Input(T_Base&& base, T_BaseAccessor&& acc = T_BaseAccessor())
+        wrapInput(T_Base&& base, T_BaseAccessor&& acc = T_BaseAccessor())
         {
             return FFT_InputDataWrapper<
                         FFT_Definition,
@@ -258,7 +258,7 @@ namespace foobar {
                 negate< std::is_lvalue_reference<T_Base> >,
                 std::remove_reference_t<T_BaseAccessor>
             >
-        wrapFFT_Output(T_Base&& base, T_BaseAccessor&& acc = T_BaseAccessor())
+        wrapOutput(T_Base&& base, T_BaseAccessor&& acc = T_BaseAccessor())
         {
             return FFT_OutputDataWrapper<
                         FFT_Definition,
@@ -273,10 +273,10 @@ namespace foobar {
 
         template< typename T_Extents >
         static auto
-        createNewFFT_Input(const T_Extents& extents)
-        -> decltype(wrapFFT_Input(CreateFFT_Input::create(extents)))
+        createNewInput(const T_Extents& extents)
+        -> decltype(wrapInput(CreateFFT_Input::create(extents)))
         {
-            return wrapFFT_Input(CreateFFT_Input::create(extents));
+            return wrapInput(CreateFFT_Input::create(extents));
         }
 
         /**
@@ -286,7 +286,7 @@ namespace foobar {
          */
         template< typename T_Wrapper >
         static auto
-        createNewFFT_Output(T_Wrapper& fftInput)
+        createNewOutput(T_Wrapper& fftInput)
         -> decltype(CreateFFT_Output::create(fftInput))
         {
             return CreateFFT_Output::create(fftInput);
@@ -300,7 +300,7 @@ namespace foobar {
          */
         template< typename T_Wrapper >
         static auto
-        createNewFFT_Output(T_Wrapper& fftInput, unsigned fullSizeLastDim)
+        createNewOutput(T_Wrapper& fftInput, unsigned fullSizeLastDim)
         -> decltype(CreateFFT_Output::create(fftInput, fullSizeLastDim))
         {
             return CreateFFT_Output::create(fftInput, fullSizeLastDim);

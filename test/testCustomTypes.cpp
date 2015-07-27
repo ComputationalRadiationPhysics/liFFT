@@ -83,8 +83,8 @@ namespace foobarTest {
         auto aperture = ComplexVol(testSize, testSize);
         auto fftResult = ComplexVol(aperture.xDim(), aperture.yDim(), aperture.zDim());
         using FFT_Type = foobar::FFT_2D_C2C<TestPrecision>;
-        auto input = FFT_Type::wrapFFT_Input(makeSliceView<0>(aperture));
-        auto output = FFT_Type::wrapFFT_Output(makeSliceView<0>(fftResult));
+        auto input = FFT_Type::wrapInput(makeSliceView<0>(aperture));
+        auto output = FFT_Type::wrapOutput(makeSliceView<0>(fftResult));
         auto fft = foobar::makeFFT<TestLibrary>(input, output);
         generateData(aperture, Rect<TestPrecision>(20,testSize/2));
         fft(input, output);
@@ -99,8 +99,8 @@ namespace foobarTest {
         auto aperture = RealVol(testSize, testSize);
         auto fftResult = ComplexVolFFTW(aperture.xDim()/2+1, aperture.yDim(), aperture.zDim());
         using FFT_Type = foobar::FFT_2D_R2C<TestPrecision>;
-        auto input = FFT_Type::wrapFFT_Input(makeSliceView<0>(aperture));
-        auto output = FFT_Type::wrapFFT_Output(makeSliceView<0>(fftResult));
+        auto input = FFT_Type::wrapInput(makeSliceView<0>(aperture));
+        auto output = FFT_Type::wrapOutput(makeSliceView<0>(fftResult));
         auto fft = foobar::makeFFT<TestLibrary>(input, output);
         generateData(aperture, Rect<TestPrecision>(20,testSize/2));
         fft(input, output);
