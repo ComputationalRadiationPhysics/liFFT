@@ -228,7 +228,7 @@ namespace foobar {
             }
         }
 
-        FFT_DataWrapper(ParamType data, unsigned realSizeLastDim, BaseAccessor acc = BaseAccessor()):
+        FFT_DataWrapper(ParamType data, unsigned fullSizeLastDim, BaseAccessor acc = BaseAccessor()):
             base_(static_cast<ParamType>(data)), acc_(std::move(acc))
         {
             policies::GetExtents<Base> extents(base_);
@@ -238,18 +238,18 @@ namespace foobar {
                     (FFT_Def::kind == FFT_Kind::Real2Complex && !isInput) ||
                     FFT_Def::kind == FFT_Kind::Complex2Complex)
             {
-                if(extents_[numDims - 1] != realSizeLastDim)
+                if(extents_[numDims - 1] != fullSizeLastDim)
                     throw std::runtime_error("Invalid size given");
             }else if((FFT_Def::kind == FFT_Kind::Complex2Real && !isInput) ||
                     (FFT_Def::kind == FFT_Kind::Real2Complex && isInput))
             {
-                if(extents_[numDims - 1] != realSizeLastDim / 2 + 1)
+                if(extents_[numDims - 1] != fullSizeLastDim / 2 + 1)
                     throw std::runtime_error("Invalid size given");
             }
             if(FFT_Def::isInplace)
             {
                 fullExtents_ = extents_;
-                fullExtents_[numDims - 1] = realSizeLastDim;
+                fullExtents_[numDims - 1] = fullSizeLastDim;
             }
 
             memory_.init(extents_);

@@ -242,6 +242,34 @@ namespace foobar {
         }
 
         /**
+         * Factory method to create a DataWrapper that can then be used as input for a FFT
+         * If the accessor returns a non-const reference, the underlying data is assumed
+         * to be continuous and directly used in the FFT
+         * Otherwise temporary memory is created to which the data is copied before each FFT-invocation
+         *
+         * @param base Container holding the data
+         * @param fullSizeLastDim The full size for the last dimension (required only for C2R inplace transforms)
+         * @param acc Accessor used to access the elements in the container via ()-operator(index, base)
+         * @return DataWrapper that can then be used as input for a FFT and provides a default Accessor to access the underlying data
+         */
+        template<typename T_Base, typename T_BaseAccessor = traits::IdentityAccessor_t<T_Base> >
+        static FFT_InputDataWrapper<
+                FFT_Definition,
+                std::remove_reference_t<T_Base>,
+                negate< std::is_lvalue_reference<T_Base> >,
+                std::remove_reference_t<T_BaseAccessor>
+            >
+        wrapInput(T_Base&& base, unsigned fullSizeLastDim, T_BaseAccessor&& acc = T_BaseAccessor())
+        {
+            return FFT_InputDataWrapper<
+                        FFT_Definition,
+                        std::remove_reference_t<T_Base>,
+                        negate< std::is_lvalue_reference<T_Base> >,
+                        std::remove_reference_t<T_BaseAccessor>
+                    >(std::forward<T_Base>(base), fullSizeLastDim, std::forward<T_BaseAccessor>(acc));
+        }
+
+        /**
          * Factory method to create a DataWrapper that can then be used as output of a FFT
          * If the accessor returns a non-const reference, the underlying data is assumed
          * to be continuous and overwritten in the FFT
