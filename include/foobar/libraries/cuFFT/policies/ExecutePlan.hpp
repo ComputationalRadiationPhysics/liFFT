@@ -10,6 +10,7 @@
 #include "foobar/libraries/cuFFT/traits/Sign.hpp"
 #include "foobar/libraries/cuFFT/traits/LibTypes.hpp"
 #include "foobar/policies/SafePtrCast.hpp"
+#include "foobar/libraries/cuFFT/policies/GetInplaceMemSize.hpp"
 
 namespace foobar {
 namespace libraries {
@@ -116,23 +117,23 @@ namespace policies {
 
         template< class T_Extents, typename T_Ptr, class T_Copier >
         void
-        copyIn(const T_Extents& inExtents, const T_Extents& outExtents, T_Ptr dest, T_Ptr src, bool inPlace, const T_Copier& copy)
+        copyIn(const T_Extents& inExtents, const T_Extents& outExtents, T_Ptr dest, T_Ptr src, bool inPlaceOnDevice, const T_Copier& copy)
         {
             size_t numElements = foobar::policies::getNumElementsFromExtents(inExtents);
             size_t w = inExtents[numDims-1] * sizeof(LibInType);
             size_t h = numElements * sizeof(LibInType) / w;
-            size_t pitch = (inPlace && !isComplexIn) ? outExtents[numDims-1] * sizeof(LibOutType) : w;
+            size_t pitch = (inPlaceOnDevice && !isComplexIn) ? outExtents[numDims-1] * sizeof(LibOutType) : w;
             copy.H2D(dest, src, w, h, pitch, w);
         }
 
         template< class T_Extents, typename T_Ptr, class T_Copier >
         void
-        copyOut(const T_Extents& inExtents, const T_Extents& outExtents, T_Ptr dest, T_Ptr src, bool inPlace, const T_Copier& copy)
+        copyOut(const T_Extents& inExtents, const T_Extents& outExtents, T_Ptr dest, T_Ptr src, bool inPlaceOnDevice, const T_Copier& copy)
         {
             size_t numElements = foobar::policies::getNumElementsFromExtents(outExtents);
             size_t w = outExtents[numDims-1] * sizeof(LibOutType);
             size_t h = numElements * sizeof(LibOutType) / w;
-            size_t pitch = (inPlace && !isComplexOut) ? inExtents[numDims-1] * sizeof(LibInType) : w;
+            size_t pitch = (inPlaceOnDevice && !isComplexOut) ? inExtents[numDims-1] * sizeof(LibInType) : w;
             copy.D2H(dest, src, w, h, pitch, w);
         }
 
@@ -175,16 +176,12 @@ namespace policies {
             using foobar::policies::safe_ptr_cast;
             static_assert(isInplace, "Must be used for inplace transforms!");
 
-            const auto& inExtents = inOut.getExtents();
-            auto outExtents = inOut.getFullExtents();
-            // For R2C we have to adjust the out extents
-            if(isComplexOut && !isComplexIn)
-                outExtents[numDims - 1] = outExtents[numDims - 1] / 2 + 1;
+            size_t size = policies::GetInplaceMemSize<Precision, isComplexIn, isComplexOut, numDims>::get(inOut.getFullExtents());
 
             auto pIn = safe_ptr_cast<LibInType*>(inOut.getDataPtr());
             if( plan.InDevicePtr )
             {
-                copyIn(inExtents, outExtents, plan.InDevicePtr.get(), pIn, true, copy);
+                copy.H2D(plan.InDevicePtr.get(), pIn, size, 1, size, size);
                 pIn = plan.InDevicePtr.get();
             }
             LibOutType* pOut = reinterpret_cast<LibOutType*>(pIn);
@@ -194,7 +191,7 @@ namespace policies {
             if( plan.InDevicePtr )
             {
                 LibInType* pOutHost = safe_ptr_cast<LibInType*>(inOut.getDataPtr());
-                copyOut(inExtents, outExtents, reinterpret_cast<LibOutType*>(pOutHost), pOut, true, copy);
+                copy.D2H(reinterpret_cast<LibOutType*>(pOutHost), pOut, size, 1, size, size);
             }
         }
     };

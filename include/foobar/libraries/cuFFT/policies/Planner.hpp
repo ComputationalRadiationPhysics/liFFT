@@ -6,6 +6,7 @@
 #include "foobar/libraries/cuFFT/traits/FFTType.hpp"
 #include "foobar/libraries/cuFFT/traits/Sign.hpp"
 #include "foobar/libraries/cuFFT/traits/LibTypes.hpp"
+#include "foobar/libraries/cuFFT/policies/GetInplaceMemSize.hpp"
 #include <cassert>
 #include <limits>
 
@@ -135,15 +136,7 @@ namespace policies {
         void
         operator()(T_Plan& plan, Input& inOut, const T_Allocator& alloc)
         {
-            static_assert(isInplace, "Must be used for inplace transforms!");
-            // ATTENTION: Complex values take up more space then real values. Make sure we have enough!
-            // Get the extents from the complex values (also for C2R/R2C)
-            auto extents(inOut.getFullExtents());
-            if(!isComplexIn || !isComplexOut)
-                extents[numDims - 1] = extents[numDims - 1] / 2 + 1;
-            // Get number of complex elements
-            unsigned numElements = foobar::policies::getNumElementsFromExtents(extents);
-            size_t size = numElements * (isComplexIn ? sizeof(LibInType) : sizeof(LibOutType));
+            size_t size = policies::GetInplaceMemSize<Precision, isComplexIn, isComplexOut, numDims>::get(inOut.getFullExtents());
             checkSize(size);
             if(!Input::IsDeviceMemory::value)
                 plan.InDevicePtr.reset(alloc.template malloc<LibInType>(size));
