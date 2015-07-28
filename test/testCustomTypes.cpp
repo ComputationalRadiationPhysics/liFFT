@@ -8,12 +8,15 @@
 #include "Volume.hpp"
 #include "foobar/accessors/VolumeAccessor.hpp"
 #include "foobar/libraries/fftw/fftw3Include.h"
-#include "generateData.hpp"
+#include "foobar/generateData.hpp"
 #include "foobar/policies/Copy.hpp"
 #include "foobar/traits/IdentityAccessor.hpp"
 #include "foobar/types/SliceView.hpp"
 #include <type_traits>
 #include <iostream>
+
+using foobar::generateData;
+using namespace foobar::generators;
 
 namespace foobarTest {
 

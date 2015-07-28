@@ -7,8 +7,11 @@
 #include "libTiff/image.hpp"
 #include "libTiff/traitsAndPolicies.hpp"
 #include "foobar/FFT.hpp"
-#include "generateData.hpp"
+#include "foobar/generateData.hpp"
 #include "foobar/accessors/TransposeAccessor.hpp"
+
+using foobar::generateData;
+using namespace foobar::generators;
 
 namespace foobarTest {
 

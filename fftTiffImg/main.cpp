@@ -5,11 +5,11 @@
 #include "libTiff/traitsAndPolicies.hpp"
 #include "foobar/FFT.hpp"
 #if defined(WITH_CUDA) and false
-#include "foobar/libraries/cuFFT/cuFFT.hpp"
-using FFT_LIB = foobar::libraries::cuFFT::CuFFT<>;
+#   include "foobar/libraries/cuFFT/cuFFT.hpp"
+    using FFT_LIB = foobar::libraries::cuFFT::CuFFT<>;
 #else
-#include "foobar/libraries/fftw/FFTW.hpp"
-using FFT_LIB = foobar::libraries::fftw::FFTW<>;
+#   include "foobar/libraries/fftw/FFTW.hpp"
+    using FFT_LIB = foobar::libraries::fftw::FFTW<>;
 #endif
 #include "foobar/policies/Copy.hpp"
 #include "foobar/types/SymmetricWrapper.hpp"
@@ -77,8 +77,8 @@ main(int argc, char** argv)
     string inFilePath, outFilePath;
     desc.add_options()
         ("help,h", "Show help message")
-        ("input-file,i", po::value<string>(&inFilePath), "Input file to use, can contain %i as a placeholder for 3D FFTs")
-        ("output-file,o", po::value<string>(&outFilePath)->default_value("output.tif"), "Output file to write to")
+        ("inputFile,i", po::value<string>(&inFilePath), "Input file to use, can contain %i as a placeholder for 3D FFTs")
+        ("outputFile,o", po::value<string>(&outFilePath)->default_value("output.tif"), "Output file to write to")
         ("firstIdx", po::value<unsigned>(&firstIdx)->default_value(0), "first index to use")
         ("lastIdx", po::value<unsigned>(&lastIdx)->default_value(0), "last index to use")
         ("minSize,m", po::value<unsigned>(&minSize)->default_value(0), "Minimum size of the string replaced for %i")

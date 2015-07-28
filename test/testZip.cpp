@@ -1,7 +1,7 @@
 #include "testZip.hpp"
 #include "testUtils.hpp"
 #include "foobar/accessors/ZipAccessor.hpp"
-#include "generateData.hpp"
+#include "foobar/generateData.hpp"
 #include "foobar/FFT.hpp"
 
 #include "libTiff/image.hpp"
@@ -9,6 +9,9 @@
 
 #include <algorithm>
 #include <iostream>
+
+using foobar::generateData;
+using namespace foobar::generators;
 
 namespace foobarTest {
 

@@ -1,8 +1,11 @@
 #include "testInplace.hpp"
 #include "testUtils.hpp"
 #include "foobar/FFT.hpp"
-#include "generateData.hpp"
+#include "foobar/generateData.hpp"
 #include "foobar/types/View.hpp"
+
+using foobar::generateData;
+using namespace foobar::generators;
 
 namespace foobarTest {
 

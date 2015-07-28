@@ -2,7 +2,7 @@
 #include "foobar/types/Vec.hpp"
 #include "foobar/FFT.hpp"
 #include "foobar/libraries/fftw/FFTW.hpp"
-#include "generateData.hpp"
+#include "foobar/generateData.hpp"
 #include "foobar/accessors/TransformAccessor.hpp"
 #include "foobar/accessors/TransposeAccessor.hpp"
 #include "foobar/types/SymmetricWrapper.hpp"
@@ -13,6 +13,9 @@
 #include "foobar/types/SliceView.hpp"
 #include <iostream>
 #include <fstream>
+
+using foobar::generateData;
+using namespace foobar::generators;
 
 namespace foobarTest {
 
