@@ -31,6 +31,11 @@ namespace foobar {
 
     namespace generators {
 
+        template<typename T, typename U>
+        typename std::common_type<T, U>::type absDiff(T a, U b) {
+          return a > b ? a - b : b - a;
+        }
+
         template<typename T>
         struct Spalt{
             const size_t size_, middle_;
@@ -41,7 +46,7 @@ namespace foobar {
             operator()(T_Idx&& idx) const{
                 static constexpr unsigned numDims = traits::NumDims<T_Idx>::value;
 
-                return (std::abs(idx[numDims - 1] - middle_) <= size_) ? 1 : 0;
+                return (absDiff(idx[numDims - 1], middle_) <= size_) ? 1 : 0;
             }
         };
 
@@ -58,8 +63,8 @@ namespace foobar {
                 static_assert(numDims >= 2, "Only >=2D data supported");
 
                 auto dist = std::sqrt(
-                        std::pow(std::abs(idx[numDims - 1] - middle_), 2)+
-                        std::pow(std::abs(idx[numDims - 2] - middle_), 2));
+                        std::pow(absDiff(idx[numDims - 1], middle_), 2)+
+                        std::pow(absDiff(idx[numDims - 2], middle_), 2));
                 return std::cos( factor_ * dist );
             }
         };
@@ -76,8 +81,8 @@ namespace foobar {
                 static constexpr unsigned numDims = traits::NumDims<T_Idx>::value;
                 static_assert(numDims >= 2, "Only >=2D data supported");
 
-                return (std::abs(idx[numDims - 1] - middleX_) <= sizeX_ &&
-                        std::abs(idx[numDims - 2] - middleY_) <= sizeY_) ? 1 : 0;
+                return (absDiff(idx[numDims - 1], middleX_) <= sizeX_ &&
+                        absDiff(idx[numDims - 2], middleY_) <= sizeY_) ? 1 : 0;
             }
         };
 
@@ -92,8 +97,8 @@ namespace foobar {
                 static constexpr unsigned numDims = traits::NumDims<T_Idx>::value;
                 static_assert(numDims >= 2, "Only >=2D data supported");
 
-                return (std::pow(std::abs(idx[numDims - 1] - middle_), 2) +
-                        std::pow(std::abs(idx[numDims - 2] - middle_), 2) <= size_*size_) ? 1 : 0;
+                return (std::pow(absDiff(idx[numDims - 1], middle_), 2) +
+                        std::pow(absDiff(idx[numDims - 2], middle_), 2) <= size_*size_) ? 1 : 0;
             }
         };
 
