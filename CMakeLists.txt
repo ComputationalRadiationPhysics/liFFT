@@ -36,7 +36,7 @@ set(ENABLE_CUDA ${CUDA_FOUND} CACHE BOOL "Use CUDA")
 ###############################################################################
 # Boost
 ###############################################################################
-find_package(Boost 1.48.0 COMPONENTS program_options REQUIRED)
+find_package(Boost 1.48.0 COMPONENTS program_options system filesystem REQUIRED)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 set(LIBS ${LIBS} ${Boost_LIBRARIES})
 

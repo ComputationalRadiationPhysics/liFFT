@@ -20,6 +20,7 @@
 #include "foobar/types/SliceView.hpp"
 
 #include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
 #include <cmath>
 
 namespace po = boost::program_options;
@@ -73,13 +74,13 @@ struct Values1_2P5um
 template<typename T>
 struct Values1_1um
 {
-    static constexpr T raise1Max = 0.65;
+    static constexpr T raise1Max = 0.663;
     static constexpr T raise1Delta = 0.01;
     static constexpr T raise1Offset = -100;
     static constexpr T raise2Max = 1;
     static constexpr T raise2Delta = 0.046;
     static constexpr T raise2Offset = 40;
-    static constexpr T gaussMax = 2.4;
+    static constexpr T gaussMax = 2.37;
     static constexpr T gaussDelta = 150;
     static constexpr T gaussOffset = -350;
     static constexpr T scale = 0.55;
@@ -88,16 +89,31 @@ struct Values1_1um
 template<typename T>
 struct Values1_100nm
 {
-    static constexpr T raise1Max = 0.65;
+    static constexpr T raise1Max = 0.6875;
     static constexpr T raise1Delta = 0.01;
     static constexpr T raise1Offset = -100;
     static constexpr T raise2Max = 1;
-    static constexpr T raise2Delta = 0.381;
+    static constexpr T raise2Delta = 0.395;
     static constexpr T raise2Offset = 4;
-    static constexpr T gaussMax = 2.4;
+    static constexpr T gaussMax = 2.324;
     static constexpr T gaussDelta = 150;
     static constexpr T gaussOffset = -350;
     static constexpr T scale = 0.55;
+};
+
+template<typename T>
+struct Values2
+{
+    static constexpr T raise1Max = 0.65;
+    static constexpr T raise1Delta = 0.007;
+    static constexpr T raise1Offset = -100;
+    static constexpr T raise2Max = 1;
+    static constexpr T raise2Delta = 0.03;
+    static constexpr T raise2Offset = 100;
+    static constexpr T gaussMax = 0;
+    static constexpr T gaussDelta = 1;
+    static constexpr T gaussOffset = 0;
+    static constexpr T scale = 0.38;
 };
 
 template< typename T, template <typename U> class T_Values >
@@ -166,6 +182,9 @@ void genData(T& data, unsigned dataSet)
     case 3:
         foobar::generateData(data, GenData1<float, Values1_100nm>());
         break;
+    case 4:
+        foobar::generateData(data, GenData1<float, Values2>());
+        break;
     default:
         throw std::logic_error("Wrong dataset");
     }
@@ -176,10 +195,22 @@ void writeInput(const string& filePath, unsigned dataSet)
 {
     libTiff::FloatImage<> img(filePath, 1024u, 2048u);
     foobar::mem::RealContainer<3, float> data(foobar::types::Vec3(2048u, 1024u, 1u));
-    genData(data, dataSet);
-    auto view = foobar::types::makeSliceView<2>(data, foobar::types::makeRange(foobar::types::Vec3(0u, 0u, 0u)));
-    foobar::policies::copy(view, img);
-    img.save();
+    unsigned startDS = dataSet ? dataSet : 1;
+    unsigned lastDS = dataSet ? dataSet : 4;
+    for(unsigned i = startDS; i<=lastDS; i++)
+    {
+        genData(data, i);
+        auto view = foobar::types::makeSliceView<2>(data, foobar::types::makeRange(foobar::types::Vec3(0u, 0u, 0u)));
+        foobar::policies::copy(view, img);
+        if(dataSet)
+            img.save();
+        else
+        {
+            boost::filesystem::path fPath(filePath);
+            fPath.replace_extension(std::to_string(i) + fPath.extension().string());
+            img.saveTo(fPath.string());
+        }
+    }
 }
 
 void writeFFT(const string& filePath, unsigned dataSet)
@@ -190,13 +221,25 @@ void writeFFT(const string& filePath, unsigned dataSet)
     auto outSlice = foobar::types::makeSliceView<0>(foobar::getFullData(output), foobar::types::makeRange());
     auto fft = foobar::makeFFT<FFT_LIB, false>(input);
 
-    genData(input, dataSet);
-    fft(input);
-    libTiff::FloatImage<> img(filePath, 1024u, 1024u);
-    auto acc1 = foobar::accessors::makeTransformAccessorFor(foobar::policies::CalcIntensityFunc(), outSlice);
-    foobar::accessors::TransposeAccessor<decltype(acc1)> acc(acc1);
-    foobar::policies::copy(outSlice, img, acc1);
-    img.save();
+    unsigned startDS = dataSet ? dataSet : 1;
+    unsigned lastDS = dataSet ? dataSet : 4;
+    for(unsigned i = startDS; i<=lastDS; i++)
+    {
+        genData(input, i);
+        fft(input);
+        libTiff::FloatImage<> img(filePath, 1024u, 1024u);
+        auto acc1 = foobar::accessors::makeTransformAccessorFor(foobar::policies::CalcIntensityFunc(), outSlice);
+        foobar::accessors::TransposeAccessor<decltype(acc1)> acc(acc1);
+        foobar::policies::copy(outSlice, img, acc);
+        if(dataSet)
+            img.save();
+        else
+        {
+            boost::filesystem::path fPath(filePath);
+            fPath.replace_extension(std::to_string(i) + fPath.extension().string());
+            img.saveTo(fPath.string());
+        }
+    }
 }
 
 int
@@ -208,7 +251,7 @@ main(int argc, char** argv)
     desc.add_options()
         ("help,h", "Show help message")
         ("outputFile,o", po::value<string>(&outFilePath)->default_value("output.tif"), "Output file to write to")
-        ("datasSet", po::value<unsigned>(&dataSet)->default_value(1), "Data set to use (1-3)")
+        ("datasSet", po::value<unsigned>(&dataSet)->default_value(0), "Data set to use (1-4) 0 => all")
         ("inOrOut, i", po::value<bool>(&inOrOut)->default_value(true), "Write Input(1) or Output(0)")
     ;
 
@@ -216,7 +259,7 @@ main(int argc, char** argv)
     po::store(po::parse_command_line(argc, argv, desc), vm);
     po::notify(vm);
 
-    if (vm.count("help") || outFilePath.empty() || dataSet < 1 || dataSet > 3 )
+    if (vm.count("help") || outFilePath.empty() || dataSet > 4 )
     {
         showHelp();
         return 1;
