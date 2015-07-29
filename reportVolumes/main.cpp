@@ -145,7 +145,7 @@ struct GenData1
         static constexpr unsigned numDims = foobar::traits::NumDims<T_Idx>::value;
         static_assert(numDims == 3, "3D only");
 
-        unsigned x = 512U;//idx[2];
+        unsigned x = idx[2];
         unsigned y = idx[1];
         unsigned z = idx[0];
 
