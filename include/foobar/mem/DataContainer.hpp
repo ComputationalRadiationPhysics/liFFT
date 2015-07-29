@@ -83,7 +83,7 @@ namespace foobar {
 
             template< typename T_Idx >
             std::result_of_t< IdentityAccessor(T_Idx&, DataContainer&) >
-            operator()(T_Idx& idx)
+            operator()(T_Idx&& idx)
             {
                 assert(policies::checkSizes(idx, extents));
                 return IdentityAccessor()(idx, *this);
@@ -91,7 +91,7 @@ namespace foobar {
 
             template< typename T_Idx >
             std::result_of_t< IdentityAccessor(T_Idx&, const DataContainer&) >
-            operator()(T_Idx& idx) const
+            operator()(T_Idx&& idx) const
             {
                 assert(policies::checkSizes(idx, extents));
                 return IdentityAccessor()(idx, *this);
