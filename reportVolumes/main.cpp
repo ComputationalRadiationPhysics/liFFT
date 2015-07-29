@@ -161,8 +161,8 @@ struct GenData1
         T res =  f(x, y, z);
         if(r < radius - 200)
             res += 0.07 *
-                sinFunc<T>(x, 0, 1,1/(60. + rand)) *
-                sinFunc<T>(y, 0, 1, 1/(60. + rand2)) *
+                sinFunc<T>(x, 0, 1,1/(120. + rand)) * sinFunc<T>(x, 0, 1,1/(120. + rand)) *
+                sinFunc<T>(y, 0, 1, 1/(120. + rand2)) * sinFunc<T>(y, 0, 1, 1/(120. + rand2)) *
                 sinFunc<T>(z, midPt - 200, 1, 1/(30. + rand3));
         return res;
     }
