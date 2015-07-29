@@ -17,20 +17,20 @@ namespace policies {
     struct FlattenIdx
     {
         template< class T_Index >
-        std::enable_if_t< std::is_integral<std::remove_reference_t<T_Index>>::value, unsigned >
+        std::enable_if_t< std::is_integral<std::remove_reference_t<T_Index>>::value, size_t >
         operator()(T_Index&& idx, const T_Data& data) const
         {
             return idx;
         }
 
         template< class T_Index >
-        std::enable_if_t< !std::is_integral<std::remove_reference_t<T_Index>>::value, unsigned >
+        std::enable_if_t< !std::is_integral<std::remove_reference_t<T_Index>>::value, size_t >
         operator()(T_Index&& idx, const T_Data& data) const
         {
             static constexpr unsigned numDims = traits::NumDims<T_Data>::value;
             GetExtents<T_Data> extents(data);
             assert(checkSizes(idx, extents));
-            unsigned flatIdx = idx[0];
+            size_t flatIdx = idx[0];
             for(unsigned i=1; i<numDims; ++i)
                 flatIdx = flatIdx*extents[i] + idx[i];
             return flatIdx;
@@ -41,14 +41,14 @@ namespace policies {
     struct FlattenIdx< T_Data, true>
     {
         template< class T_Index >
-        std::enable_if_t< std::is_integral<T_Index>::value, unsigned >
+        std::enable_if_t< std::is_integral<T_Index>::value, size_t >
         operator()(T_Index&& idx, const T_Data& data) const
         {
             return idx;
         }
 
         template< class T_Index >
-        std::enable_if_t< !std::is_integral<T_Index>::value, unsigned >
+        std::enable_if_t< !std::is_integral<T_Index>::value, size_t >
         operator()(T_Index&& idx, const T_Data& data) const
         {
             static constexpr unsigned numDims = traits::NumDims<T_Data>::value;
@@ -57,7 +57,7 @@ namespace policies {
             assert(checkSizes(idx, extents));
 #endif
             GetStrides<T_Data> strides(data);
-            unsigned flatIdx = 0;
+            size_t flatIdx = 0;
             for(unsigned i=0; i<numDims; ++i)
                 flatIdx += idx[i] * strides[i];
             return flatIdx;
@@ -65,7 +65,7 @@ namespace policies {
     };
 
     template< class T_Index, class T_Data >
-    unsigned
+    size_t
     flattenIdx(T_Index&& idx, const T_Data& data)
     {
         return FlattenIdx<T_Data>()(std::forward<T_Index>(idx), data);

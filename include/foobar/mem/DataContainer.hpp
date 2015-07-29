@@ -32,7 +32,7 @@ namespace foobar {
             static constexpr bool isFlatMemory = T_isFlatMemory;
 
             using IdentityAccessor = accessors::DataContainerAccessor<T_isFlatMemory>;
-            using IdxType = types::Vec< numDims >;
+            using IdxType = types::Vec< numDims, size_t >;
 
             friend struct accessors::DataContainerAccessor<isFlatMemory>;
             friend struct policies::GetExtents<DataContainer>;
@@ -48,8 +48,10 @@ namespace foobar {
              *
              * @param extents Extents of the container
              */
-            DataContainer(const IdxType& extents)
+            template<typename T_Extents>
+            DataContainer(T_Extents&& extents)
             {
+                static_assert(traits::NumDims<T_Extents>::value >= numDims, "Wrong extents");
                 allocData(extents);
             }
 
@@ -58,16 +60,26 @@ namespace foobar {
              *
              * @param extents Extents of the container
              */
-            DataContainer(const Memory& data, const IdxType& extents): data(data), extents(extents)
-            {}
+            template<typename T_Extents>
+            DataContainer(const Memory& data, T_Extents&& extents): data(data)
+            {
+                static_assert(traits::NumDims<T_Extents>::value >= numDims, "Wrong extents");
+                for(unsigned i = 0; i < numDims; i++)
+                    this->extents[i] = extents[i];
+            }
 
             /**
              * Creates a data container with the specified extents
              *
              * @param extents Extents of the container
              */
-            DataContainer(Memory&& data, const IdxType& extents): data(std::move(data)), extents(extents)
-            {}
+            template<typename T_Extents>
+            DataContainer(Memory&& data, T_Extents&& extents): data(std::move(data))
+            {
+                static_assert(traits::NumDims<T_Extents>::value >= numDims, "Wrong extents");
+                for(unsigned i = 0; i < numDims; i++)
+                    this->extents[i] = extents[i];
+            }
 
             template< typename T_Idx >
             std::result_of_t< IdentityAccessor(T_Idx&, DataContainer&) >
@@ -85,17 +97,23 @@ namespace foobar {
                 return IdentityAccessor()(idx, *this);
             }
 
+            template<typename T_Extents>
             void
-            setData(const IdxType& extents, const Memory& data)
+            setData(T_Extents&& extents, const Memory& data)
             {
-                this->extents = extents;
+                static_assert(traits::NumDims<T_Extents>::value >= numDims, "Wrong extents");
+                for(unsigned i = 0; i < numDims; i++)
+                    this->extents[i] = extents[i];
                 this->data = data;
             }
 
+            template<typename T_Extents>
             void
-            setData(const IdxType& extents, Memory&& data)
+            setData(T_Extents&& extents, Memory&& data)
             {
-                this->extents = extents;
+                static_assert(traits::NumDims<T_Extents>::value >= numDims, "Wrong extents");
+                for(unsigned i = 0; i < numDims; i++)
+                    this->extents[i] = extents[i];
                 this->data = std::move(data);
             }
 
@@ -104,10 +122,13 @@ namespace foobar {
               * Note: If the underlying memory does not support automatic destruction
               * you must use freeData() to free the memory
               */
+             template<typename T_Extents>
              void
-             allocData(const IdxType& extents)
+             allocData(T_Extents&& extents)
              {
-                 this->extents = extents;
+                 static_assert(traits::NumDims<T_Extents>::value >= numDims, "Wrong extents");
+                 for(unsigned i = 0; i < numDims; i++)
+                     this->extents[i] = extents[i];
                  data.allocData(policies::getNumElements(*this, false));
              }
 
@@ -189,6 +210,7 @@ namespace foobar {
 
             using IdxType = typename Parent::IdxType;
             using Memory = typename Parent::Memory;
+            static constexpr unsigned numDims = Parent::numDims;
 
             DataContainer(): Parent(){}
             /**
@@ -199,29 +221,43 @@ namespace foobar {
              * @param extents Extents of the container
              * @param strides Strides of the container
              */
-            DataContainer(const IdxType& extents, const IdxType& strides): Parent(extents), strides(strides)
-            {}
+            template<typename T_Extents, typename T_Strides>
+            DataContainer(T_Extents&& extents, T_Strides&& strides): Parent(extents)
+            {
+                static_assert(traits::NumDims<T_Strides>::value >= numDims, "Wrong strides");
+                for(unsigned i = 0; i < numDims; i++)
+                    this->strides[i] = strides[i];
+            }
 
             /**
              * Creates a data container with the specified extents
              *
              * @param extents Extents of the container
              */
-            DataContainer(const Memory& data, const IdxType& extents, const IdxType& strides): Parent(data, extents), strides(strides)
-            {}
+            template<typename T_Extents, typename T_Strides>
+            DataContainer(const Memory& data, T_Extents&& extents, T_Strides&&): Parent(data, extents)
+            {
+                static_assert(traits::NumDims<T_Strides>::value >= numDims, "Wrong strides");
+                for(unsigned i = 0; i < numDims; i++)
+                    this->strides[i] = strides[i];
+            }
 
             /**
              * Creates a data container with the specified extents
              *
              * @param extents Extents of the container
              */
-            DataContainer(Memory&& data, const IdxType& extents, const IdxType& strides): Parent(std::move(data), extents), strides(strides)
-            {}
+            template<typename T_Extents, typename T_Strides>
+            DataContainer(Memory&& data, T_Extents&& extents, T_Strides&&): Parent(std::move(data), extents)
+            {
+                static_assert(traits::NumDims<T_Strides>::value >= numDims, "Wrong strides");
+                for(unsigned i = 0; i < numDims; i++)
+                    this->strides[i] = strides[i];
+            }
 
 
         private:
             IdxType strides;
-
         };
 
         /**

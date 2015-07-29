@@ -38,7 +38,7 @@ namespace mem {
                 std::is_same< Type, types::Complex<IntegralType> >::value,
                 "You must use build-in types!");
 
-        using IdxType = types::Vec<numDims>;
+        using IdxType = typename Parent::IdxType;
         using IdentityAccessor = accessors::ArrayAccessor< true >;
 
         using Pointer = Type*;
@@ -47,21 +47,25 @@ namespace mem {
 
         friend struct policies::GetExtents<PlainPtrWrapper>;
 
-        PlainPtrWrapper(Pointer ptr, const IdxType& extents): Parent(ptr, extents)
+        template<typename T_Extents>
+        PlainPtrWrapper(Pointer ptr, T_Extents&& extents): Parent(ptr, extents)
         {
             static_assert(!isStrided, "You need to specify the strides!");
         }
 
-        PlainPtrWrapper(IntegralType* ptr, const IdxType& extents):
+        template<typename T_Extents>
+        PlainPtrWrapper(IntegralType* ptr, T_Extents&& extents):
             PlainPtrWrapper(policies::safe_ptr_cast<Pointer>(ptr), extents)
         {}
 
-        PlainPtrWrapper(Pointer ptr, const IdxType& extents, const IdxType& strides): Parent(ptr, extents, strides)
+        template<typename T_Extents, typename T_Strides>
+        PlainPtrWrapper(Pointer ptr, T_Extents&& extents, T_Strides&& strides): Parent(ptr, extents, strides)
         {
             static_assert(isStrided, "You cannot specify strides!!");
         }
 
-        PlainPtrWrapper(IntegralType* ptr, const IdxType& extents, const IdxType& strides):
+        template<typename T_Extents, typename T_Strides>
+        PlainPtrWrapper(IntegralType* ptr, T_Extents&& extents, T_Strides&& strides):
             PlainPtrWrapper(policies::safe_ptr_cast<Pointer>(ptr), extents, strides)
         {}
 
@@ -109,16 +113,16 @@ namespace mem {
 
     // Following are the convenience functions for wrapping pointers
 
-    template< bool T_isComplex, bool T_isDevicePtr = false, typename T = float, unsigned numDims = 1 >
+    template< bool T_isComplex, bool T_isDevicePtr = false, typename T = float, unsigned numDims = 1, typename U >
     PlainPtrWrapper< UnsignedConst<numDims>, RealOrComplex_t< T_isComplex, T >, std::false_type, BoolConst<T_isDevicePtr> >
-    wrapPtr(T* ptr, const types::Vec<numDims>& size)
+    wrapPtr(T* ptr, const types::Vec<numDims, U>& size)
     {
         return PlainPtrWrapper< UnsignedConst<numDims>, RealOrComplex_t< T_isComplex, T >, std::false_type, BoolConst<T_isDevicePtr> >(ptr, size);
     }
 
-    template< bool T_isComplex, bool T_isDevicePtr = false, typename T = float, unsigned numDims = 1 >
+    template< bool T_isComplex, bool T_isDevicePtr = false, typename T = float, unsigned numDims = 1, typename U, typename V >
     PlainPtrWrapper< UnsignedConst<numDims>, RealOrComplex_t< T_isComplex, T >, std::true_type, BoolConst<T_isDevicePtr> >
-    wrapPtrStrided(T* ptr, const types::Vec<numDims>& size, const types::Vec<numDims>& stride)
+    wrapPtrStrided(T* ptr, const types::Vec<numDims, U>& size, const types::Vec<numDims, V>& stride)
     {
         return PlainPtrWrapper< UnsignedConst<numDims>, RealOrComplex_t< T_isComplex, T >, std::true_type, BoolConst<T_isDevicePtr> >(ptr, size, stride);
     }

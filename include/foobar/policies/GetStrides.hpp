@@ -29,12 +29,12 @@ namespace policies {
                     strides_[i-1] = strides_[i] * extents[i];
             }
 
-            unsigned operator[](unsigned dimIdx) const
+            size_t operator[](unsigned dimIdx) const
             {
                 return strides_[dimIdx];
             }
         protected:
-            types::Vec<numDims> strides_;
+            types::Vec<numDims, size_t> strides_;
         };
 
         /**
@@ -47,7 +47,7 @@ namespace policies {
 
             GetStrides(const Data& data): data_(data){}
 
-            unsigned operator[](unsigned dimIdx) const
+            size_t operator[](unsigned dimIdx) const
             {
                 return data_.strides[dimIdx];
             }

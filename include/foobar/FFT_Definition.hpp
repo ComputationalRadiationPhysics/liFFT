@@ -30,8 +30,9 @@ namespace foobar {
             using Data = mem::DataContainer<numDims, mem::RealValues<Precision> >;
 
             template<class T_Extents>
-            static types::View< Data, std::integral_constant<bool, true> >
+            static auto
             create(const T_Extents& extents)
+            -> decltype( types::makeView(Data(extents), types::makeRange(types::Origin(), extents)) )
             {
                 T_Extents bigExtents = extents;
                 // We need some padding: row size is (n / 2 + 1) complex elements. 1 complex element = 2 real elements

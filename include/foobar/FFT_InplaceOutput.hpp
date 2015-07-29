@@ -50,6 +50,7 @@ namespace foobar {
         static constexpr bool isComplex   = FFT_Def::isComplexOutput;
         static constexpr bool isAoS       = Input::isAoS;
         static constexpr bool isStrided   = Input::isStrided;
+        static constexpr bool isHalfData = FFT_Def::kind == FFT_Kind::Real2Complex;
 
         static_assert(isAoS, "Inplace FFTs must use Array of Structs");
 
@@ -85,10 +86,16 @@ namespace foobar {
             return data_(idx);
         }
 
-        const Extents&
+        const typename Data::IdxType&
         getExtents() const
         {
             return data_.getExtents();
+        }
+
+        const Extents&
+        getFullExtents() const
+        {
+            return fullExtents_;
         }
 
         void preProcess(){}
@@ -104,16 +111,16 @@ namespace foobar {
             Extents extents;
             switch (FFT_Def::kind) {
                 case FFT_Kind::Complex2Complex:
-                    extents = input_.extents_;
+                    extents = input_.getExtents();
                     fullExtents_ = extents;
                     break;
                 case FFT_Kind::Real2Complex:
-                    extents = input_.extents_;
+                    extents = input_.getExtents();
                     fullExtents_ = extents;
                     extents[numDims - 1] = extents[numDims - 1] / 2 + 1;
                     break;
                 case FFT_Kind::Complex2Real:
-                    extents = input_.fullExtents_;
+                    extents = input_.getFullExtents();
                     fullExtents_ = extents;
                     break;
                 default:

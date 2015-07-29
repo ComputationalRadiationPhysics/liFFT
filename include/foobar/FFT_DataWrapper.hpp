@@ -24,7 +24,6 @@ namespace foobar {
     // Fwd decl
     template< class T1, class T2, class T3, bool t>
     class FFT;
-    template< class > class FFT_InplaceOutput;
 
     namespace detail {
 
@@ -34,7 +33,7 @@ namespace foobar {
             types::SymmetricWrapper<T_FFT_DataWrapper>
             operator()(T_FFT_DataWrapper& data) const
             {
-                return types::makeSymmetricWrapper(data, data.fullExtents_[data.numDims-1]);
+                return types::makeSymmetricWrapper(data, data.getFullExtents()[data.numDims-1]);
             }
         };
 
@@ -183,8 +182,7 @@ namespace foobar {
         using ParamType = typename std::conditional_t< hasInstance, std::add_rvalue_reference<Base>, std::add_lvalue_reference<Base> >::type;
         static constexpr bool isHalfData = (FFT_Def::kind == FFT_Kind::Complex2Real && isInput) ||
                                            (FFT_Def::kind == FFT_Kind::Real2Complex && !isInput);
-        friend class detail::GetFullData<FFT_DataWrapper>;
-        friend class FFT_InplaceOutput<FFT_DataWrapper>;
+
     private:
         InstanceType base_;
         BaseAccessor acc_;
