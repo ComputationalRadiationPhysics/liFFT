@@ -111,6 +111,7 @@ namespace policies {
         T_Src,
         T_Dest,
         std::enable_if_t<
+            !std::is_same<T_Src, T_Dest>::value &&
             SafePtrCastExist< T_Src, double* >::value &&
             SafePtrCastExist< double*, T_Dest >::value
         >
