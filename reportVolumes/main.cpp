@@ -252,7 +252,7 @@ main(int argc, char** argv)
         ("help,h", "Show help message")
         ("outputFile,o", po::value<string>(&outFilePath)->default_value("output.tif"), "Output file to write to")
         ("datasSet", po::value<unsigned>(&dataSet)->default_value(0), "Data set to use (1-4) 0 => all")
-        ("inOrOut, i", po::value<bool>(&inOrOut)->default_value(true), "Write Input(1) or Output(0)")
+        ("inOrOut,i", po::value<bool>(&inOrOut)->default_value(true), "Write Input(1) or Output(0)")
     ;
 
     po::variables_map vm;
