@@ -147,7 +147,7 @@ struct GenData1
 
         unsigned x = idx[2];
         unsigned y = idx[1];
-        unsigned z = idx[0];
+        unsigned z = idx[0] + 850u;
 
         int dx = x0 - x;
         int dy = y0 - y;
@@ -193,14 +193,14 @@ void genData(T& data, unsigned dataSet)
 
 void writeInput(const string& filePath, unsigned dataSet)
 {
-    libTiff::FloatImage<> img(filePath, 1024u, 2048u);
-    foobar::mem::RealContainer<3, float> data(foobar::types::Vec3(2048u, 1024u, 1u));
+    libTiff::FloatImage<> img(filePath, 1024u, 1024u);
+    foobar::mem::RealContainer<3, float> data(foobar::types::Vec3(1024u, 1024u, 1u));
     unsigned startDS = dataSet ? dataSet : 1;
     unsigned lastDS = dataSet ? dataSet : 4;
     for(unsigned i = startDS; i<=lastDS; i++)
     {
         genData(data, i);
-        auto view = foobar::types::makeSliceView<2>(data, foobar::types::makeRange(foobar::types::Vec3(0u, 0u, 0u)));
+        auto view = foobar::types::makeSliceView<2>(data, foobar::types::makeRange());
         foobar::policies::copy(view, img);
         if(dataSet)
             img.save();
@@ -216,7 +216,7 @@ void writeInput(const string& filePath, unsigned dataSet)
 void writeFFT(const string& filePath, unsigned dataSet)
 {
     using FFT = foobar::FFT_3D_R2C_F<true>;
-    auto input = FFT::createNewInput(foobar::types::Vec3(2048u, 1024u, 1024u));
+    auto input = FFT::createNewInput(foobar::types::Vec3(1024u, 1024u, 1024u));
     auto output = FFT::createNewOutput(input);
     auto outSlice = foobar::types::makeSliceView<0>(foobar::getFullData(output), foobar::types::makeRange());
     auto fft = foobar::makeFFT<FFT_LIB, false>(input);
@@ -251,7 +251,7 @@ main(int argc, char** argv)
     desc.add_options()
         ("help,h", "Show help message")
         ("outputFile,o", po::value<string>(&outFilePath)->default_value("output.tif"), "Output file to write to")
-        ("datasSet", po::value<unsigned>(&dataSet)->default_value(0), "Data set to use (1-4) 0 => all")
+        ("dataSet,d", po::value<unsigned>(&dataSet)->default_value(0), "Data set to use (1-4) 0 => all")
         ("inOrOut,i", po::value<bool>(&inOrOut)->default_value(true), "Write Input(1) or Output(0)")
     ;
 
