@@ -66,9 +66,12 @@ if(CUDA_FOUND AND ENABLE_CUDA)
     CUDA_ADD_CUFFT_TO_TARGET(haLT_Test)
     cuda_add_executable(fftTiffImg fftTiffImg/main.cu)
     CUDA_ADD_CUFFT_TO_TARGET(fftTiffImg)
+    cuda_add_executable(reportVolumes reportVolumes/main.cu)
+    CUDA_ADD_CUFFT_TO_TARGET(reportVolumes)
 else()
 	add_executable(haLT_Test ${haLT_Test_CPP_FILES})
 	add_executable(fftTiffImg fftTiffImg/main.cpp)
+	add_executable(reportVolumes reportVolumes/main.cpp)
 endif()
 
 add_executable(tiff2PDF tiff2Pdf/tiff2pdf.cpp)
@@ -76,6 +79,7 @@ add_executable(tiff2PDF tiff2Pdf/tiff2pdf.cpp)
 target_link_libraries(haLT_Test ${LIBS})
 target_link_libraries(tiff2PDF ${TIFF_LIBRARIES})
 target_link_libraries(fftTiffImg ${LIBS})
+target_link_libraries(reportVolumes ${LIBS})
 
 add_custom_command(
     TARGET haLT_Test
