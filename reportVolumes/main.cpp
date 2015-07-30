@@ -123,16 +123,16 @@ struct GenData1
 
     static constexpr T midPt = 1500;
     static constexpr T radius = 21200;
-    static constexpr T x0 = 512u;
-    static constexpr T y0 = x0;
-    static constexpr T z0 = midPt - radius;
+    static constexpr T x0 = midPt - radius;
+    static constexpr T y0 = 512u;
+    static constexpr T z0 = y0;
 
     T f(T x, T y, T z) const{
         int dx = x0 - x;
         int dy = y0 - y;
         int dz = z0 - z;
         unsigned r2 = dx*dx + dy*dy + dz*dz;
-        T r = std::sqrt(r2) + z0;
+        T r = std::sqrt(r2) + x0;
         return Values::scale *
                 raiseFunc<T>(r, midPt + Values::raise1Offset, Values::raise1Max, Values::raise1Delta) *
                 (1 - raiseFunc<T>(r, midPt + Values::raise2Offset, Values::raise2Max, Values::raise2Delta)) *
@@ -145,9 +145,9 @@ struct GenData1
         static constexpr unsigned numDims = foobar::traits::NumDims<T_Idx>::value;
         static_assert(numDims == 3, "3D only");
 
-        unsigned x = idx[2];
+        unsigned x = idx[2] + 850u;
         unsigned y = idx[1];
-        unsigned z = idx[0] + 850u;
+        unsigned z = idx[0];
 
         int dx = x0 - x;
         int dy = y0 - y;
@@ -161,9 +161,9 @@ struct GenData1
         T res =  f(x, y, z);
         if(r < radius - 200)
             res += 0.07 *
-                sinFunc<T>(x, 0, 1,1/(120. + rand)) * sinFunc<T>(x, 0, 1,1/(120. + rand)) *
+                sinFunc<T>(x, midPt - 200, 1, 1/(30. + rand3)) *
                 sinFunc<T>(y, 0, 1, 1/(120. + rand2)) * sinFunc<T>(y, 0, 1, 1/(120. + rand2)) *
-                sinFunc<T>(z, midPt - 200, 1, 1/(30. + rand3));
+                sinFunc<T>(z, 0, 1,1/(120. + rand)) * sinFunc<T>(z, 0, 1,1/(120. + rand));
         return res;
     }
 };
@@ -194,13 +194,13 @@ void genData(T& data, unsigned dataSet)
 void writeInput(const string& filePath, unsigned dataSet)
 {
     libTiff::FloatImage<> img(filePath, 1024u, 1024u);
-    foobar::mem::RealContainer<3, float> data(foobar::types::Vec3(1024u, 1024u, 1u));
+    foobar::mem::RealContainer<3, float> data(foobar::types::Vec3(1u, 1024u, 1024u));
     unsigned startDS = dataSet ? dataSet : 1;
     unsigned lastDS = dataSet ? dataSet : 4;
     for(unsigned i = startDS; i<=lastDS; i++)
     {
         genData(data, i);
-        auto view = foobar::types::makeSliceView<2>(data, foobar::types::makeRange());
+        auto view = foobar::types::makeSliceView<0>(data, foobar::types::makeRange());
         foobar::policies::copy(view, img);
         if(dataSet)
             img.save();
@@ -209,6 +209,7 @@ void writeInput(const string& filePath, unsigned dataSet)
             boost::filesystem::path fPath(filePath);
             fPath.replace_extension(std::to_string(i) + fPath.extension().string());
             img.saveTo(fPath.string());
+            img.flush();
         }
     }
 }
@@ -238,6 +239,7 @@ void writeFFT(const string& filePath, unsigned dataSet)
             boost::filesystem::path fPath(filePath);
             fPath.replace_extension(std::to_string(i) + fPath.extension().string());
             img.saveTo(fPath.string());
+            img.flush();
         }
     }
 }
