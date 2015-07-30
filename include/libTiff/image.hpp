@@ -141,6 +141,12 @@ namespace libTiff
         void close();
 
         /**
+         * Flushes the current write buffer to file invalidating the file handle
+         * You have to use saveTo afterwards!
+         */
+        void flush(){ closeHandle(); }
+
+        /**
          * Loads the image data into memory
          * Throws an exception if the image is not opened for reading
          */
@@ -176,13 +182,13 @@ namespace libTiff
 
         unsigned getWidth() const
         {
-            assert(isOpen());
+            assert(isOpen() || data_);
             return width_;
         }
 
         unsigned getHeight() const
         {
-            assert(isOpen());
+            assert(isOpen() || data_);
             return height_;
         }
 
@@ -192,7 +198,7 @@ namespace libTiff
          */
         size_t getDataSize() const
         {
-            assert(isOpen());
+            assert(isOpen() || data_);
             return sizeof(DataType) * width_ * height_;
         }
 
@@ -205,7 +211,7 @@ namespace libTiff
         Ref
         operator()(unsigned x, unsigned y)
         {
-            assert(isOpen());
+            assert(isOpen() || data_);
             return data_[(height_ - 1 - y) * width_ + x];
         }
 
@@ -218,7 +224,7 @@ namespace libTiff
         ConstRef
         operator()(unsigned x, unsigned y) const
         {
-            assert(isOpen());
+            assert(isOpen() || data_);
             return data_[(height_ - 1 - y) * width_ + x];
         }
     };
