@@ -214,6 +214,26 @@ void writeInput(const string& filePath, unsigned dataSet)
     }
 }
 
+void writeAllInput(const string& filePath, unsigned dataSet)
+{
+    libTiff::FloatImage<> img(filePath, 1024u, 1024u);
+    foobar::mem::RealContainer<3, float> data(foobar::types::Vec3(1024u, 1024u, 1024u));
+    unsigned startDS = dataSet ? dataSet : 1;
+    unsigned lastDS = dataSet ? dataSet : 4;
+    for(unsigned i = startDS; i<=lastDS; i++)
+    {
+        genData(data, i);
+        for(unsigned z=0; z<data.getExtents()[0]; z++){
+            auto view = foobar::types::makeSliceView<0>(data, foobar::types::makeRange(foobar::types::Vec3(z, 0u, 0u)));
+            foobar::policies::copy(view, img);
+            boost::filesystem::path fPath(filePath);
+            fPath.replace_extension(std::to_string(i) + string("_") + std::to_string(z) + fPath.extension().string());
+            img.saveTo(fPath.string());
+            img.flush();
+        }
+    }
+}
+
 void writeFFT(const string& filePath, unsigned dataSet)
 {
     using FFT = foobar::FFT_3D_R2C_F<true>;
@@ -249,12 +269,12 @@ main(int argc, char** argv)
 {
     unsigned dataSet;
     string inFilePath, outFilePath;
-    bool inOrOut;
+    unsigned inOrOut;
     desc.add_options()
         ("help,h", "Show help message")
         ("outputFile,o", po::value<string>(&outFilePath)->default_value("output.tif"), "Output file to write to")
         ("dataSet,d", po::value<unsigned>(&dataSet)->default_value(0), "Data set to use (1-4) 0 => all")
-        ("inOrOut,i", po::value<bool>(&inOrOut)->default_value(true), "Write Input(1) or Output(0)")
+        ("type,t", po::value<unsigned>(&inOrOut)->default_value(0), "Write Output(0), Input(1) or all Input(2)")
     ;
 
     po::variables_map vm;
@@ -267,8 +287,10 @@ main(int argc, char** argv)
         return 1;
     }
 
-    if(inOrOut)
+    if(inOrOut == 0)
+        writeFFT(outFilePath, dataSet);
+    else if(inOrOut == 1)
         writeInput(outFilePath, dataSet);
     else
-        writeFFT(outFilePath, dataSet);
+        writeAllInput(outFilePath, dataSet);
 }
