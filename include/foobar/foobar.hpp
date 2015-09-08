@@ -1,0 +1,5 @@
+#pragma once
+
+#define FOOBAR_VERSION_MAJOR 0
+#define FOOBAR_VERSION_MINOR 1
+#define FOOBAR_VERSION_PATCH 0
