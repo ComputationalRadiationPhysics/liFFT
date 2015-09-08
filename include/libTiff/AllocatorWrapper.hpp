@@ -1,6 +1,6 @@
 #pragma once
 
-namespace foobar {
+namespace libTiff {
 
     /**
      * Wraps an Allocator into a std-compliant allocator
@@ -40,4 +40,4 @@ namespace foobar {
         return AllocatorWrapper<T, T_Allocator>(alloc);
     }
 
-}  // namespace foobar
+}  // namespace libTiff

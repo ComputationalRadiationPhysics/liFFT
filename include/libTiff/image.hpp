@@ -7,7 +7,6 @@
 #include "libTiff/ImageFormat.hpp"
 #include "libTiff/FormatTraits.hpp"
 #include <memory>
-#include "foobar/AllocatorWrapper.hpp"
 
 namespace libTiff
 {

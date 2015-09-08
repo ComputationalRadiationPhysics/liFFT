@@ -1,6 +1,7 @@
 #include "libTiff/exceptions.hpp"
 #include "libTiff/converters.hpp"
-#include "uvector.hpp"
+#include "libTiff/AllocatorWrapper.hpp"
+#include "libTiff/uvector.hpp"
 #include <iostream>
 
 namespace libTiff {

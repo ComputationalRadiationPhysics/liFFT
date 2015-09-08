@@ -4,7 +4,7 @@
 #include "foobar/traits/NumDims.hpp"
 #include "foobar/types/Vec.hpp"
 #include "foobar/policies/SafePtrCast.hpp"
-#include "IntensityLibrary.hpp"
+#include "foobar/testLib/IntensityLibrary.hpp"
 #include <boost/array.hpp>
 
 namespace foobar {
