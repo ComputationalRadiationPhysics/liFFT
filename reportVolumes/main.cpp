@@ -1,8 +1,8 @@
 #include <iostream>
 #include <string>
 
-#include "libTiff/image.hpp"
-#include "libTiff/traitsAndPolicies.hpp"
+#include "tiffWriter/image.hpp"
+#include "tiffWriter/traitsAndPolicies.hpp"
 #include "foobar/FFT.hpp"
 #if defined(WITH_CUDA) and false
 #   include "foobar/libraries/cuFFT/cuFFT.hpp"
@@ -193,7 +193,7 @@ void genData(T& data, unsigned dataSet)
 
 void writeInput(const string& filePath, unsigned dataSet)
 {
-    libTiff::FloatImage<> img(filePath, 1024u, 1024u);
+    tiffWriter::FloatImage<> img(filePath, 1024u, 1024u);
     foobar::mem::RealContainer<3, float> data(foobar::types::Vec3(1u, 1024u, 1024u));
     unsigned startDS = dataSet ? dataSet : 1;
     unsigned lastDS = dataSet ? dataSet : 4;
@@ -216,7 +216,7 @@ void writeInput(const string& filePath, unsigned dataSet)
 
 void writeAllInput(const string& filePath, unsigned dataSet)
 {
-    libTiff::FloatImage<> img(filePath, 1024u, 1024u);
+    tiffWriter::FloatImage<> img(filePath, 1024u, 1024u);
     foobar::mem::RealContainer<3, float> data(foobar::types::Vec3(1024u, 1024u, 1024u));
     unsigned startDS = dataSet ? dataSet : 1;
     unsigned lastDS = dataSet ? dataSet : 4;
@@ -248,7 +248,7 @@ void writeFFT(const string& filePath, unsigned dataSet)
     {
         genData(input, i);
         fft(input);
-        libTiff::FloatImage<> img(filePath, 1024u, 1024u);
+        tiffWriter::FloatImage<> img(filePath, 1024u, 1024u);
         auto acc1 = foobar::accessors::makeTransformAccessorFor(foobar::policies::CalcIntensityFunc(), outSlice);
         foobar::accessors::TransposeAccessor<decltype(acc1)> acc(acc1);
         foobar::policies::copy(outSlice, img, acc);

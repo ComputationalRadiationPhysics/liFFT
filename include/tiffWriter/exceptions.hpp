@@ -2,7 +2,7 @@
 
 #include <stdexcept>
 
-namespace libTiff {
+namespace tiffWriter {
 
     struct FormatException : public std::runtime_error
     {
@@ -19,4 +19,4 @@ namespace libTiff {
         InfoWriteException(std::string s): std::runtime_error("Could not write "+s){}
     };
 
-}  // namespace libTiff
+}  // namespace tiffWriter

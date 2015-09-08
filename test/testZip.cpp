@@ -4,8 +4,8 @@
 #include "foobar/generateData.hpp"
 #include "foobar/FFT.hpp"
 
-#include "libTiff/image.hpp"
-#include "libTiff/traitsAndPolicies.hpp"
+#include "tiffWriter/image.hpp"
+#include "tiffWriter/traitsAndPolicies.hpp"
 
 #include <algorithm>
 #include <iostream>
@@ -41,8 +41,8 @@ namespace foobarTest {
 
     void testZipFile(const std::string& filePath1, const std::string& filePath2)
     {
-        libTiff::FloatImage<> img1(filePath1, false);
-        libTiff::FloatImage<> img2(filePath2, false);
+        tiffWriter::FloatImage<> img1(filePath1, false);
+        tiffWriter::FloatImage<> img2(filePath2, false);
         auto acc = foobar::accessors::makeZipAccessor(img1, std::multiplies<foobar::types::Real<TestPrecision>>(), foobar::traits::getIdentityAccessor(img2));
         using FFT_Type = foobar::FFT_2D_R2C_F<>;
         auto input = FFT_Type::wrapInput(img2, acc);

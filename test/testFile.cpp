@@ -4,8 +4,8 @@
 #include "foobar/mem/DataContainer.hpp"
 #include "foobar/mem/FileContainer.hpp"
 #include "foobar/accessors/ImageAccessor.hpp"
-#include "libTiff/image.hpp"
-#include "libTiff/traitsAndPolicies.hpp"
+#include "tiffWriter/image.hpp"
+#include "tiffWriter/traitsAndPolicies.hpp"
 #include "foobar/FFT.hpp"
 #include "foobar/generateData.hpp"
 #include "foobar/accessors/TransposeAccessor.hpp"
@@ -34,11 +34,11 @@ namespace foobarTest {
     void testTiffCp(const std::string& filePath)
     {
         std::string filePath2 = filePath+"2.tif";
-        libTiff::FloatImage<> img(filePath);
+        tiffWriter::FloatImage<> img(filePath);
         img.saveTo(filePath2);
         img.close();
-        libTiff::FloatImage<> img1(filePath);
-        libTiff::FloatImage<> img2(filePath2);
+        tiffWriter::FloatImage<> img1(filePath);
+        tiffWriter::FloatImage<> img2(filePath2);
         checkResult(img1, img2, "TIFF copy");
         std::remove(filePath2.c_str());
     }
@@ -46,14 +46,14 @@ namespace foobarTest {
     void testTiffModify(const std::string& filePath)
     {
         std::string filePath2 = filePath+"2.tif";
-        libTiff::FloatImage<> img(filePath);
+        tiffWriter::FloatImage<> img(filePath);
         foobar::mem::RealContainer<2, float> data(foobar::types::Vec<2>(img.getHeight(), img.getWidth()));
         generateData(data, Circle<float>(50, img.getHeight()/2));
         auto acc = foobar::accessors::makeTransposeAccessorFor(img);
         foobar::policies::copy(data, img, foobar::traits::getIdentityAccessor(data), acc);
         img.saveTo(filePath2);
         img.close();
-        libTiff::FloatImage<> img2(filePath2);
+        tiffWriter::FloatImage<> img2(filePath2);
         auto accData = foobar::accessors::makeTransposeAccessorFor(data);
         auto res = compare(data, img2, CmpError(1e-8, 1e-8), accData);
         if(!res.first)
@@ -65,7 +65,7 @@ namespace foobarTest {
 
     void testTiffFile(const std::string& filePath)
     {
-        libTiff::FloatImage<> img(filePath, false);
+        tiffWriter::FloatImage<> img(filePath, false);
         using FFT_Type = foobar::FFT_2D_R2C_F<>;
         auto input = FFT_Type::wrapInput(img);
         auto output = FFT_Type::createNewOutput(input);
@@ -81,7 +81,7 @@ namespace foobarTest {
     void testFile()
     {
         using FileType = foobar::mem::FileContainer<
-            libTiff::Image<>,
+            tiffWriter::Image<>,
             foobar::accessors::ImageAccessorGetColorAsFp<TestPrecision>,
             TestPrecision,
             false

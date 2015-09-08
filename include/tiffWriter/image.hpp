@@ -4,11 +4,11 @@
 #include <cassert>
 #include <tiffio.h>
 #include <boost/utility.hpp>
-#include "libTiff/ImageFormat.hpp"
-#include "libTiff/FormatTraits.hpp"
+#include "tiffWriter/ImageFormat.hpp"
+#include "tiffWriter/FormatTraits.hpp"
 #include <memory>
 
-namespace libTiff
+namespace tiffWriter
 {
     /**
      * Allocator that uses the TIFF functions
@@ -242,6 +242,6 @@ namespace libTiff
     template< class T_Allocator = TiffAllocator >
     using DoubleImage = Image< ImageFormat::Double, T_Allocator >;
 
-}  // namespace libTiff
+}  // namespace tiffWriter
 
-#include "libTiff/image.tpp"
+#include "tiffWriter/image.tpp"

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace libTiff{
+namespace tiffWriter{
 
     enum class ImageFormat
     {
@@ -9,4 +9,4 @@ namespace libTiff{
         Double // Monochrome, 64bit FP
     };
 
-}  // namespace name
+}  // namespace tiffWriter

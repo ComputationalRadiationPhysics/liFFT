@@ -1,8 +1,8 @@
 #include <iostream>
 #include <string>
 #include <boost/program_options.hpp>
-#include "libTiff/image.hpp"
-#include "libTiff/traitsAndPolicies.hpp"
+#include "tiffWriter/image.hpp"
+#include "tiffWriter/traitsAndPolicies.hpp"
 #include "foobar/FFT.hpp"
 #if defined(WITH_CUDA) and false
 #   include "foobar/libraries/cuFFT/cuFFT.hpp"
@@ -45,12 +45,12 @@ do2D_FFT(const string& inFilePath, const string& outFilePath)
 {
     using namespace foobar;
     using FFT = FFT_2D_R2C_F<>;
-    auto input = FFT::wrapInput(libTiff::FloatImage<>(inFilePath, false));
+    auto input = FFT::wrapInput(tiffWriter::FloatImage<>(inFilePath, false));
     auto output = FFT::createNewOutput(input);
     auto fft = makeFFT<FFT_LIB, false>(input, output);
     input.getBase().load();
     fft(input, output);
-    libTiff::FloatImage<> outImg(outFilePath, input.getBase().getWidth(), input.getBase().getHeight());
+    tiffWriter::FloatImage<> outImg(outFilePath, input.getBase().getWidth(), input.getBase().getHeight());
     auto fullOutput = types::makeSymmetricWrapper(output, input.getExtents()[1]);
     auto transformAcc = accessors::makeTransposeAccessor(
                             accessors::makeTransformAccessorFor(policies::CalcIntensityFunc(), fullOutput)
@@ -120,7 +120,7 @@ main(int argc, char** argv)
     // Assume all images have the same size --> load the first one to get extents and create FFT Data
     auto start = std::chrono::high_resolution_clock::now();
     string curFilePath = replace(inFilePath, "%i", getFilledNumber(firstIdx, minSize, filler));
-    libTiff::FloatImage<> img(curFilePath);
+    tiffWriter::FloatImage<> img(curFilePath);
     if(size < 0 )
         actualSize = std::min(img.getWidth(), img.getHeight());
     else
@@ -170,7 +170,7 @@ main(int argc, char** argv)
 
     // Copy the intensities to the img and save it
     start = std::chrono::high_resolution_clock::now();
-    libTiff::FloatImage<> outImg(outFilePath, actualSize, actualSize);
+    tiffWriter::FloatImage<> outImg(outFilePath, actualSize, actualSize);
     auto outView = foobar::types::makeSliceView<0>(foobar::getFullData(output), makeRange());
     auto acc = foobar::accessors::makeTransformAccessorFor(foobar::policies::CalcIntensityFunc(), outView);
     auto accImg = foobar::accessors::makeTransposeAccessorFor(outImg);

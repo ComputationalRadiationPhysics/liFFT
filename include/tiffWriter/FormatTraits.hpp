@@ -2,10 +2,10 @@
 
 #include <tiffio.h>
 #include <stdint.h>
-#include "libTiff/exceptions.hpp"
-#include "libTiff/ImageFormat.hpp"
+#include "tiffWriter/exceptions.hpp"
+#include "tiffWriter/ImageFormat.hpp"
 
-namespace libTiff {
+namespace tiffWriter {
 
     template< ImageFormat T_imgFormat >
     struct PixelType;
@@ -61,4 +61,4 @@ namespace libTiff {
                 bitsPerSample != BitsPerSample<T_imgFormat>::value);
     }
 
-}  // namespace libTiff
+}  // namespace tiffWriter

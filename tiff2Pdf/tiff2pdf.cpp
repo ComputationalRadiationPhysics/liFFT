@@ -2,8 +2,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "libTiff/image.hpp"
-#include "libTiff/traitsAndPolicies.hpp"
+#include "tiffWriter/image.hpp"
+#include "tiffWriter/traitsAndPolicies.hpp"
 #include "foobar/traits/IdentityAccessor.hpp"
 #include "foobar/policies/Copy.hpp"
 #include "foobar/types/AddDimsWrapper.hpp"
@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
     std::string srcFilePath = argv[1];
     std::string destFilePath = (argc == 2) ? remove_extension(srcFilePath) + ".pdf" : argv[2];
 
-    libTiff::FloatImage<> img(srcFilePath);
+    tiffWriter::FloatImage<> img(srcFilePath);
     std::string tmpFilePath = srcFilePath + ".txt";
     foobar::types::AddDimsWrapper< std::ofstream, 2 > outFile(tmpFilePath);
     foobar::policies::Copy< typename foobar::traits::IdentityAccessor<decltype(img)>::type, foobar::accessors::StringStreamAccessor<> > copy;

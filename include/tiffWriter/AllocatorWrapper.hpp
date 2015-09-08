@@ -1,6 +1,6 @@
 #pragma once
 
-namespace libTiff {
+namespace tiffWriter {
 
     /**
      * Wraps an Allocator into a std-compliant allocator
@@ -40,4 +40,4 @@ namespace libTiff {
         return AllocatorWrapper<T, T_Allocator>(alloc);
     }
 
-}  // namespace libTiff
+}  // namespace tiffWriter

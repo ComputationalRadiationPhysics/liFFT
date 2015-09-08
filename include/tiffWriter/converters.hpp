@@ -6,7 +6,7 @@
 #include <array>
 #include "foobar/c++14_types.hpp"
 
-namespace libTiff {
+namespace tiffWriter {
 
     /**
      * Gets the maximum value (in an image) of the given type
@@ -272,4 +272,4 @@ namespace libTiff {
         using Dest = T_Dest;
     };
 
-}  // namespace libTiff
+}  // namespace tiffWriter

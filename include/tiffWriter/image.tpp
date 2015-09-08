@@ -1,10 +1,10 @@
-#include "libTiff/exceptions.hpp"
-#include "libTiff/converters.hpp"
-#include "libTiff/AllocatorWrapper.hpp"
-#include "libTiff/uvector.hpp"
+#include "tiffWriter/exceptions.hpp"
+#include "tiffWriter/converters.hpp"
+#include "tiffWriter/AllocatorWrapper.hpp"
+#include "tiffWriter/uvector.hpp"
 #include <iostream>
 
-namespace libTiff {
+namespace tiffWriter {
 
     template< ImageFormat T_imgFormat, class T_Allocator >
     void
@@ -341,4 +341,4 @@ namespace libTiff {
         }
     }
 
-}  // namespace libTiff
+}  // namespace tiffWriter

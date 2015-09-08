@@ -7,7 +7,7 @@ The currently implemented libraries are:
 1. FFTW
 2. CuFFT
 
-For convenience it also contains a generic interface on top of libTiff to read and write to the following sorts of Tiff images:
+For convenience it also contains a generic interface on top of libTIFF to read and write to the following sorts of Tiff images:
 
 1. 24Bit RGB
 2. 32Bit ARGB
@@ -16,7 +16,7 @@ For convenience it also contains a generic interface on top of libTiff to read a
 Almost all possible formats are converted to floating point or 32Bit ARGB images during loading. This allows importing and exporting files from analytic tools and image editors like jImage.
 
 # Namespace organisation
-All FFT related classes and methods are under the foobar namespace, the libTiff interface classes are under the libTiff namespace. The folder structure matches the namespace organisation with the include folder beeing the top directory.
+All FFT related classes and methods are under the foobar namespace, the tiffWriter interface classes are under the tiffWriter namespace. The folder structure matches the namespace organisation with the include folder beeing the top directory.
 
 # Examples
 There are a couple of example applications that can be used as a reference for implementing own applications. All of them are in a separate folder:
@@ -53,12 +53,12 @@ A good example is the code from fftTiffImg:
     {
         using namespace foobar;
         using FFT = FFT_2D_R2C_F<>;
-        auto input = FFT::wrapInput(libTiff::FloatImage<>(inFilePath, false));
+        auto input = FFT::wrapInput(tiffWriter::FloatImage<>(inFilePath, false));
         auto output = FFT::createNewOutput(input);
         auto fft = makeFFT<FFT_LIB, false>(input, output);
         input.getBase().load();
         fft(input, output);
-        libTiff::FloatImage<> outImg(outFilePath, input.getBase().getWidth(), input.getBase().getHeight());
+        tiffWriter::FloatImage<> outImg(outFilePath, input.getBase().getWidth(), input.getBase().getHeight());
         auto fullOutput = types::makeSymmetricWrapper(output, input.getExtents()[1]);
         auto transformAcc = accessors::makeTransposeAccessor(
                                 accessors::makeTransformAccessorFor(policies::CalcIntensityFunc(), fullOutput)
