@@ -219,7 +219,7 @@ namespace tiffWriter {
                 throw FormatException("Scanline size is unexpected");
 
             // Make sure memory is freed even in case of exceptions
-            auto tmpAlloc = foobar::wrapAllocator<ChannelType>(alloc);
+            auto tmpAlloc = wrapAllocator<ChannelType>(alloc);
             ao::uvector< ChannelType, decltype(tmpAlloc) > tmpLine(TIFFScanlineSize(handle) / sizeof(ChannelType), tmpAlloc);
 
             for (unsigned y = 0; y < h; y++)
@@ -311,7 +311,7 @@ namespace tiffWriter {
                 throw FormatException("Unsupported sample count");
 
             // Use a vector here to safely delete the memory
-            using TmpAlloc = foobar::AllocatorWrapper<char, Allocator>;
+            using TmpAlloc = AllocatorWrapper<char, Allocator>;
             ao::uvector< char, TmpAlloc > tmp(numBytes);
 
             if(samplesPerPixel == 1)
