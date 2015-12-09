@@ -4,7 +4,7 @@
 #include "tiffWriter/image.hpp"
 #include "tiffWriter/traitsAndPolicies.hpp"
 #include "foobar/FFT.hpp"
-#if defined(WITH_CUDA) and false
+#if defined(WITH_CUDA)
 #   include "foobar/libraries/cuFFT/cuFFT.hpp"
     using FFT_LIB = foobar::libraries::cuFFT::CuFFT<>;
 #else
