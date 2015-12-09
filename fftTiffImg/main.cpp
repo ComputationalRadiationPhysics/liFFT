@@ -25,6 +25,9 @@ using std::string;
 using std::cout;
 using std::cerr;
 
+using FP_Type = float;
+using ImgType = typename tiffWriter::GetMonochromeImageType<FP_Type>::type;
+
 string
 replace(string str, const string& from, const string& to) {
     size_t start_pos = str.find(from);
@@ -44,8 +47,8 @@ void
 do2D_FFT(const string& inFilePath, const string& outFilePath)
 {
     using namespace foobar;
-    using FFT = FFT_2D_R2C_F<>;
-    auto input = FFT::wrapInput(tiffWriter::FloatImage<>(inFilePath, false));
+    using FFT = FFT_2D_R2C<FP_Type>;
+    auto input = FFT::wrapInput(ImgType(inFilePath, false));
     auto output = FFT::createNewOutput(input);
     auto fft = makeFFT<FFT_LIB, false>(input, output);
     input.getBase().load();
@@ -120,16 +123,16 @@ main(int argc, char** argv)
     // Assume all images have the same size --> load the first one to get extents and create FFT Data
     auto start = std::chrono::high_resolution_clock::now();
     string curFilePath = replace(inFilePath, "%i", getFilledNumber(firstIdx, minSize, filler));
-    tiffWriter::FloatImage<> img(curFilePath);
+    ImgType img(curFilePath);
     if(size < 0 )
         actualSize = std::min(img.getWidth(), img.getHeight());
     else
         actualSize = size;
     std::cout << "Processing " << (lastIdx - firstIdx + 1) << " images with region: [" << x0 << ", " << y0 << "] size " << actualSize << std::endl;
     auto imgView = foobar::types::makeView(img, makeRange(Vec2(x0, y0), Vec2(actualSize, actualSize)));
-    using FFT = foobar::FFT_3D_R2C_F<>;
+    using FFT = foobar::FFT_3D_R2C<FP_Type>;
     auto input = FFT::wrapInput(
-                    foobar::mem::RealContainer<3, float>(
+                    foobar::mem::RealContainer<3, FP_Type>(
                             foobar::types::Vec<3>(lastIdx-firstIdx+1, actualSize, actualSize)
                     )
                  );
