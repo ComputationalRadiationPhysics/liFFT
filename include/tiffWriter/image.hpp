@@ -241,6 +241,21 @@ namespace tiffWriter
      */
     template< class T_Allocator = TiffAllocator >
     using DoubleImage = Image< ImageFormat::Double, T_Allocator >;
+    
+    /** Gets the type of a monochrome image with the given floating point type */
+    template<typename T_FP>
+    struct GetMonochromeImageType;
+    
+    template<>
+    struct GetMonochromeImageType<float>
+    {
+        using type = FloatImage<>;
+    };
+    template<>
+    struct GetMonochromeImageType<double>
+    {
+        using type = DoubleImage<>;
+    };
 
 }  // namespace tiffWriter
 
