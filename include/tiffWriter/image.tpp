@@ -52,12 +52,13 @@ namespace tiffWriter {
 
     template< ImageFormat T_imgFormat, class T_Allocator >
     void
-    Image< T_imgFormat, T_Allocator >::open(const std::string& filePath, unsigned w, unsigned h)
+    Image< T_imgFormat, T_Allocator >::open(const std::string& filePath, unsigned w, unsigned h, bool isOriginAtTop)
     {
         close();
         openHandle(filePath, "w");
         isWriteable_ = true;
         width_ = w; height_ = h;
+        originIsAtTop = isOriginAtTop;
         allocData();
     }
 
@@ -269,7 +270,7 @@ namespace tiffWriter {
         else
             checkedWrite(TIFFTAG_COMPRESSION, COMPRESSION_NONE);
         checkedWrite(TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
-        checkedWrite(TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
+        checkedWrite(TIFFTAG_ORIENTATION, originIsAtTop ? ORIENTATION_TOPLEFT : ORIENTATION_BOTLEFT);
         SavePolicy<imgFormat>::save(saveAsARGB, handle_.get(), data_.get(), Allocator(), width_, height_);
         dataWritten_ = true;
     }
@@ -297,6 +298,12 @@ namespace tiffWriter {
             std::cerr << "SampelFormat not found. Assuming unsigned" << std::endl;
             tiffSampleFormat = SAMPLEFORMAT_UINT;
         }
+        uint16 orientation;
+        if(!TIFFGetField(handle_.get(), TIFFTAG_ORIENTATION, &orientation))
+            orientation = ORIENTATION_TOPLEFT;
+        if(orientation != ORIENTATION_TOPLEFT && orientation != ORIENTATION_BOTLEFT)
+            throw FormatException("Origin is not at left side");
+        originIsAtTop = orientation == ORIENTATION_TOPLEFT;
         uint16 planarConfig;
         if(!TIFFGetField(handle_.get(), TIFFTAG_PLANARCONFIG, &planarConfig) || planarConfig!=PLANARCONFIG_CONTIG){
             throw FormatException("PlanarConfig missing or not 1");

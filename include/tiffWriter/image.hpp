@@ -50,6 +50,7 @@ namespace tiffWriter
         std::unique_ptr<DataType[], void(*)(DataType*)> data_;
         bool isReadable_, isWriteable_, dataWritten_;
         unsigned width_, height_;
+        bool originIsAtTop;
         uint16 samplesPerPixel, bitsPerSample, tiffSampleFormat, photometric;
 
         void openHandle(const std::string& filePath, const char* mode);
@@ -78,7 +79,7 @@ namespace tiffWriter
             isReadable_(false),
             isWriteable_(false),
             dataWritten_(false),
-            width_(0), height_(0)
+            width_(0), height_(0), originIsAtTop(true)
         {}
         Image(Image&&) = default;
         Image& operator=(Image&&) = default;
@@ -131,8 +132,9 @@ namespace tiffWriter
          * @param filePath Path to the image to save to
          * @param w Width of the new image
          * @param h Height of the new image
+         * @param isOriginAtTop true to set origin to top, false for bottom (left)
          */
-        void open(const std::string& filePath, unsigned w, unsigned h);
+        void open(const std::string& filePath, unsigned w, unsigned h, bool isOriginAtTop = true);
 
         /**
          * Closes the current image freeing all memory
@@ -192,6 +194,17 @@ namespace tiffWriter
         }
 
         /**
+         * Returns true, if the origin of the image is at the top (left)
+         * False if it is at the bottom (left)
+         * Note: Only valid after image is opened for writing or data was loaded
+         */
+        bool isOriginAtTop() const
+        {
+            assert(isOpen() || data_);
+            return originIsAtTop;
+        }
+
+        /**
          * Returns the total size of the used memory for the image data
          * @return size in bytes
          */
@@ -211,7 +224,7 @@ namespace tiffWriter
         operator()(unsigned x, unsigned y)
         {
             assert(isOpen() || data_);
-            return data_[(height_ - 1 - y) * width_ + x];
+            return data_[y * width_ + x];
         }
 
         /**
@@ -224,7 +237,7 @@ namespace tiffWriter
         operator()(unsigned x, unsigned y) const
         {
             assert(isOpen() || data_);
-            return data_[(height_ - 1 - y) * width_ + x];
+            return data_[y * width_ + x];
         }
     };
 
