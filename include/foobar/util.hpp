@@ -70,7 +70,7 @@ namespace foobar {
         using type = AddConstVal_t<T> [];
     };
 
-    template< typename T, size_t N >
+    template< typename T, std::size_t N >
     struct AddConstVal<T [N]>
     {
         using type = AddConstVal_t<T> [N];
