@@ -7,6 +7,17 @@ if (${CMAKE_EXTRA_GENERATOR} MATCHES "Eclipse CDT4")
     set(CMAKE_ECLIPSE_VERSION "4.4" CACHE STRING "Eclipse version" FORCE)
 endif ()
 
+include(CheckCXXCompilerFlag)
+macro(CheckAndAddFlag flag)
+	set(VarName ${flag})
+	string(REPLACE "+" "X" VarName ${VarName})
+	CHECK_CXX_COMPILER_FLAG(${flag} FLAG_${VarName}_SUPPORTED)
+	if(FLAG_${VarName}_SUPPORTED)
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${flag}")
+		list(APPEND CUDA_NVCC_FLAGS "-Xcompiler ${flag}")
+	endif()
+endmacro()
+
 project(haLT)
 cmake_minimum_required(VERSION 2.8.0)
 
@@ -35,6 +46,10 @@ include_directories(${FFTW_INCLUDES})
 ###############################################################################
 find_package(CUDA)
 set(ENABLE_CUDA ${CUDA_FOUND} CACHE BOOL "Use CUDA")
+set(CUDA_PROPAGATE_HOST_FLAGS OFF)
+list(APPEND CUDA_NVCC_FLAGS_RELEASE "-O3 -DNDEBUG")
+list(APPEND CUDA_NVCC_FLAGS_DEBUG "-O0 -g")
+
 ###############################################################################
 # Boost
 ###############################################################################
@@ -52,11 +67,13 @@ else()
     set(CMAKE_CXX_STANDARD 11)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
 endif()
-add_definitions(-Wall)
-list(APPEND CUDA_NVCC_FLAGS "-Xcompiler -Wall")
-list(APPEND CUDA_NVCC_FLAGS_RELEASE "-O3 -DNDEBUG")
-list(APPEND CUDA_NVCC_FLAGS_DEBUG "-O0 -g")
-SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
+# Required by CUDA w/o CUDA_PROPAGATE_HOST_FLAGS=ON
+list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
+
+CheckAndAddFlag(-Wall)
+CheckAndAddFlag(-Wextra)
+CheckAndAddFlag(-Wshadow)
+CheckAndAddFlag(/W3)
 
 file(GLOB haLT_Test_CPP_FILES
     "test/*.cpp"
