@@ -28,7 +28,7 @@ namespace types{
            typename... TArgs,
            typename = std::enable_if_t<(sizeof...(TArgs) == (numDims-1))>
            >
-            Vec(T val, TArgs ... values): m_values{std::forward<T>(val), std::forward<TArgs>(values)...}
+            Vec(T val, TArgs ... values): m_values{{std::forward<T>(val), std::forward<TArgs>(values)...}}
         {}
 
         Vec(const Storage& values): m_values(values)
