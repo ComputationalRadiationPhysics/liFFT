@@ -1,8 +1,8 @@
 #pragma once
 
-#include <boost/core/ignore_unused.hpp>
 #include "foobar/libraries/fftw/fftw3Include.h"
 #include "foobar/libraries/fftw/traits/LibTypes.hpp"
+#include "foobar/ignore_unused.hpp"
 
 namespace foobar {
 namespace libraries {
@@ -34,7 +34,7 @@ namespace policies{
         Create(int rank, const int* n, RealType* in, ComplexType* out, int sign, unsigned flags)
         {
             assert(sign == FFTW_FORWARD);
-            boost::ignore_unused( sign );
+            ignore_unused(sign);
             return fftwf_plan_dft_r2c(rank, n, in, out, flags);
         }
 
@@ -42,7 +42,7 @@ namespace policies{
         Create(int rank, const int* n, ComplexType* in, RealType* out, int sign, unsigned flags)
         {
             assert(sign == FFTW_BACKWARD);
-            boost::ignore_unused( sign );
+            ignore_unused(sign);
             return fftwf_plan_dft_c2r(rank, n, in, out, flags);
         }
     };
@@ -66,7 +66,7 @@ namespace policies{
         Create(int rank, const int* n, RealType* in, ComplexType* out, int sign, unsigned flags)
         {
             assert(sign == FFTW_FORWARD);
-            boost::ignore_unused( sign );
+            ignore_unused(sign);
             return fftw_plan_dft_r2c(rank, n, in, out, flags);
         }
 
@@ -74,7 +74,7 @@ namespace policies{
         Create(int rank, const int* n, ComplexType* in, RealType* out, int sign, unsigned flags)
         {
             assert(sign == FFTW_BACKWARD);
-            boost::ignore_unused( sign );
+            ignore_unused(sign);
             return fftw_plan_dft_c2r(rank, n, in, out, flags);
         }
     };
