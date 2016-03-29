@@ -282,8 +282,9 @@ namespace foobar {
         template< class T >
         struct IsComplex<T, void_t< typename T::Memory > >: IsComplex< typename T::Memory >{};
 
-        template< class T >
-        struct IsAoS<T, void_t< typename T::Memory > >: IsAoS< typename T::Memory >{};
+        template< unsigned T_numDims, class T_Memory, class T_BaseAccessor, bool T_isFlatMemory >
+        struct IsAoS< mem::DataContainer<T_numDims, T_Memory, T_BaseAccessor, T_isFlatMemory> >:
+            IsAoS< typename mem::DataContainer<T_numDims, T_Memory, T_BaseAccessor, T_isFlatMemory>::Memory >{};
 
     }  // namespace traits
 

@@ -32,7 +32,6 @@ namespace mem {
         static constexpr bool isDevicePtr = T_IsDevicePtr::value;
         using IntegralType = typename traits::IntegralType<Type>::type;
         static constexpr bool isComplex = traits::IsComplex<Type>::value;
-        static constexpr bool isAoS = true;
 
         static_assert(std::is_same< Type, types::Real<IntegralType> >::value ||
                 std::is_same< Type, types::Complex<IntegralType> >::value,
@@ -133,6 +132,9 @@ namespace traits {
 
     template< class... T >
     struct IsDeviceMemory< mem::PlainPtrWrapper<T... > >: std::integral_constant<bool, mem::PlainPtrWrapper<T... >::isDevicePtr>{};
+
+    template< class... T >
+    struct IsAoS< mem::PlainPtrWrapper<T... > >: std::integral_constant<bool, true>{};
 
 }  // namespace traits
 
