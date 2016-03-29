@@ -5,7 +5,7 @@
 #include "testPlainPtr.hpp"
 #include "testZip.hpp"
 
-int main(int argc, char** argv) {
+int main(int /*argc*/, char** /*argv*/) {
     using namespace foobarTest;
     init();
     //visualizeBase();

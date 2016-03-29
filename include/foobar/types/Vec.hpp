@@ -28,10 +28,10 @@ namespace types{
            typename... TArgs,
            typename = std::enable_if_t<(sizeof...(TArgs) == (numDims-1))>
            >
-            Vec(T val, TArgs ... values): values_{std::forward<T>(val), std::forward<TArgs>(values)...}
+            Vec(T val, TArgs ... values): m_values{std::forward<T>(val), std::forward<TArgs>(values)...}
         {}
 
-        Vec(const Storage& values): values_(values)
+        Vec(const Storage& values): m_values(values)
         {}
 
         Vec(){}
@@ -41,7 +41,7 @@ namespace types{
          */
         template<typename U, typename = std::enable_if_t< std::is_same<U, T>::value && numDims==1> >
         operator U() const {
-            return values_[0];
+            return m_values[0];
         }
 
         static Vec< numDims, type >
@@ -57,54 +57,54 @@ namespace types{
         operator[](unsigned dim)
         {
             assert(dim<numDims);
-            return values_[dim];
+            return m_values[dim];
         }
 
         ConstRef
         operator[](unsigned dim) const
         {
             assert(dim<numDims);
-            return values_[dim];
+            return m_values[dim];
         }
 
         Ptr
         data()
         {
-            return values_.data();
+            return m_values.data();
         }
 
         ConstPtr
         data() const
         {
-            return values_.data();
+            return m_values.data();
         }
 
         Iterator
         begin()
         {
-            return values_.begin();
+            return m_values.begin();
         }
 
         Iterator
         end()
         {
-            return values_.end();
+            return m_values.end();
         }
 
         ConstIterator
         cbegin() const
         {
-            return values_.cbegin();
+            return m_values.cbegin();
         }
 
         ConstIterator
         cend() const
         {
-            return values_.cend();
+            return m_values.cend();
         }
 
     private:
-        Storage values_;
+        Storage m_values;
     };
 
     template< typename T, T T_val, unsigned T_numDims >
@@ -114,7 +114,7 @@ namespace types{
         using type = T;
 
         constexpr T
-        operator[](unsigned dim)
+        operator[](unsigned dim) const
         {
             return (dim<numDims) ? T_val : throw std::logic_error("Out of range");
         }

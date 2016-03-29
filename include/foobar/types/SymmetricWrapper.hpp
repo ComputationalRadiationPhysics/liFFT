@@ -25,7 +25,7 @@ namespace foobar {
 
             static constexpr unsigned numDims = traits::NumDims<Base>::value;
 
-            SymmetricWrapper(Base& base, unsigned realSize): base_(base), realSize_(realSize){}
+            SymmetricWrapper(Base& base, unsigned realSize): m_base(base), m_realSize(realSize){}
 
             template< typename T >
             static Complex<T>
@@ -48,20 +48,20 @@ namespace foobar {
             {
                 static constexpr unsigned lastDim = numDims - 1;
                 // If this instance is const, the base type (and therefore the returned type)
-                // must also be const, but base_ is a reference and therefore not const yet
-                const Base& cBase = base_;
+                // must also be const, but m_base is a reference and therefore not const yet
+                const Base& cBase = m_base;
                 policies::GetExtents<Base> extents(cBase);
                 if(idx[lastDim] >= extents[lastDim]){
                     // We are in the "virtual" part, that does not exist in memory
                     // --> Use symmetry as conj(F(x,y,z)) = F(-x,-y,-z) = F(nx-x, ny-y, nz-z)
                     // And be careful with the 0 element as F(nx, ny, nz) does not exist in memory, but is (periodicity) F(0, 0, 0)
                     T_Index newIdx;
-                    newIdx[lastDim] = realSize_ - idx[lastDim];
+                    newIdx[lastDim] = m_realSize - idx[lastDim];
                     for(unsigned i=0; i<lastDim; i++)
                         newIdx[i] = idx[i] == 0 ? 0 : extents[i] - idx[i];
-                    return makeConjugate(acc_(newIdx, cBase));
+                    return makeConjugate(m_acc(newIdx, cBase));
                 }else
-                    return acc_(idx, cBase);
+                    return m_acc(idx, cBase);
             }
 
             template<typename T>
@@ -79,24 +79,24 @@ namespace foobar {
             -> typename DisableForComplex< std::result_of_t< BaseAccessor(const T_Index&, Base&) > >::type::type
             {
                 static constexpr unsigned lastDim = numDims - 1;
-                policies::GetExtents<Base> extents(base_);
+                policies::GetExtents<Base> extents(m_base);
                 if(idx[lastDim] >= extents[lastDim]){
                     T_Index newIdx(idx);
-                    newIdx[lastDim] = realSize_ - idx[lastDim];
-                    return acc_(newIdx, base_);
+                    newIdx[lastDim] = m_realSize - idx[lastDim];
+                    return m_acc(newIdx, m_base);
                 }else
-                    return acc_(idx, base_);
+                    return m_acc(idx, m_base);
             }
 
             size_t
             getMemSize() const
             {
-                return traits::getMemSize(base_);
+                return traits::getMemSize(m_base);
             }
         private:
-            Base& base_;
-            BaseAccessor acc_;
-            unsigned realSize_;
+            Base& m_base;
+            BaseAccessor m_acc;
+            unsigned m_realSize;
             friend struct policies::GetExtentsImpl<SymmetricWrapper>;
         };
 
@@ -118,17 +118,17 @@ namespace foobar {
             using Extents = GetExtents<T_Base>;
             static constexpr unsigned numDims = traits::NumDims<Data>::value;
 
-            GetExtentsImpl(const Data& data): data_(data){}
+            GetExtentsImpl(const Data& data): m_data(data){}
 
             unsigned operator[](unsigned dimIdx) const
             {
                 if(dimIdx == numDims-1)
-                    return data_.realSize_;
+                    return m_data.m_realSize;
                 else
-                    return GetExtents<T_Base>(data_.base_)[dimIdx];
+                    return GetExtents<T_Base>(m_data.m_base)[dimIdx];
             }
         protected:
-            const Data& data_;
+            const Data& m_data;
         };
 
     }  // namespace policies

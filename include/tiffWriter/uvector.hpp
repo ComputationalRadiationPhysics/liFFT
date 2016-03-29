@@ -843,10 +843,10 @@ private:
         deallocate(_begin, capacity());
     }
 
-    void deallocate(pointer begin, size_t n)
+    void deallocate(pointer pBegin, size_t n)
     {
-        if(begin != nullptr)
-            Alloc::deallocate(begin, n);
+        if(pBegin != nullptr)
+            Alloc::deallocate(pBegin, n);
     }
 
     template<typename InputIterator>

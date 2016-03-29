@@ -27,7 +27,7 @@ namespace detail {
         using MemAcc = traits::IdentityAccessor_t< Memory >;
         using DataType = std::remove_reference_t< std::result_of_t< MemAcc(types::Vec<numDims>&, Memory&) > >;
 
-        Memory data_;
+        Memory m_data;
 
         /**
          * Allocates memory such that a matrix with the given extents fits in
@@ -38,7 +38,7 @@ namespace detail {
         void
         init(const T_Extents& extents)
         {
-            data_.allocData(extents);
+            m_data.allocData(extents);
         }
 
         /**
@@ -52,7 +52,7 @@ namespace detail {
         Ptr
         getPtr(T_Obj&, T_Acc&)
         {
-            return data_.getData();
+            return m_data.getData();
         }
 
         /**
@@ -66,7 +66,7 @@ namespace detail {
         copyFrom(T_Obj& obj, T_Acc&& acc)
         {
             auto copy = policies::makeCopy(std::forward<T_Acc>(acc), MemAcc());
-            copy(obj, data_);
+            copy(obj, m_data);
         }
 
         /**
@@ -88,7 +88,7 @@ namespace detail {
                     PlainAcc>;
 
             auto copy = policies::makeCopy(MemAcc(), AccSrc(std::forward<T_Acc>(acc)));
-            copy(data_, obj);
+            copy(m_data, obj);
         }
 
         /**
@@ -103,7 +103,7 @@ namespace detail {
         size_t
         getMemSize() const
         {
-            return traits::getMemSize(data_);
+            return traits::getMemSize(m_data);
         }
     };
 

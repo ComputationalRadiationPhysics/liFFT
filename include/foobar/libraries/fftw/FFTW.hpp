@@ -47,47 +47,47 @@ namespace fftw {
 
         static constexpr unsigned flags = FFT::constructWithReadOnly ? FFTW_ESTIMATE : FFTW_MEASURE;
 
-        PlanType plan_;
-        InPtr inPtr_;
-        OutPtr outPtr_;
+        PlanType m_plan;
+        InPtr m_inPtr;
+        OutPtr m_outPtr;
 
     public:
         FFTW(Input& input, Output& output)
         {
-            plan_ = Planner()(input, output, flags);
-            inPtr_ = input.getDataPtr();
-            outPtr_ = output.getDataPtr();
+            m_plan = Planner()(input, output, flags);
+            m_inPtr = input.getDataPtr();
+            m_outPtr = output.getDataPtr();
         }
 
         explicit FFTW(Input& inOut)
         {
-            plan_ = Planner()(inOut, flags);
-            inPtr_ = inOut.getDataPtr();
-            outPtr_ = nullptr;
+            m_plan = Planner()(inOut, flags);
+            m_inPtr = inOut.getDataPtr();
+            m_outPtr = nullptr;
         }
 
-        FFTW(FFTW&& obj): plan_(obj.plan_), inPtr_(obj.inPtr_), outPtr_(obj.outPtr_){
-            obj.plan_ = nullptr;
+        FFTW(FFTW&& obj): m_plan(obj.m_plan), m_inPtr(obj.m_inPtr), m_outPtr(obj.m_outPtr){
+            obj.m_plan = nullptr;
         }
 
         ~FFTW()
         {
-            PlanDestroyer()(plan_);
+            PlanDestroyer()(m_plan);
         }
 
         void operator()(Input& input, Output& output)
         {
-            if(input.getDataPtr() != inPtr_ || output.getDataPtr() != outPtr_)
+            if(input.getDataPtr() != m_inPtr || output.getDataPtr() != m_outPtr)
                 throw std::runtime_error("Pointers to data must not be changed after initialization");
 
-            Executer()(plan_);
+            Executer()(m_plan);
         }
 
         void operator()(Input& inOut)
         {
-            if(inOut.getDataPtr() != inPtr_)
+            if(inOut.getDataPtr() != m_inPtr)
                 throw std::runtime_error("Pointer to data must not be changed after initialization");
-            Executer()(plan_);
+            Executer()(m_plan);
         }
     };
 

@@ -7,6 +7,7 @@
 namespace foobar {
 namespace types {
 
+    /** Return offset of a range on a given container (translates special values for ranges to actual values) */
     template< class T_Range, class T_Data, bool T_isOrigin = T_Range::isOrigin >
     struct GetRangeOffset
     {
@@ -27,10 +28,11 @@ namespace types {
         static typename T_Range::Offset
         get(const T_Range& range)
         {
-            return range.offset;
+            return range.m_offset;
         }
     };
 
+    /** Return extent of a range on a given container (translates special values for ranges to actual values) */
     template< class T_Range, class T_Data, bool T_isFullSize = T_Range::isFullSize >
     struct GetRangeExtents
     {
@@ -54,9 +56,9 @@ namespace types {
         static constexpr unsigned numDims = traits::NumDims<T_Data>::value;
 
         static typename T_Range::Extents
-        get(const T_Range& range, const T_Data& data)
+        get(const T_Range& range, const T_Data& /*data*/ )
         {
-            return range.extents;
+            return range.m_extents;
         }
     };
 
@@ -78,13 +80,13 @@ namespace types {
         using Offset = T_Offset;
         using Extents = T_Extents;
 
-        const Offset offset;
-        const Extents extents;
+        const Offset m_offset;
+        const Extents m_extents;
 
         static constexpr bool isOrigin = std::is_same<Offset, Origin>::value;
         static constexpr bool isFullSize = std::is_same<Extents, FullSize>::value;
 
-        Range(const T_Offset& offset = T_Offset(), const T_Extents& extents = T_Extents()): offset(offset), extents(extents){}
+        Range(const T_Offset& offset = T_Offset(), const T_Extents& extents = T_Extents()): m_offset(offset), m_extents(extents){}
     };
 
     template< class T_Offset = Origin, class T_Extents = FullSize >

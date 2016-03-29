@@ -21,13 +21,13 @@ namespace accessors {
         operator()(T_Index&& idx, T_Data& data) const
         -> decltype(
                 std::declval< typename T_Data::BaseAccessor >()(
-                        0, getConstCorrect<T_Data>(data.data)
+                        0, getConstCorrect<T_Data>(data.m_data)
                 )
            )
         {
             auto flatIdx = policies::flattenIdx(idx, data);
             typename T_Data::BaseAccessor acc;
-            return acc(flatIdx, getConstCorrect<T_Data>(data.data));
+            return acc(flatIdx, getConstCorrect<T_Data>(data.m_data));
         }
 
         template< class T_Index, class T_Data, typename T_Value >
@@ -36,7 +36,7 @@ namespace accessors {
         {
             auto flatIdx = policies::flattenIdx(idx, data);
             typename T_Data::BaseAccessor acc;
-            acc(flatIdx, getConstCorrect<T_Data>(data.data), std::forward<T_Value>(value));
+            acc(flatIdx, getConstCorrect<T_Data>(data.m_data), std::forward<T_Value>(value));
         }
     };
 
@@ -49,12 +49,12 @@ namespace accessors {
         operator()(T_Index&& idx, T_Data& data) const
         -> decltype(
                 std::declval< typename T_Data::BaseAccessor >()(
-                        idx, getConstCorrect<T_Data>(data.data)
+                        idx, getConstCorrect<T_Data>(data.m_data)
                 )
            )
         {
             typename T_Data::BaseAccessor acc;
-            return acc(idx, getConstCorrect<T_Data>(data.data));
+            return acc(idx, getConstCorrect<T_Data>(data.m_data));
         }
 
         template< class T_Index, class T_Data, typename T_Value >
@@ -62,7 +62,7 @@ namespace accessors {
         operator()(T_Index&& idx, T_Data& data, T_Value&& value) const
         {
             typename T_Data::BaseAccessor acc;
-            acc(idx, getConstCorrect<T_Data>(data.data), std::forward<T_Value>(value));
+            acc(idx, getConstCorrect<T_Data>(data.m_data), std::forward<T_Value>(value));
         }
     };
 

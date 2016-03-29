@@ -69,7 +69,7 @@ namespace foobar {
     public:
         using IdentityAccessor = accessors::ArrayAccessor<true>;
 
-        FFT_InplaceOutput(Input& input): input_(input), data_(convertPtr(nullptr), IdxType::all(0u))
+        FFT_InplaceOutput(Input& input): m_input(input), m_data(convertPtr(nullptr), IdxType::all(0u))
         {
             updateData();
         }
@@ -77,25 +77,25 @@ namespace foobar {
         std::result_of_t< Data(const IdxType&) >
         operator()(const IdxType& idx)
         {
-            return data_(idx);
+            return m_data(idx);
         }
 
         std::result_of_t< const Data(const IdxType&) >
         operator()(const IdxType& idx) const
         {
-            return data_(idx);
+            return m_data(idx);
         }
 
         const typename Data::IdxType&
         getExtents() const
         {
-            return data_.getExtents();
+            return m_data.getExtents();
         }
 
         const Extents&
         getFullExtents() const
         {
-            return fullExtents_;
+            return m_fullExtents;
         }
 
         void preProcess(){}
@@ -103,33 +103,33 @@ namespace foobar {
             updateData();
         }
     private:
-        Input& input_;
-        Data data_;
-        Extents fullExtents_;
+        Input& m_input;
+        Data m_data;
+        Extents m_fullExtents;
 
         void updateData(){
             Extents extents;
             switch (FFT_Def::kind) {
                 case FFT_Kind::Complex2Complex:
-                    extents = input_.getExtents();
-                    fullExtents_ = extents;
+                    extents = m_input.getExtents();
+                    m_fullExtents = extents;
                     break;
                 case FFT_Kind::Real2Complex:
-                    extents = input_.getExtents();
-                    fullExtents_ = extents;
+                    extents = m_input.getExtents();
+                    m_fullExtents = extents;
                     extents[numDims - 1] = extents[numDims - 1] / 2 + 1;
                     break;
                 case FFT_Kind::Complex2Real:
-                    extents = input_.getFullExtents();
-                    fullExtents_ = extents;
+                    extents = m_input.getFullExtents();
+                    m_fullExtents = extents;
                     break;
                 default:
                     throw std::logic_error("Wrong FFT kind!");
             }
             size_t numElements = policies::getNumElementsFromExtents(extents);
-            if(traits::getMemSize(input_) < numElements * sizeof(Value))
+            if(traits::getMemSize(m_input) < numElements * sizeof(Value))
                 throw std::runtime_error("Number of elements is wrong or not enough memory allocated");
-            data_ = Data(convertPtr(input_.getDataPtr()), extents);
+            m_data = Data(convertPtr(m_input.getDataPtr()), extents);
         }
 
         using AllowedOutputData = detail::traits::AllowedOutputData< PrecisionType, FFT_Def::kind >;

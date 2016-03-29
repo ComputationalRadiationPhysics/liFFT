@@ -9,9 +9,9 @@
 
 template< typename T = double >
 class Volume{
-    const size_t xDim_, yDim_, zDim_;
-    T* data_;
-    bool isOwned_;
+    const size_t m_xDim, m_yDim, m_zDim;
+    T* m_data;
+    bool m_isOwned;
     Volume(const Volume&) = delete;
     Volume& operator=(const Volume&) = delete;
 public:
@@ -19,56 +19,56 @@ public:
     using Ref = T&;
     using ConstRef = const T&;
 
-    Volume(size_t xDim, size_t yDim = 1, size_t zDim = 1): xDim_(xDim), yDim_(yDim), zDim_(zDim){
-        data_ = new T[xDim_*yDim_*zDim_];
-        isOwned_ = true;
+    Volume(size_t xDimIn, size_t yDimIn = 1, size_t zDimIn = 1): m_xDim(xDimIn), m_yDim(yDimIn), m_zDim(zDimIn){
+        m_data = new T[m_xDim*m_yDim*m_zDim];
+        m_isOwned = true;
     }
-    Volume(size_t xDim, size_t yDim, size_t zDim, T* data): xDim_(xDim), yDim_(yDim), zDim_(zDim){
-        data_ = data;
-        isOwned_ = false;
+    Volume(size_t xDimIn, size_t yDimIn, size_t zDimIn, T* dataIn): m_xDim(xDimIn), m_yDim(yDimIn), m_zDim(zDimIn){
+        m_data = dataIn;
+        m_isOwned = false;
     }
 
-    Volume(Volume&& obj): xDim_(obj.xDim_), yDim_(obj.yDim_), zDim_(obj.zDim_), data_(obj.data_), isOwned_(obj.isOwned_){
-        if(isOwned_)
-            obj.data_ = nullptr;
+    Volume(Volume&& obj): m_xDim(obj.m_xDim), m_yDim(obj.m_yDim), m_zDim(obj.m_zDim), m_data(obj.m_data), m_isOwned(obj.m_isOwned){
+        if(m_isOwned)
+            obj.m_data = nullptr;
     }
 
     Volume& operator=(Volume&& obj){
         if(this == &obj)
             return *this;
-        if(isOwned_)
-            delete[] data_;
-        data_ = nullptr;
-        xDim_ = obj.xDim_;
-        yDim_ = obj.yDim_;
-        zDim_ = obj.zDim_;
-        data_ = obj.data_;
-        isOwned_ = obj.isOwned_;
-        if(isOwned_)
-            obj.data_ = nullptr;
+        if(m_isOwned)
+            delete[] m_data;
+        m_data = nullptr;
+        m_xDim = obj.m_xDim;
+        m_yDim = obj.m_yDim;
+        m_zDim = obj.m_zDim;
+        m_data = obj.m_data;
+        m_isOwned = obj.m_isOwned;
+        if(m_isOwned)
+            obj.m_data = nullptr;
         return *this;
     }
 
     ~Volume(){
-        if(isOwned_)
-            delete[] data_;
+        if(m_isOwned)
+            delete[] m_data;
     }
     T*
     data(){
-        return data_;
+        return m_data;
     }
     Ref
     operator()(size_t x, size_t y=0, size_t z=0){
-        return data_[(z*yDim_ + y)*xDim_ + x];
+        return m_data[(z*m_yDim + y)*m_xDim + x];
     }
     ConstRef
     operator()(size_t x, size_t y=0, size_t z=0) const{
-        return data_[(z*yDim_ + y)*xDim_ + x];
+        return m_data[(z*m_yDim + y)*m_xDim + x];
     }
 
-    size_t xDim() const{ return xDim_; }
-    size_t yDim() const{ return yDim_; }
-    size_t zDim() const{ return zDim_; }
+    size_t xDim() const{ return m_xDim; }
+    size_t yDim() const{ return m_yDim; }
+    size_t zDim() const{ return m_zDim; }
 };
 
 namespace foobar {
@@ -98,22 +98,22 @@ namespace foobar {
         {
             using Data = T_Data;
 
-            GetVolumeExtents(const Data& data): data_(data){}
+            GetVolumeExtents(const Data& data): m_data(data){}
 
             unsigned operator[](unsigned dimIdx) const
             {
                 switch(dimIdx){
                 case 0:
-                    return data_.zDim();
+                    return m_data.zDim();
                 case 1:
-                    return data_.yDim();
+                    return m_data.yDim();
                 case 2:
-                    return data_.xDim();
+                    return m_data.xDim();
                 }
                 throw std::logic_error("Invalid dimension");
             }
         protected:
-            const Data& data_;
+            const Data& m_data;
         };
 
         template<typename T>

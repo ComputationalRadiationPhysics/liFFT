@@ -21,15 +21,15 @@ namespace policies {
         GetExtentsRawPtrImpl(Data& data){
             GetExtents< Data > extents(data);
             for(unsigned i=0; i<numDims; ++i)
-                extents_[i] = extents[i];
+                m_extents[i] = extents[i];
         }
 
         const unsigned* operator()() const
         {
-            return extents_.data();
+            return m_extents.data();
         }
     private:
-        std::array< unsigned, numDims > extents_;
+        std::array< unsigned, numDims > m_extents;
     };
 
     /**
@@ -40,14 +40,14 @@ namespace policies {
     {
         using Data = T_Data;
 
-        GetExtentsRawPtrImpl(Data& data): value_(data.extents.data()){}
+        GetExtentsRawPtrImpl(Data& data): m_value(data.extents.data()){}
 
         const unsigned* operator()() const
         {
-            return value_;
+            return m_value;
         }
     private:
-        unsigned* value_;
+        unsigned* m_value;
     };
 
     /**

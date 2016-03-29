@@ -36,11 +36,13 @@ replace(string str, const string& from, const string& to) {
     return str.replace(start_pos, from.length(), to);
 }
 
-po::options_description desc("Convert tiff images via FFT and stores the intensities in another tiff");
+namespace options{
+    po::options_description desc("Convert tiff images via FFT and stores the intensities in another tiff");
+} // namespace options
 
 void showHelp()
 {
-    cout << desc << std::endl;
+    cout << options::desc << std::endl;
 }
 
 void
@@ -78,7 +80,7 @@ main(int argc, char** argv)
     int size;
     char filler;
     string inFilePath, outFilePath;
-    desc.add_options()
+    options::desc.add_options()
         ("help,h", "Show help message")
         ("inputFile,i", po::value<string>(&inFilePath), "Input file to use, can contain %i as a placeholder for 3D FFTs")
         ("outputFile,o", po::value<string>(&outFilePath)->default_value("output.tif"), "Output file to write to")
@@ -92,7 +94,7 @@ main(int argc, char** argv)
     ;
 
     po::variables_map vm;
-    po::store(po::parse_command_line(argc, argv, desc), vm);
+    po::store(po::parse_command_line(argc, argv, options::desc), vm);
     po::notify(vm);
 
     if (vm.count("help") || !vm.count("inputFile") || inFilePath.empty() || outFilePath.empty())

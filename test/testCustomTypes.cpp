@@ -24,8 +24,8 @@ namespace foobarTest {
     struct MyComplex{
         T real, imag;
         MyComplex(){}
-        MyComplex(T real): real(real), imag(0){}
-        MyComplex(T real, T imag): real(real), imag(imag){}
+        MyComplex(T realIn): real(realIn), imag(0){}
+        MyComplex(T realIn, T imagIn): real(realIn), imag(imagIn){}
     };
 
 }  // namespace foobarTest

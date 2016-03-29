@@ -69,19 +69,19 @@ namespace foobar {
         using ActLibrary = typename bmpl::apply< Library, FFT_Properties >::type;
         static constexpr bool isInplace = FFT_Properties::isInplace;
 
-        ActLibrary lib_;
+        ActLibrary m_lib;
     public:
-        explicit FFT(Input& input, Output& output): lib_(input, output)
+        explicit FFT(Input& input, Output& output): m_lib(input, output)
         {
             static_assert(!isInplace, "Must not be called for inplace transforms");
         }
 
-        explicit FFT(Input& inOut): lib_(inOut)
+        explicit FFT(Input& inOut): m_lib(inOut)
         {
             static_assert(isInplace, "Must not be called for out-of-place transforms");
         }
 
-        FFT(FFT&& obj): lib_(std::move(obj.lib_)){}
+        FFT(FFT&& obj): m_lib(std::move(obj.m_lib)){}
 
         void operator()(Input& input, Output& output)
         {
@@ -92,7 +92,7 @@ namespace foobar {
             else if(FFT_Def::kind == FFT_Kind::Real2Complex)
                 output.setFullExtents(input.getExtents());
             input.preProcess();
-            lib_(input, output);
+            m_lib(input, output);
             output.postProcess();
         }
 
@@ -100,7 +100,7 @@ namespace foobar {
         {
             static_assert(isInplace, "Must not be called for out-of-place transforms");
             inout.preProcess();
-            lib_(inout);
+            m_lib(inout);
             inout.postProcess();
         }
     };
