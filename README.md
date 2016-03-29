@@ -82,5 +82,8 @@ A good example is the code from fftTiffImg:
 In general the following naming convention was used
 - Types: UpperCamelCase
 - Variables: lowerCamelCase
+- private member variables: m_lowerCamelCase (to avoid shadow warnings)
+- shadowing parameters: lowerCamelCaseIn (for *In*put)
 - Type template parameters: T_UpperCamelCase
 - Non-Type template parameters: T_lowerCamelCase
+
