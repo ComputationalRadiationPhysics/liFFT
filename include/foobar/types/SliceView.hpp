@@ -49,7 +49,7 @@ namespace types {
         BaseExtents offsets_;
         Extents extents;
 
-        friend class policies::GetExtents<SliceView>;
+        friend struct policies::GetExtents<SliceView>;
 
         constexpr unsigned getIdx(unsigned baseIdx) const
         {
