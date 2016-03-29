@@ -1,5 +1,7 @@
 # Hack for C++11 Support in eclipse
 # https://public.kitware.com/Bug/bug_relationship_graph.php?bug_id=15316&graph=relation
+# The CMAKE_CXX_COMPILER_ARG1 must be set before the project() call to have cmake set up
+# the correct flags that are later used by eclipse
 if (${CMAKE_EXTRA_GENERATOR} MATCHES "Eclipse CDT4")
     set(CMAKE_CXX_COMPILER_ARG1 "-std=c++11" CACHE STRING "C++ version for eclipse" FORCE)
     set(CMAKE_ECLIPSE_VERSION "4.4" CACHE STRING "Eclipse version" FORCE)
@@ -42,10 +44,16 @@ set(LIBS ${LIBS} ${Boost_LIBRARIES})
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
 
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-add_definitions(-std=c++11 -Wall)
-list(APPEND CUDA_NVCC_FLAGS "-std=c++11 -Xcompiler -Wall")
+# Use the CMake variable available at 3.1 and up
+if(${CMAKE_VERSION} VERSION_LESS 3.1)
+    add_definitions(-std=c++11)
+    list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
+else()
+    set(CMAKE_CXX_STANDARD 11)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+endif()
+add_definitions(-Wall)
+list(APPEND CUDA_NVCC_FLAGS "-Xcompiler -Wall")
 list(APPEND CUDA_NVCC_FLAGS_RELEASE "-O3 -DNDEBUG")
 list(APPEND CUDA_NVCC_FLAGS_DEBUG "-O0 -g")
 SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
