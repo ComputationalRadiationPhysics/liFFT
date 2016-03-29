@@ -59,7 +59,7 @@ namespace accessors {
         }
 
         template< class T_Index, class T_Stream >
-        T_ReturnType operator()(const T_Index& idx, T_Stream& stream)
+        T_ReturnType operator()(const T_Index& /*idx*/, T_Stream& stream)
         {
             T_ReturnType result;
             stream >> result;
