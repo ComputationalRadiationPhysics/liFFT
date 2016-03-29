@@ -61,11 +61,11 @@ namespace foobar {
              * @param extents Extents of the container
              */
             template<typename T_Extents>
-            DataContainer(const Memory& data, T_Extents&& extents): data(data)
+            DataContainer(const Memory& data, T_Extents&& extents): m_data(data)
             {
                 static_assert(traits::NumDims<T_Extents>::value >= numDims, "Wrong extents");
                 for(unsigned i = 0; i < numDims; i++)
-                    this->extents[i] = extents[i];
+                    m_extents[i] = extents[i];
             }
 
             /**
@@ -74,18 +74,18 @@ namespace foobar {
              * @param extents Extents of the container
              */
             template<typename T_Extents>
-            DataContainer(Memory&& data, T_Extents&& extents): data(std::move(data))
+            DataContainer(Memory&& data, T_Extents&& extents): m_data(std::move(data))
             {
                 static_assert(traits::NumDims<T_Extents>::value >= numDims, "Wrong extents");
                 for(unsigned i = 0; i < numDims; i++)
-                    this->extents[i] = extents[i];
+                    m_extents[i] = extents[i];
             }
 
             template< typename T_Idx >
             std::result_of_t< IdentityAccessor(T_Idx&, DataContainer&) >
             operator()(T_Idx&& idx)
             {
-                assert(policies::checkSizes(idx, extents));
+                assert(policies::checkSizes(idx, m_extents));
                 return IdentityAccessor()(idx, *this);
             }
 
@@ -93,7 +93,7 @@ namespace foobar {
             std::result_of_t< IdentityAccessor(T_Idx&, const DataContainer&) >
             operator()(T_Idx&& idx) const
             {
-                assert(policies::checkSizes(idx, extents));
+                assert(policies::checkSizes(idx, m_extents));
                 return IdentityAccessor()(idx, *this);
             }
 
@@ -103,8 +103,8 @@ namespace foobar {
             {
                 static_assert(traits::NumDims<T_Extents>::value >= numDims, "Wrong extents");
                 for(unsigned i = 0; i < numDims; i++)
-                    this->extents[i] = extents[i];
-                this->data = data;
+                    m_extents[i] = extents[i];
+                m_data = data;
             }
 
             template<typename T_Extents>
@@ -113,8 +113,8 @@ namespace foobar {
             {
                 static_assert(traits::NumDims<T_Extents>::value >= numDims, "Wrong extents");
                 for(unsigned i = 0; i < numDims; i++)
-                    this->extents[i] = extents[i];
-                this->data = std::move(data);
+                    m_extents[i] = extents[i];
+                m_data = std::move(data);
             }
 
             /**
@@ -128,14 +128,14 @@ namespace foobar {
              {
                  static_assert(traits::NumDims<T_Extents>::value >= numDims, "Wrong extents");
                  for(unsigned i = 0; i < numDims; i++)
-                     this->extents[i] = extents[i];
-                 data.allocData(policies::getNumElements(*this, false));
+                     m_extents[i] = extents[i];
+                 m_data.allocData(policies::getNumElements(*this, false));
              }
 
              size_t
              getMemSize() const
              {
-                 return MemoryPolicy<Memory>::getMemSize(*this, data);
+                 return MemoryPolicy<Memory>::getMemSize(*this, m_data);
              }
 
              /**
@@ -144,8 +144,8 @@ namespace foobar {
              void
              freeData()
              {
-                 data.freeData();
-                 extents = IdxType::all(0);
+                 m_data.freeData();
+                 m_extents = IdxType::all(0);
              }
 
              template<class T>
@@ -189,18 +189,18 @@ namespace foobar {
              std::result_of_t< decltype(&MemoryPolicy<Memory>::getData)(Memory&) >
              getData()
              {
-                 return MemoryPolicy<Memory>::getData(data);
+                 return MemoryPolicy<Memory>::getData(m_data);
              }
 
              const IdxType&
              getExtents() const
              {
-                 return extents;
+                 return m_extents;
              }
 
         protected:
-             Memory data;
-             IdxType extents;
+             Memory m_data;
+             IdxType m_extents;
         };
 
         template< unsigned T_numDims, class T_Memory, class T_BaseAccessor, bool T_isFlatMemory >
@@ -226,7 +226,7 @@ namespace foobar {
             {
                 static_assert(traits::NumDims<T_Strides>::value >= numDims, "Wrong strides");
                 for(unsigned i = 0; i < numDims; i++)
-                    this->strides[i] = strides[i];
+                    m_strides[i] = strides[i];
             }
 
             /**
@@ -235,11 +235,11 @@ namespace foobar {
              * @param extents Extents of the container
              */
             template<typename T_Extents, typename T_Strides>
-            DataContainer(const Memory& data, T_Extents&& extents, T_Strides&&): Parent(data, extents)
+            DataContainer(const Memory& data, T_Extents&& extents, T_Strides&& strides): Parent(data, extents)
             {
                 static_assert(traits::NumDims<T_Strides>::value >= numDims, "Wrong strides");
                 for(unsigned i = 0; i < numDims; i++)
-                    this->strides[i] = strides[i];
+                    m_strides[i] = strides[i];
             }
 
             /**
@@ -248,16 +248,16 @@ namespace foobar {
              * @param extents Extents of the container
              */
             template<typename T_Extents, typename T_Strides>
-            DataContainer(Memory&& data, T_Extents&& extents, T_Strides&&): Parent(std::move(data), extents)
+            DataContainer(Memory&& data, T_Extents&& extents, T_Strides&& strides): Parent(std::move(data), extents)
             {
                 static_assert(traits::NumDims<T_Strides>::value >= numDims, "Wrong strides");
                 for(unsigned i = 0; i < numDims; i++)
-                    this->strides[i] = strides[i];
+                    m_strides[i] = strides[i];
             }
 
 
         private:
-            IdxType strides;
+            IdxType m_strides;
         };
 
         /**

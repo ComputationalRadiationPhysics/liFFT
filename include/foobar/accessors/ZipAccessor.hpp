@@ -18,21 +18,21 @@ namespace accessors {
         using DataFirst= T_DataFirst;
         using Func = T_Func;
 
-        DataFirst& dataFirst_;
-        Func func_;
-        AccSecond accSecond_;
-        AccFirst accFirst_;
+        DataFirst& m_dataFirst;
+        Func m_func;
+        AccSecond m_accSecond;
+        AccFirst m_accFirst;
 
         ZipAccessor(DataFirst& dataFirst, const Func& func = Func(), const AccSecond& accSecond = AccSecond(), const AccFirst& accFirst = AccFirst()):
-            dataFirst_(dataFirst), func_(func), accSecond_(accSecond), accFirst_(accFirst)
+            m_dataFirst(dataFirst), m_func(func), m_accSecond(accSecond), m_accFirst(accFirst)
         {}
 
         template< typename T_Idx, class T_Data >
         auto
         operator()(T_Idx& idx, T_Data& data)
-        -> decltype( func_( accFirst_(idx, dataFirst_), accSecond_(idx, data) ) )
+        -> decltype( m_func( m_accFirst(idx, m_dataFirst), m_accSecond(idx, data) ) )
         {
-            return func_( accFirst_(idx, dataFirst_), accSecond_(idx, data) );
+            return m_func( m_accFirst(idx, m_dataFirst), m_accSecond(idx, data) );
         }
     };
 

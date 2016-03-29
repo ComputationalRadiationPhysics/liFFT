@@ -14,22 +14,22 @@ namespace tiffWriter {
         using const_pointer = const T*;
         typedef size_t size_type;
 
-        Allocator alloc_;
+        Allocator m_alloc;
 
-        AllocatorWrapper(const Allocator& alloc = Allocator()): alloc_(alloc) {}
+        AllocatorWrapper(const Allocator& alloc = Allocator()): m_alloc(alloc) {}
 
         pointer
         allocate(size_type n, const void* = 0)
         {
             pointer p;
-            alloc_.malloc(p, n*sizeof(T));
+            m_alloc.malloc(p, n*sizeof(T));
             return p;
         }
 
         void
         deallocate(pointer p, size_type)
         {
-            alloc_.free(p);
+            m_alloc.free(p);
         }
     };
 

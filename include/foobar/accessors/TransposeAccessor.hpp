@@ -13,7 +13,7 @@ namespace accessors {
     {
     private:
         using BaseAccessor = T_BaseAccessor;
-        BaseAccessor acc_;
+        BaseAccessor m_acc;
 
         template< class T_Index, class T_Data >
         void
@@ -30,26 +30,26 @@ namespace accessors {
         }
     public:
 
-        explicit TransposeAccessor(const BaseAccessor& acc = BaseAccessor()): acc_(acc){}
+        explicit TransposeAccessor(const BaseAccessor& acc = BaseAccessor()): m_acc(acc){}
 
         template< class T_Index, class T_Data >
         auto
         operator()(const T_Index& idx, T_Data& data) const
-        -> decltype(acc_(idx, data))
+        -> decltype(m_acc(idx, data))
         {
             T_Index transposedIdx;
             transposeIdx(idx, transposedIdx, data);
-            return acc_(transposedIdx, data);
+            return m_acc(transposedIdx, data);
         }
 
         template< class T_Index, class T_Data, typename T_Value >
         auto
         operator()(const T_Index& idx, T_Data& data, T_Value&& value)
-        -> decltype( acc_(idx, data, std::forward<T_Value>(value)) )
+        -> decltype( m_acc(idx, data, std::forward<T_Value>(value)) )
         {
             T_Index transposedIdx;
             transposeIdx(idx, transposedIdx, data);
-            acc_(transposedIdx, data, std::forward<T_Value>(value));
+            m_acc(transposedIdx, data, std::forward<T_Value>(value));
         }
     };
 

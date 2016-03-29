@@ -45,11 +45,11 @@ namespace tiffWriter
         using Ref = DataType&;
         using ConstRef = const DataType&;
 
-        std::string filepath_;
-        std::unique_ptr<TIFF, void(*)(TIFF*)> handle_;
-        std::unique_ptr<DataType[], void(*)(DataType*)> data_;
-        bool isReadable_, isWriteable_, dataWritten_;
-        unsigned width_, height_;
+        std::string m_filepath;
+        std::unique_ptr<TIFF, void(*)(TIFF*)> m_handle;
+        std::unique_ptr<DataType[], void(*)(DataType*)> m_data;
+        bool m_isReadable, m_isWriteable, m_dataWritten;
+        unsigned m_width, m_height;
         bool originIsAtTop;
         uint16 samplesPerPixel, bitsPerSample, tiffSampleFormat, photometric;
 
@@ -73,13 +73,13 @@ namespace tiffWriter
          * Before accessing it you need to call \ref open(..)
          */
         Image():
-            filepath_(""),
-            handle_(nullptr, TIFFClose),
-            data_(nullptr, [](DataType* p){ Allocator().free(p);}),
-            isReadable_(false),
-            isWriteable_(false),
-            dataWritten_(false),
-            width_(0), height_(0), originIsAtTop(true)
+            m_filepath(""),
+            m_handle(nullptr, TIFFClose),
+            m_data(nullptr, [](DataType* p){ Allocator().free(p);}),
+            m_isReadable(false),
+            m_isWriteable(false),
+            m_dataWritten(false),
+            m_width(0), m_height(0), originIsAtTop(true)
         {}
         Image(Image&&) = default;
         Image& operator=(Image&&) = default;
@@ -91,9 +91,9 @@ namespace tiffWriter
          * @param loadData True if the image data should be loaded or only its memory allocated.
          *          The data can be (re)loaded with \ref load()
          */
-        Image(const std::string& filePath, bool loadData = true): Image()
+        Image(const std::string& filePath, bool bLoadData = true): Image()
         {
-            open(filePath, loadData);
+            open(filePath, bLoadData);
         }
 
         /**
@@ -178,19 +178,19 @@ namespace tiffWriter
          */
         bool isOpen() const
         {
-            return (handle_ != nullptr);
+            return (m_handle != nullptr);
         }
 
         unsigned getWidth() const
         {
-            assert(isOpen() || data_);
-            return width_;
+            assert(isOpen() || m_data);
+            return m_width;
         }
 
         unsigned getHeight() const
         {
-            assert(isOpen() || data_);
-            return height_;
+            assert(isOpen() || m_data);
+            return m_height;
         }
 
         /**
@@ -200,7 +200,7 @@ namespace tiffWriter
          */
         bool isOriginAtTop() const
         {
-            assert(isOpen() || data_);
+            assert(isOpen() || m_data);
             return originIsAtTop;
         }
 
@@ -210,8 +210,8 @@ namespace tiffWriter
          */
         size_t getDataSize() const
         {
-            assert(isOpen() || data_);
-            return sizeof(DataType) * width_ * height_;
+            assert(isOpen() || m_data);
+            return sizeof(DataType) * m_width * m_height;
         }
 
         /**
@@ -223,8 +223,8 @@ namespace tiffWriter
         Ref
         operator()(unsigned x, unsigned y)
         {
-            assert(isOpen() || data_);
-            return data_[y * width_ + x];
+            assert(isOpen() || m_data);
+            return m_data[y * m_width + x];
         }
 
         /**
@@ -236,8 +236,8 @@ namespace tiffWriter
         ConstRef
         operator()(unsigned x, unsigned y) const
         {
-            assert(isOpen() || data_);
-            return data_[y * width_ + x];
+            assert(isOpen() || m_data);
+            return m_data[y * m_width + x];
         }
     };
 

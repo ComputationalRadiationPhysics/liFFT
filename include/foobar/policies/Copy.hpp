@@ -71,17 +71,17 @@ namespace policies {
         {
             using BaseAccessor = T_BaseAccessor;
 
-            BaseAccessor acc_;
+            BaseAccessor m_acc;
 
             ReadAccessorWrapper(){}
-            ReadAccessorWrapper(const BaseAccessor& acc): acc_(acc){}
-            ReadAccessorWrapper(BaseAccessor&& acc): acc_(std::move(acc)){}
+            ReadAccessorWrapper(const BaseAccessor& acc): m_acc(acc){}
+            ReadAccessorWrapper(BaseAccessor&& acc): m_acc(std::move(acc)){}
 
             template< typename T_Data >
             std::enable_if_t< traits::IsStreamAccessor< BaseAccessor, T_Data >::value >
             readDelimiter(T_Data& data, unsigned dim)
             {
-                acc_.skipDelimiter(data, dim);
+                m_acc.skipDelimiter(data, dim);
             }
 
             template< typename T_Data >
@@ -94,9 +94,9 @@ namespace policies {
             >
             auto
             read(const T_Index& idx, T_Data& data)
-            -> decltype(acc_(idx, data))
+            -> decltype(m_acc(idx, data))
             {
-                return acc_(idx, data);
+                return m_acc(idx, data);
             }
         };
 
@@ -105,18 +105,18 @@ namespace policies {
         {
             using BaseAccessor = T_BaseAccessor;
 
-            BaseAccessor acc_;
+            BaseAccessor m_acc;
 
             WriteAccessorWrapper(){}
-            WriteAccessorWrapper(const BaseAccessor& acc): acc_(acc){}
-            WriteAccessorWrapper(BaseAccessor&& acc): acc_(std::move(acc)){}
+            WriteAccessorWrapper(const BaseAccessor& acc): m_acc(acc){}
+            WriteAccessorWrapper(BaseAccessor&& acc): m_acc(std::move(acc)){}
 
             template< typename T_Data >
             std::enable_if_t< traits::IsStreamAccessor< BaseAccessor, T_Data, char >::value >
             writeDelimiter(T_Data& data, unsigned dim)
             {
                 types::Vec<1> dummyIdx;
-                acc_(dummyIdx, data, acc_.getDelimiters()[dim]);
+                m_acc(dummyIdx, data, m_acc.getDelimiters()[dim]);
             }
 
             template< typename T_Data >
@@ -138,7 +138,7 @@ namespace policies {
             std::enable_if_t< traits::IsWriteAccessor< BaseAccessor, T_Data, T_Value, T_Index >::value >
             write(const T_Index& idx, T_Data& data, T_Value&& value)
             {
-                acc_(idx, data, std::forward<T_Value>(value));
+                m_acc(idx, data, std::forward<T_Value>(value));
             }
 
             /**
@@ -157,9 +157,9 @@ namespace policies {
             std::enable_if_t< !traits::IsWriteAccessor< BaseAccessor, T_Data, T_Value, T_Index >::value >
             write(const T_Index& idx, T_Data& data, T_Value&& value)
             {
-                using LeftType = decltype(acc_(idx, data));
+                using LeftType = decltype(m_acc(idx, data));
                 static_assert(AssertValue<std::is_assignable<LeftType, T_Value>>::value, "Cannot assign value returned from srcAccessor to dstData");
-                acc_(idx, data) = std::forward<T_Value>(value);
+                m_acc(idx, data) = std::forward<T_Value>(value);
             }
         };
     }  // namespace detail
@@ -182,8 +182,8 @@ namespace policies {
     struct Copy
     {
     private:
-        detail::ReadAccessorWrapper< T_SrcAccessor > accSrc_;
-        detail::WriteAccessorWrapper< T_DstAccessor > accDst_;
+        detail::ReadAccessorWrapper< T_SrcAccessor > m_accSrc;
+        detail::WriteAccessorWrapper< T_DstAccessor > m_accDst;
 
         template< class T_Accessor, unsigned T_numDims, bool T_isStreamAcc = false >
         struct DelimiterDimOk: std::true_type{};
@@ -225,7 +225,7 @@ namespace policies {
 
     public:
         Copy(){}
-        Copy(T_SrcAccessor accSrc, T_DstAccessor accDst): accSrc_(accSrc), accDst_(accDst){}
+        Copy(T_SrcAccessor accSrc, T_DstAccessor accDst): m_accSrc(accSrc), m_accDst(accDst){}
 
         template< class T_Src, class T_Dst >
         void
@@ -245,7 +245,7 @@ namespace policies {
             static_assert(DelimiterDimOk<T_DstAccessor, numDimsDst, dstIsStream>::value,
                     "Destination accessor does not provide enough delimiters");
 
-            loop(src, detail::CopyHandler(), accSrc_, dst, accDst_);
+            loop(src, detail::CopyHandler(), m_accSrc, dst, m_accDst);
         }
     };
 

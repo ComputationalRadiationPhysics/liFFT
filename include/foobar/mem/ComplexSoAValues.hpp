@@ -23,67 +23,67 @@ namespace foobar {
             using IdentityAccessor = accessors::ArrayAccessor<>;
 
             ComplexSoAValues(){}
-            ComplexSoAValues(Ptr realData, Ptr imagData, size_t numElements): real_(realData, numElements), imag_(imagData, numElements){}
+            ComplexSoAValues(Ptr realData, Ptr imagData, size_t numElements): m_real(realData, numElements), m_imag(imagData, numElements){}
 
             void
             reset(std::pair<Ptr, Ptr> data, size_t numElements)
             {
-                real_.reset(data.first, numElements);
-                imag_.reset(data.second, numElements);
+                m_real.reset(data.first, numElements);
+                m_imag.reset(data.second, numElements);
             }
 
             void
             allocData(size_t numElements)
             {
-                real_.allocData(numElements);
-                imag_.allocData(numElements);
+                m_real.allocData(numElements);
+                m_imag.allocData(numElements);
             }
 
             void
             freeData()
             {
-                real_.freeData();
-                imag_.freeData();
+                m_real.freeData();
+                m_imag.freeData();
             }
 
             std::pair<Ptr, Ptr>
             releaseData()
             {
-                return std::make_pair(real_.releaseData(), imag_.releaseData());
+                return std::make_pair(m_real.releaseData(), m_imag.releaseData());
             }
 
             std::pair<Ptr, Ptr>
             getData() const
             {
-                return std::make_pair(real_.getData(), imag_.getData());
+                return std::make_pair(m_real.getData(), m_imag.getData());
             }
 
             ConstRef
             operator[](size_t idx) const
             {
-                return ConstRef(real_[idx], imag_[idx]);
+                return ConstRef(m_real[idx], m_imag[idx]);
             }
 
             Ref
             operator[](size_t idx)
             {
-                return Ref(real_[idx], imag_[idx]);
+                return Ref(m_real[idx], m_imag[idx]);
             }
 
             Data&
             getRealData()
             {
-                return real_;
+                return m_real;
             }
 
             Data&
             getImagData()
             {
-                return imag_;
+                return m_imag;
             }
 
         private:
-            Data real_, imag_;
+            Data m_real, m_imag;
         };
 
     }  // namespace mem

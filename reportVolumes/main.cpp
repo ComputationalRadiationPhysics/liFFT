@@ -28,11 +28,13 @@ using std::string;
 using std::cout;
 using std::cerr;
 
-po::options_description desc("Generate 3D data, convert with FFT and output to tiff");
+namespace options {
+    po::options_description desc("Generate 3D data, convert with FFT and output to tiff");
+}  // namespace options
 
 void showHelp()
 {
-    cout << desc << std::endl;
+    cout << options::desc << std::endl;
 }
 
 template<typename T>
@@ -270,7 +272,7 @@ main(int argc, char** argv)
     unsigned dataSet;
     string inFilePath, outFilePath;
     unsigned inOrOut;
-    desc.add_options()
+    options::desc.add_options()
         ("help,h", "Show help message")
         ("outputFile,o", po::value<string>(&outFilePath)->default_value("output.tif"), "Output file to write to")
         ("dataSet,d", po::value<unsigned>(&dataSet)->default_value(0), "Data set to use (1-4) 0 => all")
@@ -278,7 +280,7 @@ main(int argc, char** argv)
     ;
 
     po::variables_map vm;
-    po::store(po::parse_command_line(argc, argv, desc), vm);
+    po::store(po::parse_command_line(argc, argv, options::desc), vm);
     po::notify(vm);
 
     if (vm.count("help") || outFilePath.empty() || dataSet > 4 )

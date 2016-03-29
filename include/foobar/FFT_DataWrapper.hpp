@@ -71,16 +71,16 @@ namespace foobar {
         {
         protected:
             void preProcess(){
-                if(inplaceOutput_)
-                    inplaceOutput_->preProcess();
+                if(m_inplaceOutput)
+                    m_inplaceOutput->preProcess();
             }
             void postProcess(){
-                if(inplaceOutput_)
-                    inplaceOutput_->postProcess();
+                if(m_inplaceOutput)
+                    m_inplaceOutput->postProcess();
             }
-            detail::IInplaceOutput* inplaceOutput_;
+            detail::IInplaceOutput* m_inplaceOutput;
 
-            FFT_DataWrapperBase(): inplaceOutput_(nullptr){}
+            FFT_DataWrapperBase(): m_inplaceOutput(nullptr){}
             ~FFT_DataWrapperBase(){}
         };
 
@@ -184,81 +184,81 @@ namespace foobar {
                                            (FFT_Def::kind == FFT_Kind::Real2Complex && !isInput);
 
     private:
-        InstanceType base_;
-        BaseAccessor acc_;
-        Extents extents_, fullExtents_;
-        Memory memory_;
-        std::unique_ptr<MemoryFallback> memFallback_;
+        InstanceType m_base;
+        BaseAccessor m_acc;
+        Extents m_extents, m_fullExtents;
+        Memory m_memory;
+        std::unique_ptr<MemoryFallback> m_memFallback;
 
         void
         setFullExtents(const Extents& extents)
         {
-            fullExtents_ = extents;
+            m_fullExtents = extents;
         }
         template< class T1, class T2, class T3, bool t>
         friend class FFT;
     public:
         FFT_DataWrapper(ParamType data, BaseAccessor acc = BaseAccessor()):
-            base_(static_cast<ParamType>(data)), acc_(std::move(acc))
+            m_base(static_cast<ParamType>(data)), m_acc(std::move(acc))
         {
             static_assert(!FFT_Def::isInplace || FFT_Def::kind != FFT_Kind::Complex2Real, "No real extents set");
 
-            policies::GetExtents<Base> extents(base_);
+            policies::GetExtents<Base> extents(m_base);
             for(unsigned i=0; i<numDims; ++i)
-                extents_[i] = extents[i];
-            memory_.init(extents_);
+                m_extents[i] = extents[i];
+            m_memory.init(m_extents);
             // Set full extents for real data or for C2C transforms
             // The others are set to 0 here and updated during FFT execution
             if(FFT_Def::kind == FFT_Kind::Complex2Complex ||
                     (FFT_Def::kind == FFT_Kind::Complex2Real && !isInput) ||
                     (FFT_Def::kind == FFT_Kind::Real2Complex && isInput) )
-                fullExtents_ = extents_;
+                m_fullExtents = m_extents;
             else
-                fullExtents_ = fullExtents_.all(0);
-            if(memory_.checkPtr(base_, acc_, FFT_Def::isInplace && !isComplex))
-                memFallback_ = nullptr;
+                m_fullExtents = m_fullExtents.all(0);
+            if(m_memory.checkPtr(m_base, m_acc, FFT_Def::isInplace && !isComplex))
+                m_memFallback = nullptr;
             else if(FFT_Def::isInplace)
                 throw std::runtime_error("Cannot use given memory as the strides/indexing is wrong!");
             else
             {
-                memFallback_.reset(new MemoryFallback());
-                memFallback_->init(extents_);
+                m_memFallback.reset(new MemoryFallback());
+                m_memFallback->init(m_extents);
             }
         }
 
         FFT_DataWrapper(ParamType data, unsigned fullSizeLastDim, BaseAccessor acc = BaseAccessor()):
-            base_(static_cast<ParamType>(data)), acc_(std::move(acc))
+            m_base(static_cast<ParamType>(data)), m_acc(std::move(acc))
         {
-            policies::GetExtents<Base> extents(base_);
+            policies::GetExtents<Base> extents(m_base);
             for(unsigned i=0; i<numDims; ++i)
-                extents_[i] = extents[i];
+                m_extents[i] = extents[i];
             if((FFT_Def::kind == FFT_Kind::Complex2Real && isInput) ||
                     (FFT_Def::kind == FFT_Kind::Real2Complex && !isInput) ||
                     FFT_Def::kind == FFT_Kind::Complex2Complex)
             {
-                if(extents_[numDims - 1] != fullSizeLastDim)
+                if(m_extents[numDims - 1] != fullSizeLastDim)
                     throw std::runtime_error("Invalid size given");
             }else if((FFT_Def::kind == FFT_Kind::Complex2Real && !isInput) ||
                     (FFT_Def::kind == FFT_Kind::Real2Complex && isInput))
             {
-                if(extents_[numDims - 1] != fullSizeLastDim / 2 + 1)
+                if(m_extents[numDims - 1] != fullSizeLastDim / 2 + 1)
                     throw std::runtime_error("Invalid size given");
             }
             if(FFT_Def::isInplace)
             {
-                fullExtents_ = extents_;
-                fullExtents_[numDims - 1] = fullSizeLastDim;
+                m_fullExtents = m_extents;
+                m_fullExtents[numDims - 1] = fullSizeLastDim;
             }
 
-            memory_.init(extents_);
-            if(memory_.checkPtr(base_, acc_, FFT_Def::isInplace && !isComplex))
-                memFallback_ = nullptr;
+            m_memory.init(m_extents);
+            if(m_memory.checkPtr(m_base, m_acc, FFT_Def::isInplace && !isComplex))
+                m_memFallback = nullptr;
             else if(FFT_Def::isInplace)
                 throw std::runtime_error("Cannot use given memory as the strides/indexing is wrong!");
             else
             {
-                memFallback_.reset(new MemoryFallback());
-                memFallback_->init(extents_);
+                m_memFallback.reset(new MemoryFallback());
+                m_memFallback->init(m_extents);
             }
         }
 
@@ -270,7 +270,7 @@ namespace foobar {
         std::result_of_t< BaseAccessor(const IdxType&, Base&) >
         operator()(const IdxType& idx)
         {
-            return acc_(idx, base_);
+            return m_acc(idx, m_base);
         }
 
         /**
@@ -281,7 +281,7 @@ namespace foobar {
         std::result_of_t< BaseAccessor(const IdxType&, const Base&) >
         operator()(const IdxType& idx) const
         {
-            return acc_(idx, const_cast<const Base&>(base_));
+            return m_acc(idx, const_cast<const Base&>(m_base));
         }
 
         /**
@@ -291,7 +291,7 @@ namespace foobar {
         RefType
         getBase()
         {
-            return base_;
+            return m_base;
         }
 
         /**
@@ -302,22 +302,22 @@ namespace foobar {
          */
         auto
         getDataPtr()
-        -> decltype(memory_.getPtr(base_, acc_))
+        -> decltype(m_memory.getPtr(m_base, m_acc))
         {
-            if(memFallback_)
-                return memFallback_->getPtr(base_, acc_);
+            if(m_memFallback)
+                return m_memFallback->getPtr(m_base, m_acc);
             else
-                return memory_.getPtr(base_, acc_);
+                return m_memory.getPtr(m_base, m_acc);
         }
 
         size_t getMemSize() const
         {
             if(FFT_Def::isInplace)
-                return traits::getMemSize(base_);
-            else if(memFallback_)
-                return traits::getMemSize(*memFallback_);
+                return traits::getMemSize(m_base);
+            else if(m_memFallback)
+                return traits::getMemSize(*m_memFallback);
             else
-                return traits::getMemSize(memory_);
+                return traits::getMemSize(m_memory);
         }
 
         /**
@@ -329,7 +329,7 @@ namespace foobar {
         const Extents&
         getExtents() const
         {
-            return extents_;
+            return m_extents;
         }
 
         /**
@@ -341,7 +341,7 @@ namespace foobar {
         const Extents&
         getFullExtents() const
         {
-            return fullExtents_;
+            return m_fullExtents;
         }
 
         /**
@@ -350,7 +350,7 @@ namespace foobar {
         size_t
         getNumElements() const
         {
-            return policies::getNumElementsFromExtents(extents_);
+            return policies::getNumElementsFromExtents(m_extents);
         }
 
         /**
@@ -362,10 +362,10 @@ namespace foobar {
         {
             if(isInput)
             {
-                if(memFallback_)
-                    memFallback_->copyFrom(base_, acc_);
+                if(m_memFallback)
+                    m_memFallback->copyFrom(m_base, m_acc);
                 else
-                    memory_.copyFrom(base_, acc_);
+                    m_memory.copyFrom(m_base, m_acc);
             }
             Parent::preProcess();
         }
@@ -379,10 +379,10 @@ namespace foobar {
         {
             if(!isInput)
             {
-                if(memFallback_)
-                    memFallback_->copyTo(base_, acc_);
+                if(m_memFallback)
+                    m_memFallback->copyTo(m_base, m_acc);
                 else
-                    memory_.copyTo(base_, acc_);
+                    m_memory.copyTo(m_base, m_acc);
             }
             Parent::postProcess();
         }

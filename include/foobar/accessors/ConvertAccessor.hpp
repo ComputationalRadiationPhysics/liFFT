@@ -16,7 +16,7 @@ namespace accessors {
         using BaseAccessor = T_BaseAccessor;
         using Target = T_Target;
 
-        BaseAccessor acc_;
+        BaseAccessor m_acc;
 
         template< class T_Index, class T_Data >
         struct GetCurTarget
@@ -38,7 +38,7 @@ namespace accessors {
 
         ConvertAccessor(){}
         template< class T >
-        explicit ConvertAccessor(T&& baseAccessor): acc_(std::forward<T>(baseAccessor)){}
+        explicit ConvertAccessor(T&& baseAccessor): m_acc(std::forward<T>(baseAccessor)){}
 
         template< class T_Index, class T_Data >
         auto
@@ -46,7 +46,7 @@ namespace accessors {
         -> typename GetCurTarget< T_Index, T_Data >::type
         {
             using CurTarget = typename GetCurTarget< T_Index, T_Data >::type;
-            return reinterpret_cast<CurTarget>(acc_(idx, data));
+            return reinterpret_cast<CurTarget>(m_acc(idx, data));
         }
     };
 

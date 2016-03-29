@@ -47,73 +47,73 @@ namespace detail {
         using IdentityAccessor = accessors::ArrayAccessor<>;
 
         AoSValues(): AoSValues(nullptr, 0){}
-        AoSValues(Ptr data, size_t numElements): data_(data), numElements_(numElements){}
+        AoSValues(Ptr data, size_t numElements): m_data(data), m_numElements(numElements){}
 
         void
         reset(Ptr data, size_t numElements)
         {
             assert(numElements || !data);
-            data_.reset(data);
-            numElements_ = numElements;
+            m_data.reset(data);
+            m_numElements = numElements;
         }
 
         void
         allocData(size_t numElements)
         {
             assert(numElements);
-            data_.reset(new Value[numElements]);
-            numElements_ = numElements;
+            m_data.reset(new Value[numElements]);
+            m_numElements = numElements;
         }
 
         void
         freeData()
         {
-            data_.reset();
-            numElements_ = 0;
+            m_data.reset();
+            m_numElements = 0;
         }
 
         Ptr
         releaseData()
         {
-            numElements_ = 0;
-            return data_.release();
+            m_numElements = 0;
+            return m_data.release();
         }
 
         Ptr
         getData() const
         {
-            return data_.get();
+            return m_data.get();
         }
 
         size_t
         getNumElements() const
         {
-            return numElements_;
+            return m_numElements;
         }
 
         size_t
         getMemSize() const
         {
-            return numElements_ * sizeof(T);
+            return m_numElements * sizeof(T);
         }
 
         ConstRef
         operator[](size_t idx) const
         {
-            assert(idx < numElements_);
-            return data_[idx];
+            assert(idx < m_numElements);
+            return m_data[idx];
         }
 
         Ref
         operator[](size_t idx)
         {
-            assert(idx < numElements_);
-            return data_[idx];
+            assert(idx < m_numElements);
+            return m_data[idx];
         }
 
     private:
-        Data data_;
-        size_t numElements_;
+        Data m_data;
+        size_t m_numElements;
     };
 
 }  // namespace detail

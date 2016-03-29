@@ -75,7 +75,7 @@ namespace mem {
         {
             assert(policies::checkSizes(idx, this->getExtents()));
             unsigned flatIdx = policies::flattenIdx(idx, *this);
-            return this->data[flatIdx];
+            return this->m_data[flatIdx];
         }
 
         template< class T_Index >
@@ -84,7 +84,7 @@ namespace mem {
         {
             assert(policies::checkSizes(idx, this->getExtents()));
             unsigned flatIdx = policies::flattenIdx(idx, *this);
-            return this->data[flatIdx];
+            return this->m_data[flatIdx];
         }
 
         size_t

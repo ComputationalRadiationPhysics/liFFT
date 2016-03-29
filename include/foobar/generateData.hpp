@@ -38,23 +38,23 @@ namespace foobar {
 
         template<typename T>
         struct Spalt{
-            const size_t size_, middle_;
-            Spalt(size_t size, size_t middle):size_(size), middle_(middle){}
+            const size_t m_size, m_middle;
+            Spalt(size_t size, size_t middle):m_size(size), m_middle(middle){}
 
             template< class T_Idx >
             T
             operator()(T_Idx&& idx) const{
                 static constexpr unsigned numDims = traits::NumDims<T_Idx>::value;
 
-                return (absDiff(idx[numDims - 1], middle_) <= size_) ? 1 : 0;
+                return (absDiff(idx[numDims - 1], m_middle) <= m_size) ? 1 : 0;
             }
         };
 
         template<typename T>
         struct Cosinus{
-            const size_t middle_;
-            const T factor_;
-            Cosinus(size_t period, size_t middle):middle_(middle), factor_(2 * M_PI / period){}
+            const size_t m_middle;
+            const T m_factor;
+            Cosinus(size_t period, size_t middle):m_middle(middle), m_factor(2 * M_PI / period){}
 
             template< class T_Idx >
             T
@@ -63,17 +63,17 @@ namespace foobar {
                 static_assert(numDims >= 2, "Only >=2D data supported");
 
                 auto dist = std::sqrt(
-                        std::pow(absDiff(idx[numDims - 1], middle_), 2)+
-                        std::pow(absDiff(idx[numDims - 2], middle_), 2));
-                return std::cos( factor_ * dist );
+                        std::pow(absDiff(idx[numDims - 1], m_middle), 2)+
+                        std::pow(absDiff(idx[numDims - 2], m_middle), 2));
+                return std::cos( m_factor * dist );
             }
         };
 
         template<typename T>
         struct Rect{
-            const size_t sizeX_, sizeY_, middleX_, middleY_;
+            const size_t m_sizeX, m_sizeY, m_middleX, m_middleY;
             Rect(size_t sizeX, size_t middleX): Rect(sizeX, middleX, sizeX, middleX){}
-            Rect(size_t sizeX, size_t middleX, size_t sizeY, size_t middleY):sizeX_(sizeX), sizeY_(sizeY), middleX_(middleX), middleY_(middleY){}
+            Rect(size_t sizeX, size_t middleX, size_t sizeY, size_t middleY):m_sizeX(sizeX), m_sizeY(sizeY), m_middleX(middleX), m_middleY(middleY){}
 
             template< class T_Idx >
             T
@@ -81,15 +81,15 @@ namespace foobar {
                 static constexpr unsigned numDims = traits::NumDims<T_Idx>::value;
                 static_assert(numDims >= 2, "Only >=2D data supported");
 
-                return (absDiff(idx[numDims - 1], middleX_) <= sizeX_ &&
-                        absDiff(idx[numDims - 2], middleY_) <= sizeY_) ? 1 : 0;
+                return (absDiff(idx[numDims - 1], m_middleX) <= m_sizeX &&
+                        absDiff(idx[numDims - 2], m_middleY) <= m_sizeY) ? 1 : 0;
             }
         };
 
         template<typename T>
         struct Circle{
-            const size_t size_, middle_;
-            Circle(size_t size, size_t middle):size_(size), middle_(middle){}
+            const size_t m_size, m_middle;
+            Circle(size_t size, size_t middle):m_size(size), m_middle(middle){}
 
             template< class T_Idx >
             T
@@ -97,20 +97,20 @@ namespace foobar {
                 static constexpr unsigned numDims = traits::NumDims<T_Idx>::value;
                 static_assert(numDims >= 2, "Only >=2D data supported");
 
-                return (std::pow(absDiff(idx[numDims - 1], middle_), 2) +
-                        std::pow(absDiff(idx[numDims - 2], middle_), 2) <= size_*size_) ? 1 : 0;
+                return (std::pow(absDiff(idx[numDims - 1], m_middle), 2) +
+                        std::pow(absDiff(idx[numDims - 2], m_middle), 2) <= m_size*m_size) ? 1 : 0;
             }
         };
 
         template<typename T>
         struct SetToConst{
-            const T val_;
-            SetToConst(T val): val_(val){}
+            const T m_val;
+            SetToConst(T val): m_val(val){}
 
             template< class T_Idx >
             T
             operator()(T_Idx&&) const{
-                return val_;
+                return m_val;
             }
         };
 

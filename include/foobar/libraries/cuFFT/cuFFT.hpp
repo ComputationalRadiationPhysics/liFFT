@@ -73,19 +73,19 @@ namespace cuFFT {
         using LibTypes = traits::LibTypes< PrecisionType, FFT::isComplexIn, FFT::isComplexOut >;
         using PlanType = Plan<typename LibTypes::InType, typename LibTypes::OutType, Allocator>;
 
-        PlanType plan_;
+        PlanType m_plan;
 
         CuFFT(CuFFT& obj) = delete;
         CuFFT& operator=(const CuFFT&) = delete;
     public:
         explicit CuFFT(Input& input, Output& output)
         {
-            Planner()(plan_, input, output, inplaceForHost, Allocator());
+            Planner()(m_plan, input, output, inplaceForHost, Allocator());
         }
 
         explicit CuFFT(Input& inOut)
         {
-            Planner()(plan_, inOut, Allocator());
+            Planner()(m_plan, inOut, Allocator());
         }
 
         CuFFT(CuFFT&& obj) = default;
@@ -93,12 +93,12 @@ namespace cuFFT {
 
         void operator()(Input& input, Output& output)
         {
-            Executer()(plan_, input, output, inplaceForHost, Copier());
+            Executer()(m_plan, input, output, inplaceForHost, Copier());
         }
 
         void operator()(Input& inOut)
         {
-            Executer()(plan_, inOut, Copier());
+            Executer()(m_plan, inOut, Copier());
         }
     };
 

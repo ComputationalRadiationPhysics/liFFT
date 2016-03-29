@@ -24,17 +24,17 @@ namespace policies {
             {
                 GetExtents< T_Data > extents(data);
                 static_assert(numDims >= 1, "No dimensions");
-                strides_[numDims - 1] = 1;
+                m_strides[numDims - 1] = 1;
                 for(unsigned i=numDims - 1; i>0; --i)
-                    strides_[i-1] = strides_[i] * extents[i];
+                    m_strides[i-1] = m_strides[i] * extents[i];
             }
 
             size_t operator[](unsigned dimIdx) const
             {
-                return strides_[dimIdx];
+                return m_strides[dimIdx];
             }
         protected:
-            types::Vec<numDims, size_t> strides_;
+            types::Vec<numDims, size_t> m_strides;
         };
 
         /**
@@ -45,14 +45,14 @@ namespace policies {
         {
             using Data = T_Data;
 
-            GetStrides(const Data& data): data_(data){}
+            GetStrides(const Data& data): m_data(data){}
 
             size_t operator[](unsigned dimIdx) const
             {
-                return data_.strides[dimIdx];
+                return m_data.strides[dimIdx];
             }
         protected:
-            const Data& data_;
+            const Data& m_data;
         };
 
     }  // namespace detail

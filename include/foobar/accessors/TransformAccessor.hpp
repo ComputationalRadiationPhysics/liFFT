@@ -13,20 +13,20 @@ namespace accessors {
         using BaseAccessor = T_BaseAccessor;
         using Func = T_Func;
 
-        BaseAccessor acc_;
-        Func func_;
+        BaseAccessor m_acc;
+        Func m_func;
     public:
 
         TransformAccessor(){}
         template< class T, class U >
-        explicit TransformAccessor(T&& baseAccessor, U&& func = T_Func()): acc_(std::forward<T>(baseAccessor)), func_(std::forward<U>(func)){}
+        explicit TransformAccessor(T&& baseAccessor, U&& func = T_Func()): m_acc(std::forward<T>(baseAccessor)), m_func(std::forward<U>(func)){}
 
         template< class T_Index, class T_Data >
         auto
         operator()(const T_Index& idx, const T_Data& data) const
-        -> decltype(func_(acc_(idx, data)))
+        -> decltype(m_func(m_acc(idx, data)))
         {
-            return func_(acc_(idx, data));
+            return m_func(m_acc(idx, data));
         }
     };
 

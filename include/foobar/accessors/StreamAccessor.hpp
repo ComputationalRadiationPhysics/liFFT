@@ -50,7 +50,7 @@ namespace accessors {
     template< typename T_ReturnType = float, class T_Delimiters = TextDelimiters >
     struct StreamAccessor
     {
-        const T_Delimiters delimiters_ = T_Delimiters();
+        const T_Delimiters m_delimiters = T_Delimiters();
 
         template< class T_Index, class T_Stream, typename T_Value >
         void operator()(const T_Index& /*idx*/, T_Stream& stream, T_Value&& value)
@@ -69,14 +69,14 @@ namespace accessors {
         const T_Delimiters&
         getDelimiters()
         {
-            return delimiters_;
+            return m_delimiters;
         }
 
         template< class T_Stream >
         void
         skipDelimiter(T_Stream& stream, unsigned idx)
         {
-            size_t numChars = GetNumChars< decltype(delimiters_[idx])>::get(delimiters_[idx]);
+            size_t numChars = GetNumChars< decltype(m_delimiters[idx])>::get(m_delimiters[idx]);
             stream.ignore(numChars);
         }
     };

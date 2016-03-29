@@ -16,14 +16,14 @@ namespace policies {
         using Data = T_Data;
         static constexpr unsigned numDims = traits::NumDims<Data>::value;
 
-        GetExtentsImpl(const Data& data): data_(data){}
+        GetExtentsImpl(const Data& data): m_data(data){}
 
         unsigned operator[](unsigned dimIdx) const
         {
-            return data_.extents[dimIdx];
+            return m_data.extents[dimIdx];
         }
     protected:
-        const Data& data_;
+        const Data& m_data;
     };
 
     template< typename T_Data >
@@ -31,14 +31,14 @@ namespace policies {
     {
         using Data = T_Data;
         static constexpr unsigned numDims = traits::NumDims<Data>::value;
-        GetExtentsImpl(const Data& data): data_(data){}
+        GetExtentsImpl(const Data& data): m_data(data){}
 
         unsigned operator[](unsigned dimIdx) const
         {
-            return data_.getExtents()[dimIdx];
+            return m_data.getExtents()[dimIdx];
         }
     protected:
-        const Data& data_;
+        const Data& m_data;
     };
 
     template< typename T_Data >

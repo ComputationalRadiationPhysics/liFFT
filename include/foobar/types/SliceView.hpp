@@ -44,12 +44,10 @@ namespace types {
         using BaseExtents = Vec<baseNumDims>;
 
     private:
-        InstanceType base_;
-        BaseAccessor acc_;
-        BaseExtents offsets_;
-        Extents extents;
-
-        friend struct policies::GetExtents<SliceView>;
+        InstanceType m_base;
+        BaseAccessor m_acc;
+        BaseExtents m_offsets;
+        Extents m_extents;
 
         constexpr unsigned getIdx(unsigned baseIdx) const
         {
@@ -80,9 +78,9 @@ namespace types {
          * @param acc Accessor to access the base class
          */
         SliceView(ParamType base, const BaseExtents& offsets, const Extents& extents, const BaseAccessor& acc = BaseAccessor()):
-            base_(static_cast<ParamType>(base)), acc_(acc), offsets_(offsets), extents(extents)
+            m_base(static_cast<ParamType>(base)), m_acc(acc), m_offsets(offsets), m_extents(extents)
         {
-            policies::GetExtents<Base> bExtents(base_);
+            policies::GetExtents<Base> bExtents(m_base);
             for(unsigned i=0; i<baseNumDims; ++i)
             {
                 if(offsets[i] >= bExtents[i])
@@ -116,8 +114,8 @@ namespace types {
             static_assert(traits::NumDims<T_Idx>::value == numDims, "Wrong Idx dimensions");
             BaseExtents idxNew;
             for(unsigned i=0; i<baseNumDims; ++i)
-                idxNew[i] = (i==fixedDim) ? offsets_[i] : offsets_[i] + idx[getIdx(i)];
-            return acc_(idxNew, base_);
+                idxNew[i] = (i==fixedDim) ? m_offsets[i] : m_offsets[i] + idx[getIdx(i)];
+            return m_acc(idxNew, m_base);
         }
 
         template<typename T_Idx>
@@ -127,9 +125,9 @@ namespace types {
             static_assert(traits::NumDims<T_Idx>::value == numDims, "Wrong Idx dimensions");
             BaseExtents idxNew;
             for(unsigned i=0; i<baseNumDims; ++i)
-                idxNew[i] = (i==fixedDim) ? offsets_[i] : offsets_[i] + idx[getIdx(i)];
-            const Base& cBase = const_cast<const Base&>(base_);
-            return acc_(idxNew, cBase);
+                idxNew[i] = (i==fixedDim) ? m_offsets[i] : m_offsets[i] + idx[getIdx(i)];
+            const Base& cBase = const_cast<const Base&>(m_base);
+            return m_acc(idxNew, cBase);
         }
 
         /**
@@ -139,19 +137,19 @@ namespace types {
         RefType
         getBase()
         {
-            return base_;
+            return m_base;
         }
 
         const Extents&
         getExtents() const
         {
-            return extents;
+            return m_extents;
         }
 
         size_t
         getMemSize() const
         {
-            return traits::getMemSize(base_);
+            return traits::getMemSize(m_base);
         }
     };
 

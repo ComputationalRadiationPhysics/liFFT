@@ -23,10 +23,10 @@ namespace types {
 
         Complex(){}
         template< typename U, typename = std::enable_if_t< std::is_integral<U>::value || std::is_floating_point<U>::value > >
-        Complex(U real): real(real), imag(0){}
+        Complex(U realIn): real(realIn), imag(0){}
         Complex(const Complex&) = default;
         template< typename U, typename V >
-        Complex(U&& real, V&& imag): real(std::forward<U>(real)), imag(std::forward<V>(imag)){}
+        Complex(U&& realIn, V&& imagIn): real(std::forward<U>(realIn)), imag(std::forward<V>(imagIn)){}
         template< typename U, bool T_isConst >
         Complex(const ComplexRef<U, T_isConst>& ref): real(ref.real), imag(ref.imag){}
 
@@ -34,8 +34,8 @@ namespace types {
         std::enable_if_t< traits::IsBinaryCompatible< U, Complex>::value, Complex >
         operator=(const U& other)
         {
-            auto other_ = reinterpret_cast<const Complex&>(other);
-            return *this = other_;
+            auto m_other = reinterpret_cast<const Complex&>(other);
+            return *this = m_other;
         }
 
         Complex& operator=(const Complex&) = default;

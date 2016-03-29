@@ -177,7 +177,7 @@ namespace tiffWriter {
                         (numElSrc == 3 && numElDest == 4),
                         "Can only copy or convert from (A)RGB to (A)RGB");
 
-        Func func_;
+        Func m_func;
         using Dest = typename Func::Src;
         using Array = std::array<Dest, numElDest>;
 
@@ -196,7 +196,7 @@ namespace tiffWriter {
                 // Set alpha value to max
                 tmp[numCopy] = GetMaxVal<Dest>::value;
             }
-            return func_(tmp);
+            return m_func(tmp);
         }
     };
 
@@ -212,13 +212,13 @@ namespace tiffWriter {
         using Dest = std::result_of_t<T_Func(T_Src)>;
         using Channels = std::array<Src, numChannels>;
         using Result = std::array<Dest, numChannels>;
-        T_Func func_;
+        T_Func m_func;
 
         Result
         operator()(const Channels& channels)
         {
             Result res;
-            std::transform(channels.begin(), channels.end(), res.begin(), func_);
+            std::transform(channels.begin(), channels.end(), res.begin(), m_func);
             return res;
         }
     };
@@ -249,13 +249,13 @@ namespace tiffWriter {
         using Src = T_Src;
         using Dest = T_Dest;
         using Result = std::array<Dest, T_numChannelsDest>;
-        ConvertChannel<Src, Dest, T_minIsBlack> conv_;
+        ConvertChannel<Src, Dest, T_minIsBlack> m_conv;
 
         Result
         operator()(Src src)
         {
             Result res;
-            res.fill(conv_(src));
+            res.fill(m_conv(src));
             return res;
         }
     };

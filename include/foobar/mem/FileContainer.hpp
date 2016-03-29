@@ -20,14 +20,14 @@ namespace foobar {
 
         struct FileContainerAccessor
         {
-            accessors::DataContainerAccessor<> acc_;
+            accessors::DataContainerAccessor<> m_acc;
 
             template< class T_Index, class T_Data >
             auto
             operator()(T_Index&& idx, T_Data& data) const
-            -> decltype(acc_(idx, data.data_))
+            -> decltype(m_acc(idx, data.m_data))
             {
-                return acc_(idx, data.data_);
+                return m_acc(idx, data.m_data);
             }
         };
 
@@ -69,27 +69,27 @@ namespace foobar {
             using Data = DataContainer< numDims, ArrayType >;
             using ExtentsVec = decltype(std::declval<Data>().getExtents());
 
-            FileHandler fileHandler_;
-            Data data_;
-            std::string filePath_;
-            bool gotData_;
+            FileHandler m_fileHandler;
+            Data m_data;
+            std::string m_filePath;
+            bool m_gotData;
 
             void
             allocData()
             {
-                assert(fileHandler_.isOpen());
-                if(data_.getData())
+                assert(m_fileHandler.isOpen());
+                if(m_data.getData())
                     return;
-                policies::GetExtents< FileHandler > fileExtents(fileHandler_);
+                policies::GetExtents< FileHandler > fileExtents(m_fileHandler);
                 typename Data::IdxType extents;
                 for(unsigned i=0; i<numDims; ++i)
                     extents[i] = fileExtents[i];
-                data_.allocData(extents);
+                m_data.allocData(extents);
             }
 
             void freeData()
             {
-                data_.freeData();
+                m_data.freeData();
             }
 
         public:
@@ -106,14 +106,14 @@ namespace foobar {
 
             void setFilePath(const std::string& filePath)
             {
-                if(!filePath_.empty())
-                    fileHandler_.close();
-                filePath_ = filePath;
+                if(!m_filePath.empty())
+                    m_fileHandler.close();
+                m_filePath = filePath;
                 freeData();
-                gotData_ = false;
+                m_gotData = false;
                 if(!filePath.empty()){
-                    fileHandler_.open(filePath);
-                    if(fileHandler_.isOpen()){
+                    m_fileHandler.open(filePath);
+                    if(m_fileHandler.isOpen()){
                         allocData();
                     }
                 }
@@ -122,38 +122,38 @@ namespace foobar {
             const ExtentsVec&
             getExtents() const
             {
-                assert(fileHandler_.isOpen());
-                return data_.getExtents();
+                assert(m_fileHandler.isOpen());
+                return m_data.getExtents();
             }
 
             Ptr
             getAllocatedMemory()
             {
                 allocData();
-                return data_.getData();
+                return m_data.getData();
             }
 
             size_t
             getMemSize() const
             {
-                return data_.getMemSize();
+                return m_data.getMemSize();
             }
 
             Data&
             getData()
             {
                 loadData();
-                return data_;
+                return m_data;
             }
 
             void
             loadData(bool forceReload = false)
             {
-                if(gotData_ && !forceReload)
+                if(m_gotData && !forceReload)
                     return;
-                gotData_ = true;
+                m_gotData = true;
                 allocData();
-                CopyPolicy()(fileHandler_, data_);
+                CopyPolicy()(m_fileHandler, m_data);
             }
         };
 

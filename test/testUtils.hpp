@@ -70,9 +70,9 @@ namespace foobarTest {
     {
         bool ok = true;
         CmpError e;
-        CmpError allowed_;
+        CmpError m_allowed;
 
-        CompareFunc(CmpError allowed): allowed_(allowed){}
+        CompareFunc(CmpError allowed): m_allowed(allowed){}
 
         template< unsigned T_curDim, unsigned T_endDim, class... T_Args>
         void handleLoopPre(T_Args&&...){}
@@ -87,9 +87,9 @@ namespace foobarTest {
             using Complex = foobar::types::Complex<Precision>;
             static_assert(foobar::traits::IsBinaryCompatible<T, Complex>::value, "Cannot convert expected");
             static_assert(foobar::traits::IsBinaryCompatible<U, Complex>::value, "Cannot convert is");
-            const Complex& expected_ = reinterpret_cast<const Complex&>(expected);
-            const Complex& is_ = reinterpret_cast<const Complex&>(is);
-            return compare(expected_.real, is_.real) && compare(expected_.imag, is_.imag);
+            const Complex& m_expected = reinterpret_cast<const Complex&>(expected);
+            const Complex& m_is = reinterpret_cast<const Complex&>(is);
+            return compare(m_expected.real, m_is.real) && compare(m_expected.imag, m_is.imag);
         }
 
         template<class T, class U>
@@ -99,10 +99,10 @@ namespace foobarTest {
             if(expected == is)
                 return true;
             auto absDiff = std::abs(expected-is);
-            if(absDiff <= allowed_.maxAbsDiff)
+            if(absDiff <= m_allowed.maxAbsDiff)
                 return true;
             auto relDiff = std::abs(absDiff / expected);
-            if(relDiff <= allowed_.maxRelDiff)
+            if(relDiff <= m_allowed.maxRelDiff)
                 return true;
             if(absDiff > e.maxAbsDiff)
                 e.maxAbsDiff = absDiff;

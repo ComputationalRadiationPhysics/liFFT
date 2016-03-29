@@ -7,16 +7,16 @@
 template<typename T>
 class VolumeAdapter{
 protected:
-    T& obj_;
+    T& m_obj;
 public:
     using value_type = typename T::value_type;
     static constexpr unsigned numDims = 3;
 
-    VolumeAdapter(T& obj):obj_(obj){}
+    VolumeAdapter(T& obj):m_obj(obj){}
 
-    size_t xDim() const{ return obj_.xDim(); }
-    size_t yDim() const{ return obj_.yDim(); }
-    size_t zDim() const{ return obj_.zDim(); }
+    size_t xDim() const{ return m_obj.xDim(); }
+    size_t yDim() const{ return m_obj.yDim(); }
+    size_t zDim() const{ return m_obj.zDim(); }
 };
 
 template<typename T>
@@ -50,13 +50,13 @@ public:
         x = (x>=this->xDim()/2) ? x-this->xDim()/2 : x+this->xDim()/2;
         y = (y>=this->yDim()/2) ? y-this->yDim()/2 : y+this->yDim()/2;
         z = (z>=this->zDim()/2) ? z-this->zDim()/2 : z+this->zDim()/2;
-        return this->obj_(x, y, z);
+        return this->m_obj(x, y, z);
     }
     const value_type& operator()(size_t x, size_t y=0, size_t z=0) const{
         x = (x>=this->xDim()/2) ? x-this->xDim()/2 : x+this->xDim()/2;
         y = (y>=this->yDim()/2) ? y-this->yDim()/2 : y+this->yDim()/2;
         z = (z>=this->zDim()/2) ? z-this->zDim()/2 : z+this->zDim()/2;
-        return this->obj_(x, y, z);
+        return this->m_obj(x, y, z);
     }
 };
 

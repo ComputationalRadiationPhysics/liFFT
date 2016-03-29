@@ -40,10 +40,9 @@ namespace types {
         using IdentityAccessor = accessors::ArrayAccessor<true>;
 
     private:
-        InstanceType base_;
-        BaseAccessor acc_;
-        Extents offsets_, extents;
-        friend struct policies::GetExtents<View>;
+        InstanceType m_base;
+        BaseAccessor m_acc;
+        Extents m_offsets, m_extents;
 
     public:
 
@@ -57,9 +56,9 @@ namespace types {
          * @param acc Accessor to access the base class
          */
         View(ParamType base, const Extents& offsets, const Extents& extents, const BaseAccessor& acc = BaseAccessor()):
-            base_(static_cast<ParamType>(base)), acc_(acc), offsets_(offsets), extents(extents)
+            m_base(static_cast<ParamType>(base)), m_acc(acc), m_offsets(offsets), m_extents(extents)
         {
-            policies::GetExtents<Base> bExtents(base_);
+            policies::GetExtents<Base> bExtents(m_base);
             for(unsigned i=0; i<numDims; ++i)
             {
                 if(extents[i] > bExtents[i])
@@ -74,8 +73,8 @@ namespace types {
         operator()(T_Idx idx)
         {
             for(unsigned i=0; i<numDims; ++i)
-                idx[i]+=offsets_[i];
-            return acc_(idx, base_);
+                idx[i]+=m_offsets[i];
+            return m_acc(idx, m_base);
         }
 
         template<typename T_Idx>
@@ -83,9 +82,9 @@ namespace types {
         operator()(T_Idx idx) const
         {
             for(unsigned i=0; i<numDims; ++i)
-                idx[i]+=offsets_[i];
-            const Base& cBase = const_cast<const Base&>(base_);
-            return acc_(idx, cBase);
+                idx[i]+=m_offsets[i];
+            const Base& cBase = const_cast<const Base&>(m_base);
+            return m_acc(idx, cBase);
         }
 
         /**
@@ -95,19 +94,19 @@ namespace types {
         RefType
         getBase()
         {
-            return base_;
+            return m_base;
         }
 
         size_t
         getMemSize() const
         {
-            return traits::getMemSize(base_);
+            return traits::getMemSize(m_base);
         }
 
         const Extents&
         getExtents() const
         {
-            return extents;
+            return m_extents;
         }
     };
 

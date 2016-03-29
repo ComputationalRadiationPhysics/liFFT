@@ -37,15 +37,15 @@ namespace policies {
     {
         using type = tiffWriter::Image< T_imgFormat, T_Allocator >;
 
-        GetExtentsImpl(const type& data): extents_(data.getHeight(), data.getWidth()){}
+        GetExtentsImpl(const type& data): m_extents(data.getHeight(), data.getWidth()){}
 
         unsigned
         operator[](unsigned dim) const
         {
-            return extents_[dim];
+            return m_extents[dim];
         }
     private:
-        const types::Vec<2> extents_;
+        const types::Vec<2> m_extents;
     };
 
 }  // namespace policies
