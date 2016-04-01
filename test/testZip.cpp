@@ -31,7 +31,7 @@ using namespace LiFFT::generators;
 
 namespace LiFFTTest {
 
-    void testZipBasic()
+    bool testZipBasic()
     {
         TestExtents extents = TestExtents::all(testSize);
         BaseR2CInput input1(extents);
@@ -52,10 +52,10 @@ namespace LiFFTTest {
         fft(input, output);
         LiFFT::policies::copy(inputProd, baseR2CInput);
         execBaseR2C();
-        checkResult(baseR2COutput, output, "R2C with zip accessor");
+        return checkResult(baseR2COutput, output, "R2C with zip accessor");
     }
 
-    void testZipFile(const std::string& filePath1, const std::string& filePath2)
+    bool testZipFile(const std::string& filePath1, const std::string& filePath2)
     {
         tiffWriter::FloatImage<> img1(filePath1, false);
         tiffWriter::FloatImage<> img2(filePath2, false);
@@ -68,13 +68,14 @@ namespace LiFFTTest {
         LiFFT::policies::copy(img2, baseR2CInput, acc);
         fft(input, output);
         execBaseR2C();
-        checkResult(baseR2COutput, output, "TIFF-ZIP test");
         visualizeOutput(BaseInstance::OutR2C, "Tiff-Zip.pdf");
+        return checkResult(baseR2COutput, output, "TIFF-ZIP test");
     }
 
-    void testZip(){
-        testZipBasic();
-        testZipFile("input1.tif", "input2.tif");
+    int testZip(){
+        TEST( testZipBasic() );
+        TEST( testZipFile("input1.tif", "input2.tif") );
+        return 0;
     }
 
 }  // namespace LiFFTTest

@@ -18,6 +18,6 @@
 
 namespace LiFFTTest {
 
-    void testZip();
+    int testZip();
 
 }  // namespace LiFFTTest

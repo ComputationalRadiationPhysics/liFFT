@@ -18,6 +18,6 @@
 
 namespace LiFFTTest {
 
-    void testFile();
+    int testFile();
 
 }  // namespace LiFFTTest

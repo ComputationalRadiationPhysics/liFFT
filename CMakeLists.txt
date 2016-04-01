@@ -35,13 +35,6 @@ set(LIBS ${LIBS} ${TIFF_LIBRARIES})
 include_directories(${TIFF_INCLUDE_DIR})
 
 ###############################################################################
-# FFTW
-###############################################################################
-find_package(FFTW REQUIRED)
-set(LIBS ${LIBS} ${FFTW_LIB} ${FFTW_F_LIB})
-include_directories(${FFTW_INCLUDES})
-
-###############################################################################
 # CUDA
 ###############################################################################
 find_package(CUDA)
@@ -49,6 +42,17 @@ set(ENABLE_CUDA ${CUDA_FOUND} CACHE BOOL "Use CUDA")
 set(CUDA_PROPAGATE_HOST_FLAGS OFF)
 list(APPEND CUDA_NVCC_FLAGS_RELEASE "-O3 -DNDEBUG")
 list(APPEND CUDA_NVCC_FLAGS_DEBUG "-O0 -g")
+
+###############################################################################
+# FFTW
+###############################################################################
+if(CUDA_FOUND AND CUDA_ENABLED)
+    find_package(FFTW)
+else()
+    find_package(FFTW REQUIRED)
+endif()
+set(LIBS ${LIBS} ${FFTW_LIB} ${FFTW_F_LIB})
+include_directories(${FFTW_INCLUDES})
 
 ###############################################################################
 # Boost
@@ -126,6 +130,13 @@ add_custom_command(
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
     "${PROJECT_SOURCE_DIR}/input1.tif"
+    $<TARGET_FILE_DIR:LiFFT_Test>
+)
+add_custom_command(
+    TARGET LiFFT_Test
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    "${PROJECT_SOURCE_DIR}/input2.tif"
     $<TARGET_FILE_DIR:LiFFT_Test>
 )
 

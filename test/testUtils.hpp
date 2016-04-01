@@ -23,6 +23,8 @@
 #include <cmath>
 #include <iostream>
 
+#define TEST(function) if(!(function)) return 1
+
 namespace LiFFTTest {
 
     /**

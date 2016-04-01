@@ -17,7 +17,6 @@
 #include "testUtils.hpp"
 #include "libLiFFT/types/Vec.hpp"
 #include "libLiFFT/FFT.hpp"
-#include "libLiFFT/libraries/fftw/FFTW.hpp"
 #include "libLiFFT/generateData.hpp"
 #include "libLiFFT/accessors/TransformAccessor.hpp"
 #include "libLiFFT/accessors/TransposeAccessor.hpp"

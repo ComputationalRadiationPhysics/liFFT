@@ -23,16 +23,24 @@
 
 int main(int /*argc*/, char** /*argv*/) {
     using namespace LiFFTTest;
+    int errorCt = 0;
+    
     init();
     //visualizeBase();
 
-    testInplace();
-    testFile();
-    testCustomTypes();
-    testPlainPtr();
-    testZip();
+    errorCt += testInplace();
+    errorCt += testFile();
+    errorCt += testCustomTypes();
+    errorCt += testPlainPtr();
+    errorCt += testZip();
 
     finalize();
-    return 0;
+    
+    if(errorCt)
+        std::cerr << errorCt << " tests failed" << std::endl;
+    else
+        std::cout << "All tests succeeded" << std::endl;
+    
+    return errorCt;
 }
 

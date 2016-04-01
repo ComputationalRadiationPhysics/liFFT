@@ -18,6 +18,6 @@
 
 namespace LiFFTTest {
 
-    void testPlainPtr();
+    int testPlainPtr();
 
 }  // namespace LiFFTTest
