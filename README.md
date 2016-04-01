@@ -16,7 +16,7 @@ For convenience it also contains a generic interface on top of libTIFF to read a
 Almost all possible formats are converted to floating point or 32Bit ARGB images during loading. This allows importing and exporting files from analytic tools and image editors like jImage.
 
 # Namespace organisation
-All FFT related classes and methods are under the foobar namespace, the tiffWriter interface classes are under the tiffWriter namespace. The folder structure matches the namespace organisation with the include folder beeing the top directory.
+All FFT related classes and methods are under the haLT namespace, the tiffWriter interface classes are under the tiffWriter namespace. The folder structure matches the namespace organisation with the include folder beeing the top directory.
 
 # Examples
 There are a couple of example applications that can be used as a reference for implementing own applications. All of them are in a separate folder:
@@ -36,7 +36,7 @@ There are a couple of example applications that can be used as a reference for i
 
 - Include (at least) 'FFT.hpp'
 - Choose one of the predefined FFT types from FFT\_Definitions and typedef it to your liking (e.g. `using MyFFT = FFT_2D_C2C`)
-- Choose either foobar::mem::RealContainer or foobar::mem::ComplexContainer for the input data, and set the dimensionality and precision via the template parameters    **OR**
+- Choose either haLT::mem::RealContainer or haLT::mem::ComplexContainer for the input data, and set the dimensionality and precision via the template parameters    **OR**
 - Use the static member function *MyFFT::createNewInput* to have an appropriate container automaticly choosen for you (prefered method)
 - Use the *Container::IdxType member as the index type to set the elements via ()-operator (e.g. `Container::IdxType idx(5, 3, 2); container(idx) = 1337;`)
 - (If you used a custom container you have to wrap it with `auto input = MyFFT::wrapInput(container)`)
@@ -51,7 +51,7 @@ A good example is the code from fftTiffImg:
     void
     do2D_FFT(const string& inFilePath, const string& outFilePath)
     {
-        using namespace foobar;
+        using namespace haLT;
         using FFT = FFT_2D_R2C_F<>;
         auto input = FFT::wrapInput(tiffWriter::FloatImage<>(inFilePath, false));
         auto output = FFT::createNewOutput(input);
