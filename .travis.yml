@@ -1,0 +1,114 @@
+#####################################################################
+# This file is part of libLiFFT.
+#
+# libLiFFT is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# libLiFFT is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with libLiFFT.  If not, see <www.gnu.org/licenses/>.
+#####################################################################
+
+language: cpp
+
+os:
+    - linux
+
+compiler:
+    - gcc
+    - clang
+    
+cache:
+    directories:
+        - $HOME/dependencies
+    
+env:
+    global:
+        - LIFFT_BOOST=1.55.0
+    matrix:
+        - LIFFT_BUILD_TYPE=Debug LIFFT_CUDA=OFF LIFFT_CLANG_VER=3.6
+        - LIFFT_BUILD_TYPE=Release LIFFT_CUDA=OFF LIFFT_CLANG_VER=3.6
+        - LIFFT_BUILD_TYPE=Release LIFFT_CUDA=OFF LIFFT_CLANG_VER=3.5
+        - LIFFT_BUILD_TYPE=Debug LIFFT_CUDA=ON LIFFT_CUDA_VER=7.0-28
+        - LIFFT_BUILD_TYPE=Release LIFFT_CUDA=ON LIFFT_CUDA_VER=7.0-28 
+
+matrix:
+    exclude:
+        - compiler: gcc
+          env: LIFFT_BUILD_TYPE=Release LIFFT_CUDA=OFF LIFFT_CLANG_VER=3.5
+        - compiler: clang
+          env: LIFFT_BUILD_TYPE=Debug LIFFT_CUDA=ON LIFFT_CUDA_VER=7.0-28
+        - compiler: clang
+          env: LIFFT_BUILD_TYPE=Release LIFFT_CUDA=ON LIFFT_CUDA_VER=7.0-28
+    include:
+        - os: linux
+          compiler: gcc
+          env: LIFFT_BUILD_TYPE=Release LIFFT_CUDA=OFF LIFFT_BOOST=1.60.0
+          sudo: required
+  
+before_install:
+    # g++ / clang dependencies
+    - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+    - |
+        if [ "${CXX}" == "clang++" ]; then
+            sudo add-apt-repository -y "deb http://llvm.org/apt/precise/ llvm-toolchain-precise-${LIFFT_CLANG_VER} main"
+            wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
+        fi
+    - |
+        if [ "${LIFFT_CUDA}" == "ON" ]; then
+            wget http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1204/x86_64/cuda-repo-ubuntu1204_${LIFFT_CUDA_VER}_amd64.deb
+            sudo dpkg -i cuda-repo-ubuntu1204_${LIFFT_CUDA_VER}_amd64.deb
+        fi
+    - sudo apt-get update -qq
+
+install:
+    - if [ "${CXX}" == "g++" ]; then sudo apt-get install g++-4.8; export CXX=g++-4.8; fi
+    - if [ "${CXX}" == "clang++" ]; then sudo apt-get install -y clang-${LIFFT_CLANG_VER}; export CXX=clang++-${LIFFT_CLANG_VER}; fi
+    # CUDA
+    - |
+        if [ "${LIFFT_CUDA}" == "ON" ]; then
+            CUDA_APT_VER=${LIFFT_CUDA_VER%-*}
+            CUDA_APT_VER=${CUDA_APT_VER/./-}
+            CUDA_PACKAGES="cuda-drivers cuda-core-${CUDA_APT_VER} cuda-cudart-dev-${CUDA_APT_VER} cuda-cufft-dev-${CUDA_APT_VER}"
+            echo "Installing ${CUDA_PACKAGES}"
+            sudo apt-get install -y ${CUDA_PACKAGES}
+            export CUDA_HOME=/usr/local/cuda-${LIFFT_CUDA_VER%%-*}
+            export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH}
+            export PATH=${CUDA_HOME}/bin:${PATH}
+        fi
+    # Boost
+    - export LIFFT_BOOST_FOLDER="boost_${LIFFT_BOOST//./_}"
+    - export BOOST_ROOT="$HOME/dependencies/${LIFFT_BOOST_FOLDER}"
+    - |
+        if [ ! -d "$BOOST_ROOT" ]; then
+            wget http://sourceforge.net/projects/boost/files/boost/${LIFFT_BOOST}/${LIFFT_BOOST_FOLDER}.tar.bz2 --output-document=boost.tar.bz2
+            mkdir -p $BOOST_ROOT
+            tar jxf boost.tar.bz2 --strip-components=1 -C $BOOST_ROOT
+            (cd $BOOST_ROOT; ./bootstrap.sh --with-libraries=program_options,filesystem,system)
+            (cd $BOOST_ROOT; ./b2 --prefix=$BOOST_ROOT -d0 install)
+        else echo "Using cached boost version at $BOOST_ROOT"
+        fi
+    - |
+        if [ "${LIFFT_CUDA}" == "OFF" ]; then
+            sudo apt-get install libfftw3-dev
+            sudo apt-get install python-matplotlib
+        fi
+    # Versions
+    - $CXX --version
+    - if [ "${LIFFT_CUDA}" == "ON" ]; then nvcc --version; fi
+    - cmake --version
+
+script:
+    - mkdir build && cd build
+    - set -e
+    - cmake ../ -DCMAKE_BUILD_TYPE=${LIFFT_BUILD_TYPE} -DENABLE_CUDA=${LIFFT_CUDA} -DCMAKE_VERBOSE_MAKEFILE=ON
+    - make
+    - if [ "${LIFFT_CUDA}" == "OFF" ]; then ./LiFFT_Test; fi
+    - set +e
+
