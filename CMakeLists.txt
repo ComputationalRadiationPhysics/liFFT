@@ -100,6 +100,7 @@ else()
 endif()
 
 add_executable(tiff2PDF tiff2Pdf/tiff2pdf.cpp)
+add_executable(minIncludes test/minIncludes.cpp)
 
 target_link_libraries(LiFFT_Test ${LIBS})
 target_link_libraries(tiff2PDF ${TIFF_LIBRARIES})
