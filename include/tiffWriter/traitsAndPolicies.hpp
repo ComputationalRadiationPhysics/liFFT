@@ -1,32 +1,32 @@
-/* This file is part of HaLT.
+/* This file is part of libLiFFT.
  *
- * HaLT is free software: you can redistribute it and/or modify
+ * libLiFFT is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
  *
- * HaLT is distributed in the hope that it will be useful,
+ * libLiFFT is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with HaLT.  If not, see <www.gnu.org/licenses/>.
+ * License along with libLiFFT.  If not, see <www.gnu.org/licenses/>.
  */
  
 #pragma once
 
 #include "tiffWriter/image.hpp"
-#include "haLT/traits/NumDims.hpp"
-#include "haLT/traits/IdentityAccessor.hpp"
-#include "haLT/traits/IsComplex.hpp"
-#include "haLT/traits/IsStrided.hpp"
-#include "haLT/accessors/VolumeAccessor.hpp"
-#include "haLT/policies/GetExtents.hpp"
-#include "haLT/types/Vec.hpp"
-#include "haLT/util.hpp"
+#include "libLiFFT/traits/NumDims.hpp"
+#include "libLiFFT/traits/IdentityAccessor.hpp"
+#include "libLiFFT/traits/IsComplex.hpp"
+#include "libLiFFT/traits/IsStrided.hpp"
+#include "libLiFFT/accessors/VolumeAccessor.hpp"
+#include "libLiFFT/policies/GetExtents.hpp"
+#include "libLiFFT/types/Vec.hpp"
+#include "libLiFFT/util.hpp"
 
-namespace haLT {
+namespace LiFFT {
 namespace traits {
 
     template< tiffWriter::ImageFormat T_imgFormat, class T_Allocator >
@@ -65,4 +65,4 @@ namespace policies {
     };
 
 }  // namespace policies
-}  // namespace haLT
+}  // namespace LiFFT

@@ -1,50 +1,50 @@
-/* This file is part of HaLT.
+/* This file is part of libLiFFT.
  *
- * HaLT is free software: you can redistribute it and/or modify
+ * libLiFFT is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
  *
- * HaLT is distributed in the hope that it will be useful,
+ * libLiFFT is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with HaLT.  If not, see <www.gnu.org/licenses/>.
+ * License along with libLiFFT.  If not, see <www.gnu.org/licenses/>.
  */
  
 #include "testUtils.hpp"
-#include "haLT/types/Vec.hpp"
-#include "haLT/FFT.hpp"
-#include "haLT/libraries/fftw/FFTW.hpp"
-#include "haLT/generateData.hpp"
-#include "haLT/accessors/TransformAccessor.hpp"
-#include "haLT/accessors/TransposeAccessor.hpp"
-#include "haLT/types/SymmetricWrapper.hpp"
-#include "haLT/accessors/StreamAccessor.hpp"
-#include "haLT/types/AddDimsWrapper.hpp"
-#include "haLT/policies/CalcIntensityFunctor.hpp"
-#include "haLT/types/View.hpp"
-#include "haLT/types/SliceView.hpp"
+#include "libLiFFT/types/Vec.hpp"
+#include "libLiFFT/FFT.hpp"
+#include "libLiFFT/libraries/fftw/FFTW.hpp"
+#include "libLiFFT/generateData.hpp"
+#include "libLiFFT/accessors/TransformAccessor.hpp"
+#include "libLiFFT/accessors/TransposeAccessor.hpp"
+#include "libLiFFT/types/SymmetricWrapper.hpp"
+#include "libLiFFT/accessors/StreamAccessor.hpp"
+#include "libLiFFT/types/AddDimsWrapper.hpp"
+#include "libLiFFT/policies/CalcIntensityFunctor.hpp"
+#include "libLiFFT/types/View.hpp"
+#include "libLiFFT/types/SliceView.hpp"
 #include <iostream>
 #include <fstream>
 
-using haLT::generateData;
-using namespace haLT::generators;
+using LiFFT::generateData;
+using namespace LiFFT::generators;
 
-namespace haLTTest {
+namespace LiFFTTest {
 
     BaseR2CInput  baseR2CInput;
     BaseR2COutput baseR2COutput;
     BaseC2CInput  baseC2CInput;
     BaseC2COutput baseC2COutput;
 
-    using FFT_R2C = haLT::FFT_Definition< haLT::FFT_Kind::Real2Complex, testNumDims, TestPrecision, std::true_type>;
-    using FFT_C2C = haLT::FFT_Definition< haLT::FFT_Kind::Complex2Complex, testNumDims, TestPrecision, std::true_type>;
+    using FFT_R2C = LiFFT::FFT_Definition< LiFFT::FFT_Kind::Real2Complex, testNumDims, TestPrecision, std::true_type>;
+    using FFT_C2C = LiFFT::FFT_Definition< LiFFT::FFT_Kind::Complex2Complex, testNumDims, TestPrecision, std::true_type>;
 
-    haLT::FFT_Interface_Outplace<decltype(FFT_R2C::wrapInput(baseR2CInput)), decltype(FFT_R2C::wrapOutput(baseR2COutput))>* fftR2C;
-    haLT::FFT_Interface_Outplace<decltype(FFT_C2C::wrapInput(baseC2CInput)), decltype(FFT_C2C::wrapOutput(baseC2COutput))>* fftC2C;
+    LiFFT::FFT_Interface_Outplace<decltype(FFT_R2C::wrapInput(baseR2CInput)), decltype(FFT_R2C::wrapOutput(baseR2COutput))>* fftR2C;
+    LiFFT::FFT_Interface_Outplace<decltype(FFT_C2C::wrapInput(baseC2CInput)), decltype(FFT_C2C::wrapOutput(baseC2COutput))>* fftC2C;
 
     /**
      * Writes nD data to a file as strings
@@ -53,11 +53,11 @@ namespace haLTTest {
      * @param data Data to write
      * @param acc  Accessor to use
      */
-    template< typename T, class T_Accessor = haLT::traits::IdentityAccessor_t<T> >
+    template< typename T, class T_Accessor = LiFFT::traits::IdentityAccessor_t<T> >
     void write2File(const std::string& name, T& data, T_Accessor acc = T_Accessor()){
-        auto copy = haLT::policies::makeCopy(acc, haLT::accessors::StringStreamAccessor<>());
+        auto copy = LiFFT::policies::makeCopy(acc, LiFFT::accessors::StringStreamAccessor<>());
 
-        haLT::types::AddDimsWrapper< std::ofstream, 2 > file(name.c_str());
+        LiFFT::types::AddDimsWrapper< std::ofstream, 2 > file(name.c_str());
         copy(data, file);
         file.close();
     }
@@ -69,20 +69,20 @@ namespace haLTTest {
      * @param data Data to write
      * @param acc  Accessor to use
      */
-    template< typename T, class T_Accessor = haLT::traits::IdentityAccessor_t<T> >
+    template< typename T, class T_Accessor = LiFFT::traits::IdentityAccessor_t<T> >
     void writeIntensity2File(const std::string& name, T& data, T_Accessor acc = T_Accessor()){
-        write2File(name, data, haLT::accessors::makeTransformAccessor(acc, haLT::policies::CalcIntensityFunc()));
+        write2File(name, data, LiFFT::accessors::makeTransformAccessor(acc, LiFFT::policies::CalcIntensityFunc()));
     }
 
     void
     testView()
     {
-        using Extents = haLT::types::Vec<2>;
+        using Extents = LiFFT::types::Vec<2>;
         const Extents size(100u, 120u);
         const Extents offset(10u, 5u);
         const Extents viewSize(40u, 65u);
-        auto data = haLT::mem::RealContainer<2, float>(size);
-        auto view = haLT::types::makeView(data, haLT::types::makeRange(offset, viewSize));
+        auto data = LiFFT::mem::RealContainer<2, float>(size);
+        auto view = LiFFT::types::makeView(data, LiFFT::types::makeRange(offset, viewSize));
         Extents idx, viewIdx;
         bool error = false;
         for(idx[0] = offset[0], viewIdx[0] = 0; viewIdx[0] < viewSize[0]; ++idx[0], ++viewIdx[0])
@@ -108,13 +108,13 @@ namespace haLTTest {
     void
     testSliceView()
     {
-        using Extents3 = haLT::types::Vec<3>;
-        using Extents2 = haLT::types::Vec<2>;
+        using Extents3 = LiFFT::types::Vec<3>;
+        using Extents2 = LiFFT::types::Vec<2>;
         const Extents3 size(100u, 120u, 214u);
         const Extents3 offset(10u, 5u, 23u);
         const Extents2 viewSize(40u, 65u);
-        auto data = haLT::mem::RealContainer<3, float>(size);
-        auto view = haLT::types::makeSliceView<fixedDim>(data, haLT::types::makeRange(offset, viewSize));
+        auto data = LiFFT::mem::RealContainer<3, float>(size);
+        auto view = LiFFT::types::makeSliceView<fixedDim>(data, LiFFT::types::makeRange(offset, viewSize));
         Extents3 idx;
         Extents2 viewIdx;
         bool error = false;
@@ -139,14 +139,14 @@ namespace haLTTest {
     testDataWrappers()
     {
         const unsigned size = 100u;
-        using Extents = haLT::types::Vec<3>;
-        using FFT = haLT::FFT_3D_R2C_F<>;
+        using Extents = LiFFT::types::Vec<3>;
+        using FFT = LiFFT::FFT_3D_R2C_F<>;
         auto input = FFT::wrapInput(
-                        haLT::mem::RealContainer<3, float>(
+                        LiFFT::mem::RealContainer<3, float>(
                                 Extents(size, size, size)
                         )
                      );
-        auto data = haLT::mem::RealContainer<3, float>(
+        auto data = LiFFT::mem::RealContainer<3, float>(
                 Extents(size, size, size)
         );
         auto output = FFT::wrapInput(data);
@@ -155,9 +155,9 @@ namespace haLTTest {
         const float val = 1337;
         const float val2 = 1338;
         bool error = false;
-        auto acc = haLT::traits::getIdentityAccessor(input);
-        auto acc2 = haLT::traits::getIdentityAccessor(output);
-        auto acc3 = haLT::traits::getIdentityAccessor(data);
+        auto acc = LiFFT::traits::getIdentityAccessor(input);
+        auto acc2 = LiFFT::traits::getIdentityAccessor(output);
+        auto acc3 = LiFFT::traits::getIdentityAccessor(data);
         for(unsigned i=0; i<4; i++){
             input(idx) = val;
             output(idx) = val;
@@ -193,14 +193,14 @@ namespace haLTTest {
         {
             auto input = FFT_R2C::wrapInput(baseR2CInput);
             auto output = FFT_R2C::wrapOutput(baseR2COutput);
-            using FFT = decltype(haLT::makeFFT<TestLibrary, false>(input, output));
+            using FFT = decltype(LiFFT::makeFFT<TestLibrary, false>(input, output));
             fftR2C = static_cast<decltype(fftR2C)>(malloc(sizeof(FFT)));
             new(fftR2C)auto(FFT(input, output));
         }
         {
             auto input = FFT_C2C::wrapInput(baseC2CInput);
             auto output = FFT_C2C::wrapOutput(baseC2COutput);
-            using FFT = decltype(haLT::makeFFT<TestLibrary, false>(input, output));
+            using FFT = decltype(LiFFT::makeFFT<TestLibrary, false>(input, output));
             fftC2C = static_cast<decltype(fftC2C)>(malloc(sizeof(FFT)));
             new(fftC2C)auto(FFT(input, output));
         }
@@ -227,7 +227,7 @@ namespace haLTTest {
         generateData(baseC2CInput, Rect<TestPrecision>(20,testSize/2));
         execBaseR2C();
         execBaseC2C();
-        auto fullR2COutput = haLT::types::makeSymmetricWrapper(baseR2COutput, baseC2CInput.getExtents()[baseR2CInput.numDims-1]);
+        auto fullR2COutput = LiFFT::types::makeSymmetricWrapper(baseR2COutput, baseC2CInput.getExtents()[baseR2CInput.numDims-1]);
         checkResult(baseC2COutput, fullR2COutput, "Self check");
 
         visualizeOutput(BaseInstance::InC2C, "inputC2C.pdf");
@@ -247,12 +247,12 @@ namespace haLTTest {
             writeIntensity2File(txtFile, baseC2CInput);
             break;
         case BaseInstance::OutC2C:
-            writeIntensity2File(txtFile, baseC2COutput, haLT::accessors::makeTransposeAccessorFor(baseC2COutput));
+            writeIntensity2File(txtFile, baseC2COutput, LiFFT::accessors::makeTransposeAccessorFor(baseC2COutput));
             break;
         case BaseInstance::OutR2C:
             {
-                auto fullR2COutput = haLT::types::makeSymmetricWrapper(baseR2COutput, baseC2CInput.getExtents()[baseR2CInput.numDims-1]);
-                writeIntensity2File(txtFile, fullR2COutput, haLT::accessors::makeTransposeAccessorFor(fullR2COutput));
+                auto fullR2COutput = LiFFT::types::makeSymmetricWrapper(baseR2COutput, baseC2CInput.getExtents()[baseR2CInput.numDims-1]);
+                writeIntensity2File(txtFile, fullR2COutput, LiFFT::accessors::makeTransposeAccessorFor(fullR2COutput));
             }
             break;
         default:
@@ -277,4 +277,4 @@ namespace haLTTest {
         (*fftC2C)(input, output);
     }
 
-}  // namespace haLTTest
+}  // namespace LiFFTTest

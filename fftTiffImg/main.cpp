@@ -1,17 +1,17 @@
-/* This file is part of HaLT.
+/* This file is part of libLiFFT.
  *
- * HaLT is free software: you can redistribute it and/or modify
+ * libLiFFT is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
  *
- * HaLT is distributed in the hope that it will be useful,
+ * libLiFFT is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with HaLT.  If not, see <www.gnu.org/licenses/>.
+ * License along with libLiFFT.  If not, see <www.gnu.org/licenses/>.
  */
  
 #include <iostream>
@@ -19,21 +19,21 @@
 #include <boost/program_options.hpp>
 #include "tiffWriter/image.hpp"
 #include "tiffWriter/traitsAndPolicies.hpp"
-#include "haLT/FFT.hpp"
+#include "libLiFFT/FFT.hpp"
 #if defined(WITH_CUDA)
-#   include "haLT/libraries/cuFFT/cuFFT.hpp"
-    using FFT_LIB = haLT::libraries::cuFFT::CuFFT<>;
+#   include "libLiFFT/libraries/cuFFT/cuFFT.hpp"
+    using FFT_LIB = LiFFT::libraries::cuFFT::CuFFT<>;
 #else
-#   include "haLT/libraries/fftw/FFTW.hpp"
-    using FFT_LIB = haLT::libraries::fftw::FFTW<>;
+#   include "libLiFFT/libraries/fftw/FFTW.hpp"
+    using FFT_LIB = LiFFT::libraries::fftw::FFTW<>;
 #endif
-#include "haLT/policies/Copy.hpp"
-#include "haLT/types/SymmetricWrapper.hpp"
-#include "haLT/accessors/TransformAccessor.hpp"
-#include "haLT/accessors/TransposeAccessor.hpp"
-#include "haLT/policies/CalcIntensityFunctor.hpp"
-#include "haLT/types/View.hpp"
-#include "haLT/types/SliceView.hpp"
+#include "libLiFFT/policies/Copy.hpp"
+#include "libLiFFT/types/SymmetricWrapper.hpp"
+#include "libLiFFT/accessors/TransformAccessor.hpp"
+#include "libLiFFT/accessors/TransposeAccessor.hpp"
+#include "libLiFFT/policies/CalcIntensityFunctor.hpp"
+#include "libLiFFT/types/View.hpp"
+#include "libLiFFT/types/SliceView.hpp"
 #include <chrono>
 
 namespace po = boost::program_options;
@@ -64,7 +64,7 @@ void showHelp()
 void
 do2D_FFT(const string& inFilePath, const string& outFilePath)
 {
-    using namespace haLT;
+    using namespace LiFFT;
     using FFT = FFT_2D_R2C<FP_Type>;
     auto input = FFT::wrapInput(ImgType(inFilePath, false));
     auto output = FFT::createNewOutput(input);
@@ -133,9 +133,9 @@ main(int argc, char** argv)
         return 0;
     }
 
-    using haLT::types::Vec2;
-    using haLT::types::Vec3;
-    using haLT::types::makeRange;
+    using LiFFT::types::Vec2;
+    using LiFFT::types::Vec3;
+    using LiFFT::types::makeRange;
 
     // Multiple images --> 3D FFT
     // Assume all images have the same size --> load the first one to get extents and create FFT Data
@@ -147,11 +147,11 @@ main(int argc, char** argv)
     else
         actualSize = size;
     std::cout << "Processing " << (lastIdx - firstIdx + 1) << " images with region: [" << x0 << ", " << y0 << "] size " << actualSize << std::endl;
-    auto imgView = haLT::types::makeView(img, makeRange(Vec2(x0, y0), Vec2(actualSize, actualSize)));
-    using FFT = haLT::FFT_3D_R2C<FP_Type>;
+    auto imgView = LiFFT::types::makeView(img, makeRange(Vec2(x0, y0), Vec2(actualSize, actualSize)));
+    using FFT = LiFFT::FFT_3D_R2C<FP_Type>;
     auto input = FFT::wrapInput(
-                    haLT::mem::RealContainer<3, FP_Type>(
-                            haLT::types::Vec<3>(lastIdx-firstIdx+1, actualSize, actualSize)
+                    LiFFT::mem::RealContainer<3, FP_Type>(
+                            LiFFT::types::Vec<3>(lastIdx-firstIdx+1, actualSize, actualSize)
                     )
                  );
     auto output = FFT::createNewOutput(input);
@@ -159,23 +159,23 @@ main(int argc, char** argv)
     auto sec = std::chrono::duration_cast<std::chrono::seconds>(diff);
     std::cout << "Init done: " << sec.count() << "s" << std::endl;
 
-    // Init FFT, makeRange(haLT::types::Origin)
+    // Init FFT, makeRange(LiFFT::types::Origin)
     start = std::chrono::high_resolution_clock::now();
-    auto fft = haLT::makeFFT<FFT_LIB>(input, output);
+    auto fft = LiFFT::makeFFT<FFT_LIB>(input, output);
     diff = std::chrono::high_resolution_clock::now() - start;
     sec = std::chrono::duration_cast<std::chrono::seconds>(diff);
     std::cout << "FFT initialized: " << sec.count() << "s" << std::endl;
 
     // Now copy all the data into one memory region
     start = std::chrono::high_resolution_clock::now();
-    auto inputView = haLT::types::makeSliceView<0>(input, makeRange());
-    haLT::policies::copy(imgView, inputView);
+    auto inputView = LiFFT::types::makeSliceView<0>(input, makeRange());
+    LiFFT::policies::copy(imgView, inputView);
     for(unsigned i=firstIdx+1; i<=lastIdx; ++i)
     {
         curFilePath = replace(inFilePath, "%i", getFilledNumber(i, minSize, filler));
         imgView.getBase().open(curFilePath);
-        auto view = haLT::types::makeSliceView<0>(input, makeRange(Vec3(i-firstIdx, 0u, 0u)));
-        haLT::policies::copy(imgView, view);
+        auto view = LiFFT::types::makeSliceView<0>(input, makeRange(Vec3(i-firstIdx, 0u, 0u)));
+        LiFFT::policies::copy(imgView, view);
     }
     img.close();
     diff = std::chrono::high_resolution_clock::now() - start;
@@ -192,10 +192,10 @@ main(int argc, char** argv)
     // Copy the intensities to the img and save it
     start = std::chrono::high_resolution_clock::now();
     tiffWriter::FloatImage<> outImg(outFilePath, actualSize, actualSize);
-    auto outView = haLT::types::makeSliceView<0>(haLT::getFullData(output), makeRange());
-    auto acc = haLT::accessors::makeTransformAccessorFor(haLT::policies::CalcIntensityFunc(), outView);
-    auto accImg = haLT::accessors::makeTransposeAccessorFor(outImg);
-    haLT::policies::copy(outView, outImg , acc, accImg);
+    auto outView = LiFFT::types::makeSliceView<0>(LiFFT::getFullData(output), makeRange());
+    auto acc = LiFFT::accessors::makeTransformAccessorFor(LiFFT::policies::CalcIntensityFunc(), outView);
+    auto accImg = LiFFT::accessors::makeTransposeAccessorFor(outImg);
+    LiFFT::policies::copy(outView, outImg , acc, accImg);
     outImg.save();
     diff = std::chrono::high_resolution_clock::now() - start;
     sec = std::chrono::duration_cast<std::chrono::seconds>(diff);

@@ -1,49 +1,49 @@
-/* This file is part of HaLT.
+/* This file is part of libLiFFT.
  *
- * HaLT is free software: you can redistribute it and/or modify
+ * libLiFFT is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
  *
- * HaLT is distributed in the hope that it will be useful,
+ * libLiFFT is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with HaLT.  If not, see <www.gnu.org/licenses/>.
+ * License along with libLiFFT.  If not, see <www.gnu.org/licenses/>.
  */
  
 #pragma once
 
-#include "haLT/mem/DataContainer.hpp"
-#include "haLT/mem/RealValues.hpp"
-#include "haLT/mem/ComplexAoSValues.hpp"
+#include "libLiFFT/mem/DataContainer.hpp"
+#include "libLiFFT/mem/RealValues.hpp"
+#include "libLiFFT/mem/ComplexAoSValues.hpp"
 #ifdef WITH_CUDA
-#include "haLT/libraries/cuFFT/cuFFT.hpp"
+#include "libLiFFT/libraries/cuFFT/cuFFT.hpp"
 #else
-#include "haLT/libraries/fftw/FFTW.hpp"
+#include "libLiFFT/libraries/fftw/FFTW.hpp"
 #endif
 
-namespace haLTTest{
+namespace LiFFTTest{
     // Types used for the test suite
     constexpr unsigned testNumDims = 2;
     constexpr unsigned testSize = 2048;
-    using TestExtents      = haLT::types::Vec<testNumDims>;
+    using TestExtents      = LiFFT::types::Vec<testNumDims>;
     using TestPrecision    = float;
-    using RealType         = haLT::mem::RealValues<TestPrecision>;
-    using ComplexType      = haLT::mem::ComplexAoSValues<TestPrecision>;
-    using RealContainer    = haLT::mem::DataContainer<testNumDims, RealType>;
-    using ComplexContainer = haLT::mem::DataContainer<testNumDims, ComplexType>;
+    using RealType         = LiFFT::mem::RealValues<TestPrecision>;
+    using ComplexType      = LiFFT::mem::ComplexAoSValues<TestPrecision>;
+    using RealContainer    = LiFFT::mem::DataContainer<testNumDims, RealType>;
+    using ComplexContainer = LiFFT::mem::DataContainer<testNumDims, ComplexType>;
     using BaseR2CInput  = RealContainer;
     using BaseR2COutput = ComplexContainer;
     using BaseC2CInput  = ComplexContainer;
     using BaseC2COutput = ComplexContainer;
 
     #ifdef WITH_CUDA
-    using TestLibrary = haLT::libraries::cuFFT::CuFFT<>;
+    using TestLibrary = LiFFT::libraries::cuFFT::CuFFT<>;
     #else
-    using TestLibrary = haLT::libraries::fftw::FFTW<>;
+    using TestLibrary = LiFFT::libraries::fftw::FFTW<>;
     #endif
 
     // Control values used in the test suite
