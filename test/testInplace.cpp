@@ -79,7 +79,8 @@ namespace LiFFTTest {
         LiFFT::policies::copy(aperture, baseC2CInput);
         fft(input);
         execBaseC2C();
-        return checkResult(baseC2COutput, output, "C2C inPlace");
+        // Inplace got some more random derivations in the low intensity regions
+        return checkResult(baseC2COutput, output, "C2C inPlace", CmpError(1e-3, 5e-5));
     }
 
     bool testInplaceR2C()
@@ -96,7 +97,8 @@ namespace LiFFTTest {
         LiFFT::policies::copy(aperture, baseR2CInput);
         fft(input);
         execBaseR2C();
-        return checkResult(baseR2COutput, output, "R2C inPlace");
+        // Inplace got some more random derivations in the low intensity regions
+        return checkResult(baseR2COutput, output, "R2C inPlace", CmpError(1e-3, 5e-5));
     }
 
     int testInplace()
