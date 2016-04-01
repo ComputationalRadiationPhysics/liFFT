@@ -83,6 +83,7 @@ file(GLOB LiFFT_Test_CPP_FILES
     "test/*.cpp"
     "test/*.hpp"
 )
+list(REMOVE_ITEM LiFFT_Test_CPP_FILES ${CMAKE_CURRENT_SOURCE_DIR}/test/minIncludes.cpp)
 
 file(GLOB LiFFT_Test_CU_FILES
     "test/*.cu"
