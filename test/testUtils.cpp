@@ -216,8 +216,8 @@ namespace LiFFTTest {
         baseR2COutput.freeData();
         baseC2CInput.freeData();
         baseC2COutput.freeData();
-        delete fftR2C;
-        delete fftC2C;
+        free(fftR2C);
+        free(fftC2C);
     }
 
     void visualizeBase()
