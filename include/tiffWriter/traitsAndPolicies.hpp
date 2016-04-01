@@ -17,16 +17,16 @@
 #pragma once
 
 #include "tiffWriter/image.hpp"
-#include "foobar/traits/NumDims.hpp"
-#include "foobar/traits/IdentityAccessor.hpp"
-#include "foobar/traits/IsComplex.hpp"
-#include "foobar/traits/IsStrided.hpp"
-#include "foobar/accessors/VolumeAccessor.hpp"
-#include "foobar/policies/GetExtents.hpp"
-#include "foobar/types/Vec.hpp"
-#include "foobar/util.hpp"
+#include "haLT/traits/NumDims.hpp"
+#include "haLT/traits/IdentityAccessor.hpp"
+#include "haLT/traits/IsComplex.hpp"
+#include "haLT/traits/IsStrided.hpp"
+#include "haLT/accessors/VolumeAccessor.hpp"
+#include "haLT/policies/GetExtents.hpp"
+#include "haLT/types/Vec.hpp"
+#include "haLT/util.hpp"
 
-namespace foobar {
+namespace haLT {
 namespace traits {
 
     template< tiffWriter::ImageFormat T_imgFormat, class T_Allocator >
@@ -65,4 +65,4 @@ namespace policies {
     };
 
 }  // namespace policies
-}  // namespace foobar
+}  // namespace haLT

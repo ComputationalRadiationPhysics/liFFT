@@ -16,8 +16,8 @@
  
 #pragma once
 
-namespace foobarTest {
+namespace haLTTest {
 
     void testPlainPtr();
 
-}  // namespace foobarTest
+}  // namespace haLTTest

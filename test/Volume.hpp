@@ -16,12 +16,12 @@
  
 #pragma once
 
-#include "foobar/traits/IntegralType.hpp"
-#include "foobar/traits/NumDims.hpp"
-#include "foobar/traits/IsComplex.hpp"
-#include "foobar/traits/IsStrided.hpp"
-#include "foobar/traits/IsAoS.hpp"
-#include "foobar/policies/GetExtents.hpp"
+#include "haLT/traits/IntegralType.hpp"
+#include "haLT/traits/NumDims.hpp"
+#include "haLT/traits/IsComplex.hpp"
+#include "haLT/traits/IsStrided.hpp"
+#include "haLT/traits/IsAoS.hpp"
+#include "haLT/policies/GetExtents.hpp"
 
 template< typename T = double >
 class Volume{
@@ -87,7 +87,7 @@ public:
     size_t zDim() const{ return m_zDim; }
 };
 
-namespace foobar {
+namespace haLT {
     namespace traits {
 
         template<typename T>
@@ -140,5 +140,5 @@ namespace foobar {
         };
 
     }  // namespace policies
-}  // namespace foobar
+}  // namespace haLT
 

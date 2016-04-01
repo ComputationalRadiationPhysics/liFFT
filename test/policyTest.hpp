@@ -19,10 +19,10 @@
 #include "policyExample.hpp"
 #include <chrono>
 #include <vector>
-#include "foobar/mem/DataContainer.hpp"
-#include "foobar/mem/RealValues.hpp"
-#include "foobar/mem/ComplexAoSValues.hpp"
-#include "foobar/mem/ComplexSoAValues.hpp"
+#include "haLT/mem/DataContainer.hpp"
+#include "haLT/mem/RealValues.hpp"
+#include "haLT/mem/ComplexAoSValues.hpp"
+#include "haLT/mem/ComplexSoAValues.hpp"
 
 
 using millisecs = std::chrono::duration<unsigned long long, std::milli>;
@@ -45,10 +45,10 @@ bool checkResult(const T& result, unsigned expected){
 }
 
 void test(){
-    using namespace foobar::types;
-    using namespace foobar::mem;
-    using foobar::calcIntensity;
-    using foobar::calcIntensity2;
+    using namespace haLT::types;
+    using namespace haLT::mem;
+    using haLT::calcIntensity;
+    using haLT::calcIntensity2;
 
     DataContainer< 1, RealValues<double> > simpleRealData;
     DataContainer< 1, ComplexAoSValues<double> > complexAoS;

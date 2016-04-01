@@ -16,8 +16,8 @@
  
 #pragma once
 
-namespace foobarTest {
+namespace haLTTest {
 
     void testFile();
 
-}  // namespace foobarTest
+}  // namespace haLTTest

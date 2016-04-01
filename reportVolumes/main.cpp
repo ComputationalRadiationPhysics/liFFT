@@ -19,21 +19,21 @@
 
 #include "tiffWriter/image.hpp"
 #include "tiffWriter/traitsAndPolicies.hpp"
-#include "foobar/FFT.hpp"
+#include "haLT/FFT.hpp"
 #if defined(WITH_CUDA) and false
-#   include "foobar/libraries/cuFFT/cuFFT.hpp"
-    using FFT_LIB = foobar::libraries::cuFFT::CuFFT<>;
+#   include "haLT/libraries/cuFFT/cuFFT.hpp"
+    using FFT_LIB = haLT::libraries::cuFFT::CuFFT<>;
 #else
-#   include "foobar/libraries/fftw/FFTW.hpp"
-    using FFT_LIB = foobar::libraries::fftw::FFTW<>;
+#   include "haLT/libraries/fftw/FFTW.hpp"
+    using FFT_LIB = haLT::libraries::fftw::FFTW<>;
 #endif
 
-#include "foobar/policies/Copy.hpp"
-#include "foobar/accessors/TransformAccessor.hpp"
-#include "foobar/accessors/TransposeAccessor.hpp"
-#include "foobar/policies/CalcIntensityFunctor.hpp"
-#include "foobar/generateData.hpp"
-#include "foobar/types/SliceView.hpp"
+#include "haLT/policies/Copy.hpp"
+#include "haLT/accessors/TransformAccessor.hpp"
+#include "haLT/accessors/TransposeAccessor.hpp"
+#include "haLT/policies/CalcIntensityFunctor.hpp"
+#include "haLT/generateData.hpp"
+#include "haLT/types/SliceView.hpp"
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
@@ -160,7 +160,7 @@ struct GenData1
     template< class T_Idx >
     T
     operator()(T_Idx&& idx) const{
-        static constexpr unsigned numDims = foobar::traits::NumDims<T_Idx>::value;
+        static constexpr unsigned numDims = haLT::traits::NumDims<T_Idx>::value;
         static_assert(numDims == 3, "3D only");
 
         unsigned x = idx[2] + 850u;
@@ -192,16 +192,16 @@ void genData(T& data, unsigned dataSet)
     std::cout << "Generating Dataset " << dataSet << "..." << std::endl;
     switch(dataSet){
     case 1:
-        foobar::generateData(data, GenData1<float, Values1_2P5um>());
+        haLT::generateData(data, GenData1<float, Values1_2P5um>());
         break;
     case 2:
-        foobar::generateData(data, GenData1<float, Values1_1um>());
+        haLT::generateData(data, GenData1<float, Values1_1um>());
         break;
     case 3:
-        foobar::generateData(data, GenData1<float, Values1_100nm>());
+        haLT::generateData(data, GenData1<float, Values1_100nm>());
         break;
     case 4:
-        foobar::generateData(data, GenData1<float, Values2>());
+        haLT::generateData(data, GenData1<float, Values2>());
         break;
     default:
         throw std::logic_error("Wrong dataset");
@@ -212,14 +212,14 @@ void genData(T& data, unsigned dataSet)
 void writeInput(const string& filePath, unsigned dataSet)
 {
     tiffWriter::FloatImage<> img(filePath, 1024u, 1024u);
-    foobar::mem::RealContainer<3, float> data(foobar::types::Vec3(1u, 1024u, 1024u));
+    haLT::mem::RealContainer<3, float> data(haLT::types::Vec3(1u, 1024u, 1024u));
     unsigned startDS = dataSet ? dataSet : 1;
     unsigned lastDS = dataSet ? dataSet : 4;
     for(unsigned i = startDS; i<=lastDS; i++)
     {
         genData(data, i);
-        auto view = foobar::types::makeSliceView<0>(data, foobar::types::makeRange());
-        foobar::policies::copy(view, img);
+        auto view = haLT::types::makeSliceView<0>(data, haLT::types::makeRange());
+        haLT::policies::copy(view, img);
         if(dataSet)
             img.save();
         else
@@ -235,15 +235,15 @@ void writeInput(const string& filePath, unsigned dataSet)
 void writeAllInput(const string& filePath, unsigned dataSet)
 {
     tiffWriter::FloatImage<> img(filePath, 1024u, 1024u);
-    foobar::mem::RealContainer<3, float> data(foobar::types::Vec3(1024u, 1024u, 1024u));
+    haLT::mem::RealContainer<3, float> data(haLT::types::Vec3(1024u, 1024u, 1024u));
     unsigned startDS = dataSet ? dataSet : 1;
     unsigned lastDS = dataSet ? dataSet : 4;
     for(unsigned i = startDS; i<=lastDS; i++)
     {
         genData(data, i);
         for(unsigned z=0; z<data.getExtents()[0]; z++){
-            auto view = foobar::types::makeSliceView<0>(data, foobar::types::makeRange(foobar::types::Vec3(z, 0u, 0u)));
-            foobar::policies::copy(view, img);
+            auto view = haLT::types::makeSliceView<0>(data, haLT::types::makeRange(haLT::types::Vec3(z, 0u, 0u)));
+            haLT::policies::copy(view, img);
             boost::filesystem::path fPath(filePath);
             fPath.replace_extension(std::to_string(i) + string("_") + std::to_string(z) + fPath.extension().string());
             img.saveTo(fPath.string());
@@ -254,11 +254,11 @@ void writeAllInput(const string& filePath, unsigned dataSet)
 
 void writeFFT(const string& filePath, unsigned dataSet)
 {
-    using FFT = foobar::FFT_3D_R2C_F<true>;
-    auto input = FFT::createNewInput(foobar::types::Vec3(1024u, 1024u, 1024u));
+    using FFT = haLT::FFT_3D_R2C_F<true>;
+    auto input = FFT::createNewInput(haLT::types::Vec3(1024u, 1024u, 1024u));
     auto output = FFT::createNewOutput(input);
-    auto outSlice = foobar::types::makeSliceView<0>(foobar::getFullData(output), foobar::types::makeRange());
-    auto fft = foobar::makeFFT<FFT_LIB, false>(input);
+    auto outSlice = haLT::types::makeSliceView<0>(haLT::getFullData(output), haLT::types::makeRange());
+    auto fft = haLT::makeFFT<FFT_LIB, false>(input);
 
     unsigned startDS = dataSet ? dataSet : 1;
     unsigned lastDS = dataSet ? dataSet : 4;
@@ -267,9 +267,9 @@ void writeFFT(const string& filePath, unsigned dataSet)
         genData(input, i);
         fft(input);
         tiffWriter::FloatImage<> img(filePath, 1024u, 1024u);
-        auto acc1 = foobar::accessors::makeTransformAccessorFor(foobar::policies::CalcIntensityFunc(), outSlice);
-        foobar::accessors::TransposeAccessor<decltype(acc1)> acc(acc1);
-        foobar::policies::copy(outSlice, img, acc);
+        auto acc1 = haLT::accessors::makeTransformAccessorFor(haLT::policies::CalcIntensityFunc(), outSlice);
+        haLT::accessors::TransposeAccessor<decltype(acc1)> acc(acc1);
+        haLT::policies::copy(outSlice, img, acc);
         if(dataSet)
             img.save();
         else

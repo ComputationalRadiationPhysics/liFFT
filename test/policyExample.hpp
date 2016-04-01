@@ -16,15 +16,15 @@
  
 #pragma once
 
-#include "foobar/traits/IntegralType.hpp"
-#include "foobar/traits/IsComplex.hpp"
-#include "foobar/traits/IsAoS.hpp"
-#include "foobar/policies/GetExtents.hpp"
-#include "foobar/policies/GetStrides.hpp"
-#include "foobar/accessors/DataContainerAccessor.hpp"
-#include "foobar/policies/CalcIntensity.hpp"
+#include "haLT/traits/IntegralType.hpp"
+#include "haLT/traits/IsComplex.hpp"
+#include "haLT/traits/IsAoS.hpp"
+#include "haLT/policies/GetExtents.hpp"
+#include "haLT/policies/GetStrides.hpp"
+#include "haLT/accessors/DataContainerAccessor.hpp"
+#include "haLT/policies/CalcIntensity.hpp"
 
-namespace foobar {
+namespace haLT {
 
     template< class T_Input >
     std::enable_if_t< (traits::IsComplex<T_Input>::value && traits::IsAoS<T_Input>::value) >
@@ -82,4 +82,4 @@ namespace foobar {
 
 
 
-}  // namespace foobar
+}  // namespace haLT

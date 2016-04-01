@@ -17,8 +17,8 @@
 #pragma once
 
 #include "Volume.hpp"
-#include "foobar/traits/NumDims.hpp"
-#include "foobar/policies/GetExtents.hpp"
+#include "haLT/traits/NumDims.hpp"
+#include "haLT/policies/GetExtents.hpp"
 
 template<typename T>
 class VolumeAdapter{
@@ -82,7 +82,7 @@ makeTransposeAdapter(T& obj){
     return TransposeAdapter<T>(obj);
 }
 
-namespace foobar{
+namespace haLT{
     namespace policies {
 
         template<typename T>
@@ -100,4 +100,4 @@ namespace foobar{
         };
 
     }  // namespace policies
-}  // namespace foobar
+}  // namespace haLT

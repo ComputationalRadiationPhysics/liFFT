@@ -16,15 +16,15 @@
  
 #pragma once
 
-#include "foobar/policies/IntensityCalculator.hpp"
-#include "foobar/policies/GetNumElements.hpp"
+#include "haLT/policies/IntensityCalculator.hpp"
+#include "haLT/policies/GetNumElements.hpp"
 
 void testIntensityCalculator()
 {
-    using namespace foobar::types;
-    using namespace foobar::mem;
-    using foobar::policies::getNumElements;
-    using foobar::policies::useIntensityCalculator;
+    using namespace haLT::types;
+    using namespace haLT::mem;
+    using haLT::policies::getNumElements;
+    using haLT::policies::useIntensityCalculator;
     DataContainer< 1, RealValues<double>> real;
     DataContainer< 1, ComplexAoSValues<double>> complexAoS;
     DataContainer< 1, ComplexSoAValues<double>> complexSoA;

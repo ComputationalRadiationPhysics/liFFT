@@ -22,7 +22,7 @@
 #include "testZip.hpp"
 
 int main(int /*argc*/, char** /*argv*/) {
-    using namespace foobarTest;
+    using namespace haLTTest;
     init();
     //visualizeBase();
 

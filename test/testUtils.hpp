@@ -17,13 +17,13 @@
 #pragma once
 
 #include "testDefines.hpp"
-#include "foobar/traits/IdentityAccessor.hpp"
-#include "foobar/traits/IsComplex.hpp"
-#include "foobar/policies/Loop.hpp"
+#include "haLT/traits/IdentityAccessor.hpp"
+#include "haLT/traits/IsComplex.hpp"
+#include "haLT/policies/Loop.hpp"
 #include <cmath>
 #include <iostream>
 
-namespace foobarTest {
+namespace haLTTest {
 
     /**
      * Initializes the test environment and prepares the base line FFTs to compare against
@@ -96,20 +96,20 @@ namespace foobarTest {
         void handleLoopPost(T_Args&&...){}
 
         template<class T, class U>
-        std::enable_if_t< foobar::traits::IsComplex<T>::value, bool >
+        std::enable_if_t< haLT::traits::IsComplex<T>::value, bool >
         compare(const T& expected, const U& is)
         {
-            using Precision = foobar::traits::IntegralType_t<T>;
-            using Complex = foobar::types::Complex<Precision>;
-            static_assert(foobar::traits::IsBinaryCompatible<T, Complex>::value, "Cannot convert expected");
-            static_assert(foobar::traits::IsBinaryCompatible<U, Complex>::value, "Cannot convert is");
+            using Precision = haLT::traits::IntegralType_t<T>;
+            using Complex = haLT::types::Complex<Precision>;
+            static_assert(haLT::traits::IsBinaryCompatible<T, Complex>::value, "Cannot convert expected");
+            static_assert(haLT::traits::IsBinaryCompatible<U, Complex>::value, "Cannot convert is");
             const Complex& m_expected = reinterpret_cast<const Complex&>(expected);
             const Complex& m_is = reinterpret_cast<const Complex&>(is);
             return compare(m_expected.real, m_is.real) && compare(m_expected.imag, m_is.imag);
         }
 
         template<class T, class U>
-        std::enable_if_t< !foobar::traits::IsComplex<T>::value, bool >
+        std::enable_if_t< !haLT::traits::IsComplex<T>::value, bool >
         compare(const T& expected, const U& is)
         {
             if(expected == is)
@@ -153,12 +153,12 @@ namespace foobarTest {
      * @param isAcc      Accessor for actual container [IdentityAccessor used]
      * @return Pair: 1: bool OK, 2: Maximum errors detected
      */
-    template< class T, class U, class T_AccessorT = foobar::traits::IdentityAccessor_t<T>, class T_AccessorU = foobar::traits::IdentityAccessor_t<U> >
+    template< class T, class U, class T_AccessorT = haLT::traits::IdentityAccessor_t<T>, class T_AccessorU = haLT::traits::IdentityAccessor_t<U> >
     std::pair< bool, CmpError >
     compare(const T& expected, const U& is, CmpError allowedErr = CmpError(1e-4, 5e-5), const T_AccessorT& expAcc = T_AccessorT(), const T_AccessorU& isAcc = T_AccessorU())
     {
         CompareFunc result(allowedErr);
-        foobar::policies::loop(expected, result, expAcc, is, isAcc);
+        haLT::policies::loop(expected, result, expAcc, is, isAcc);
         return std::make_pair(result.ok, result.e);
     }
 
@@ -182,4 +182,4 @@ namespace foobarTest {
         return cmpRes.first;
     }
 
-}  // namespace foobarTest
+}  // namespace haLTTest

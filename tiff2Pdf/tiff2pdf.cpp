@@ -20,10 +20,10 @@
 #include <string>
 #include "tiffWriter/image.hpp"
 #include "tiffWriter/traitsAndPolicies.hpp"
-#include "foobar/traits/IdentityAccessor.hpp"
-#include "foobar/policies/Copy.hpp"
-#include "foobar/types/AddDimsWrapper.hpp"
-#include "foobar/accessors/StreamAccessor.hpp"
+#include "haLT/traits/IdentityAccessor.hpp"
+#include "haLT/policies/Copy.hpp"
+#include "haLT/types/AddDimsWrapper.hpp"
+#include "haLT/accessors/StreamAccessor.hpp"
 
 std::string
 remove_extension(const std::string& filename) {
@@ -42,8 +42,8 @@ int main(int argc, char** argv) {
 
     tiffWriter::FloatImage<> img(srcFilePath);
     std::string tmpFilePath = srcFilePath + ".txt";
-    foobar::types::AddDimsWrapper< std::ofstream, 2 > outFile(tmpFilePath);
-    foobar::policies::Copy< typename foobar::traits::IdentityAccessor<decltype(img)>::type, foobar::accessors::StringStreamAccessor<> > copy;
+    haLT::types::AddDimsWrapper< std::ofstream, 2 > outFile(tmpFilePath);
+    haLT::policies::Copy< typename haLT::traits::IdentityAccessor<decltype(img)>::type, haLT::accessors::StringStreamAccessor<> > copy;
 
     copy(img, outFile);
     outFile.close();
