@@ -1,14 +1,30 @@
+/* This file is part of HaLT.
+ *
+ * HaLT is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * HaLT is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with HaLT.  If not, see <www.gnu.org/licenses/>.
+ */
+ 
 #pragma once
 
-#include "foobar/traits/IntegralType.hpp"
-#include "foobar/traits/IsComplex.hpp"
-#include "foobar/traits/IsAoS.hpp"
-#include "foobar/policies/GetExtents.hpp"
-#include "foobar/policies/GetStrides.hpp"
-#include "foobar/accessors/DataContainerAccessor.hpp"
-#include "foobar/policies/CalcIntensity.hpp"
+#include "haLT/traits/IntegralType.hpp"
+#include "haLT/traits/IsComplex.hpp"
+#include "haLT/traits/IsAoS.hpp"
+#include "haLT/policies/GetExtents.hpp"
+#include "haLT/policies/GetStrides.hpp"
+#include "haLT/accessors/DataContainerAccessor.hpp"
+#include "haLT/policies/CalcIntensity.hpp"
 
-namespace foobar {
+namespace haLT {
 
     template< class T_Input >
     std::enable_if_t< (traits::IsComplex<T_Input>::value && traits::IsAoS<T_Input>::value) >
@@ -66,4 +82,4 @@ namespace foobar {
 
 
 
-}  // namespace foobar
+}  // namespace haLT

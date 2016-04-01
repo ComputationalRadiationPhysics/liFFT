@@ -1,16 +1,32 @@
+/* This file is part of HaLT.
+ *
+ * HaLT is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * HaLT is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with HaLT.  If not, see <www.gnu.org/licenses/>.
+ */
+ 
 #pragma once
 
 #include "tiffWriter/image.hpp"
-#include "foobar/traits/NumDims.hpp"
-#include "foobar/traits/IdentityAccessor.hpp"
-#include "foobar/traits/IsComplex.hpp"
-#include "foobar/traits/IsStrided.hpp"
-#include "foobar/accessors/VolumeAccessor.hpp"
-#include "foobar/policies/GetExtents.hpp"
-#include "foobar/types/Vec.hpp"
-#include "foobar/util.hpp"
+#include "haLT/traits/NumDims.hpp"
+#include "haLT/traits/IdentityAccessor.hpp"
+#include "haLT/traits/IsComplex.hpp"
+#include "haLT/traits/IsStrided.hpp"
+#include "haLT/accessors/VolumeAccessor.hpp"
+#include "haLT/policies/GetExtents.hpp"
+#include "haLT/types/Vec.hpp"
+#include "haLT/util.hpp"
 
-namespace foobar {
+namespace haLT {
 namespace traits {
 
     template< tiffWriter::ImageFormat T_imgFormat, class T_Allocator >
@@ -49,4 +65,4 @@ namespace policies {
     };
 
 }  // namespace policies
-}  // namespace foobar
+}  // namespace haLT

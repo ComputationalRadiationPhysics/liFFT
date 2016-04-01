@@ -1,14 +1,30 @@
+/* This file is part of HaLT.
+ *
+ * HaLT is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * HaLT is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with HaLT.  If not, see <www.gnu.org/licenses/>.
+ */
+ 
 #pragma once
 
-#include "foobar/policies/IntensityCalculator.hpp"
-#include "foobar/policies/GetNumElements.hpp"
+#include "haLT/policies/IntensityCalculator.hpp"
+#include "haLT/policies/GetNumElements.hpp"
 
 void testIntensityCalculator()
 {
-    using namespace foobar::types;
-    using namespace foobar::mem;
-    using foobar::policies::getNumElements;
-    using foobar::policies::useIntensityCalculator;
+    using namespace haLT::types;
+    using namespace haLT::mem;
+    using haLT::policies::getNumElements;
+    using haLT::policies::useIntensityCalculator;
     DataContainer< 1, RealValues<double>> real;
     DataContainer< 1, ComplexAoSValues<double>> complexAoS;
     DataContainer< 1, ComplexSoAValues<double>> complexSoA;

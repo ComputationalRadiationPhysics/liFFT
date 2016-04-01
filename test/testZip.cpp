@@ -1,8 +1,24 @@
+/* This file is part of HaLT.
+ *
+ * HaLT is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * HaLT is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with HaLT.  If not, see <www.gnu.org/licenses/>.
+ */
+ 
 #include "testZip.hpp"
 #include "testUtils.hpp"
-#include "foobar/accessors/ZipAccessor.hpp"
-#include "foobar/generateData.hpp"
-#include "foobar/FFT.hpp"
+#include "haLT/accessors/ZipAccessor.hpp"
+#include "haLT/generateData.hpp"
+#include "haLT/FFT.hpp"
 
 #include "tiffWriter/image.hpp"
 #include "tiffWriter/traitsAndPolicies.hpp"
@@ -10,10 +26,10 @@
 #include <algorithm>
 #include <iostream>
 
-using foobar::generateData;
-using namespace foobar::generators;
+using haLT::generateData;
+using namespace haLT::generators;
 
-namespace foobarTest {
+namespace haLTTest {
 
     void testZipBasic()
     {
@@ -28,13 +44,13 @@ namespace foobarTest {
         for(idx[0] = 0; idx[0]<testSize; idx[0]++)
             for(idx[1] = 0; idx[1]<testSize; idx[1]++)
                 inputProd(idx) = input1(idx) * input2(idx);
-        auto acc = foobar::accessors::makeZipAccessor(input1, std::multiplies<foobar::types::Real<TestPrecision>>(), foobar::traits::getIdentityAccessor(input2));
-        using FFT_Type = foobar::FFT_2D_R2C<TestPrecision>;
+        auto acc = haLT::accessors::makeZipAccessor(input1, std::multiplies<haLT::types::Real<TestPrecision>>(), haLT::traits::getIdentityAccessor(input2));
+        using FFT_Type = haLT::FFT_2D_R2C<TestPrecision>;
         auto input = FFT_Type::wrapInput(input2, acc);
         auto output = FFT_Type::createNewOutput(input);
-        auto fft = foobar::makeFFT<TestLibrary>(input, output);
+        auto fft = haLT::makeFFT<TestLibrary>(input, output);
         fft(input, output);
-        foobar::policies::copy(inputProd, baseR2CInput);
+        haLT::policies::copy(inputProd, baseR2CInput);
         execBaseR2C();
         checkResult(baseR2COutput, output, "R2C with zip accessor");
     }
@@ -43,13 +59,13 @@ namespace foobarTest {
     {
         tiffWriter::FloatImage<> img1(filePath1, false);
         tiffWriter::FloatImage<> img2(filePath2, false);
-        auto acc = foobar::accessors::makeZipAccessor(img1, std::multiplies<foobar::types::Real<TestPrecision>>(), foobar::traits::getIdentityAccessor(img2));
-        using FFT_Type = foobar::FFT_2D_R2C_F<>;
+        auto acc = haLT::accessors::makeZipAccessor(img1, std::multiplies<haLT::types::Real<TestPrecision>>(), haLT::traits::getIdentityAccessor(img2));
+        using FFT_Type = haLT::FFT_2D_R2C_F<>;
         auto input = FFT_Type::wrapInput(img2, acc);
         auto output = FFT_Type::createNewOutput(input);
-        auto fft = foobar::makeFFT< TestLibrary, false >(input, output);
+        auto fft = haLT::makeFFT< TestLibrary, false >(input, output);
         img1.load(); img2.load();
-        foobar::policies::copy(img2, baseR2CInput, acc);
+        haLT::policies::copy(img2, baseR2CInput, acc);
         fft(input, output);
         execBaseR2C();
         checkResult(baseR2COutput, output, "TIFF-ZIP test");
@@ -61,4 +77,4 @@ namespace foobarTest {
         testZipFile("input1.tif", "input2.tif");
     }
 
-}  // namespace foobarTest
+}  // namespace haLTTest

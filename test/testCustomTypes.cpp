@@ -1,24 +1,40 @@
+/* This file is part of HaLT.
+ *
+ * HaLT is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * HaLT is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with HaLT.  If not, see <www.gnu.org/licenses/>.
+ */
+ 
 #include "testCustomTypes.hpp"
 #include "testUtils.hpp"
 
-#include "foobar/traits/IsComplex.hpp"
-#include "foobar/traits/IsBinaryCompatible.hpp"
-#include "foobar/traits/IntegralType.hpp"
-#include "foobar/FFT.hpp"
+#include "haLT/traits/IsComplex.hpp"
+#include "haLT/traits/IsBinaryCompatible.hpp"
+#include "haLT/traits/IntegralType.hpp"
+#include "haLT/FFT.hpp"
 #include "Volume.hpp"
-#include "foobar/accessors/VolumeAccessor.hpp"
-#include "foobar/libraries/fftw/fftw3Include.h"
-#include "foobar/generateData.hpp"
-#include "foobar/policies/Copy.hpp"
-#include "foobar/traits/IdentityAccessor.hpp"
-#include "foobar/types/SliceView.hpp"
+#include "haLT/accessors/VolumeAccessor.hpp"
+#include "haLT/libraries/fftw/fftw3Include.h"
+#include "haLT/generateData.hpp"
+#include "haLT/policies/Copy.hpp"
+#include "haLT/traits/IdentityAccessor.hpp"
+#include "haLT/types/SliceView.hpp"
 #include <type_traits>
 #include <iostream>
 
-using foobar::generateData;
-using namespace foobar::generators;
+using haLT::generateData;
+using namespace haLT::generators;
 
-namespace foobarTest {
+namespace haLTTest {
 
     template< typename T = double >
     struct MyComplex{
@@ -28,19 +44,19 @@ namespace foobarTest {
         MyComplex(T realIn, T imagIn): real(realIn), imag(imagIn){}
     };
 
-}  // namespace foobarTest
+}  // namespace haLTTest
 
-namespace foobar {
+namespace haLT {
     namespace traits {
 
         template<typename T>
-        struct IsComplex< foobarTest::MyComplex<T> >: std::true_type{};
+        struct IsComplex< haLTTest::MyComplex<T> >: std::true_type{};
 
         template<typename T>
-        struct IsBinaryCompatibleImpl< foobarTest::MyComplex<T>, foobar::types::Complex<T> >: std::true_type{};
+        struct IsBinaryCompatibleImpl< haLTTest::MyComplex<T>, haLT::types::Complex<T> >: std::true_type{};
 
         template<typename T>
-        struct IntegralType< foobarTest::MyComplex<T> >
+        struct IntegralType< haLTTest::MyComplex<T> >
         {
             using type = T; // or define this in MyComplex itself
         };
@@ -52,9 +68,9 @@ namespace foobar {
         struct IsComplex< fftwf_complex >: std::true_type{};
 
         template<>
-        struct IsBinaryCompatibleImpl< fftw_complex, foobar::types::Complex<double> >: std::true_type{};
+        struct IsBinaryCompatibleImpl< fftw_complex, haLT::types::Complex<double> >: std::true_type{};
         template<>
-        struct IsBinaryCompatibleImpl< fftwf_complex, foobar::types::Complex<float> >: std::true_type{};
+        struct IsBinaryCompatibleImpl< fftwf_complex, haLT::types::Complex<float> >: std::true_type{};
 
         template<typename T>
         struct IdentityAccessor< Volume<T> >
@@ -63,9 +79,9 @@ namespace foobar {
         };
     }  // namespace traits
 
-}  // namespace foobar
+}  // namespace haLT
 
-namespace foobarTest {
+namespace haLTTest {
 
     template<typename T>
     std::ostream& operator<< (std::ostream& stream, MyComplex<T> val){
@@ -77,37 +93,37 @@ namespace foobarTest {
     using ComplexVolFFTW = Volume< std::conditional_t<std::is_same<TestPrecision, float>::value, fftwf_complex, fftw_complex > >;
     using RealVol        = Volume< TestPrecision >;
 
-    using foobar::types::makeRange;
-    using foobar::types::makeSliceView;
+    using haLT::types::makeRange;
+    using haLT::types::makeSliceView;
 
     void testComplex()
     {
-        using foobar::accessors::VolumeAccessor;
+        using haLT::accessors::VolumeAccessor;
         auto aperture = ComplexVol(testSize, testSize);
         auto fftResult = ComplexVol(aperture.xDim(), aperture.yDim(), aperture.zDim());
-        using FFT_Type = foobar::FFT_2D_C2C<TestPrecision>;
+        using FFT_Type = haLT::FFT_2D_C2C<TestPrecision>;
         auto input = FFT_Type::wrapInput(makeSliceView<0>(aperture));
         auto output = FFT_Type::wrapOutput(makeSliceView<0>(fftResult));
-        auto fft = foobar::makeFFT<TestLibrary>(input, output);
+        auto fft = haLT::makeFFT<TestLibrary>(input, output);
         generateData(aperture, Rect<TestPrecision>(20,testSize/2));
         fft(input, output);
-        foobar::policies::copy(makeSliceView<0>(aperture), baseC2CInput);
+        haLT::policies::copy(makeSliceView<0>(aperture), baseC2CInput);
         execBaseC2C();
         checkResult(baseC2COutput, makeSliceView<0>(fftResult), "C2C with custom types");
     }
 
     void testReal()
     {
-        using foobar::accessors::VolumeAccessor;
+        using haLT::accessors::VolumeAccessor;
         auto aperture = RealVol(testSize, testSize);
         auto fftResult = ComplexVolFFTW(aperture.xDim()/2+1, aperture.yDim(), aperture.zDim());
-        using FFT_Type = foobar::FFT_2D_R2C<TestPrecision>;
+        using FFT_Type = haLT::FFT_2D_R2C<TestPrecision>;
         auto input = FFT_Type::wrapInput(makeSliceView<0>(aperture));
         auto output = FFT_Type::wrapOutput(makeSliceView<0>(fftResult));
-        auto fft = foobar::makeFFT<TestLibrary>(input, output);
+        auto fft = haLT::makeFFT<TestLibrary>(input, output);
         generateData(aperture, Rect<TestPrecision>(20,testSize/2));
         fft(input, output);
-        foobar::policies::copy(makeSliceView<0>(aperture), baseR2CInput);
+        haLT::policies::copy(makeSliceView<0>(aperture), baseR2CInput);
         execBaseR2C();
         checkResult(baseR2COutput, makeSliceView<0>(fftResult), "R2C with custom types");
     }
@@ -118,4 +134,4 @@ namespace foobarTest {
         testReal();
     }
 
-}  // namespace foobarTest
+}  // namespace haLTTest

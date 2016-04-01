@@ -1,13 +1,29 @@
+/* This file is part of HaLT.
+ *
+ * HaLT is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * HaLT is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with HaLT.  If not, see <www.gnu.org/licenses/>.
+ */
+ 
 #include <stdlib.h>
 #include <iostream>
 #include <fstream>
 #include <string>
 #include "tiffWriter/image.hpp"
 #include "tiffWriter/traitsAndPolicies.hpp"
-#include "foobar/traits/IdentityAccessor.hpp"
-#include "foobar/policies/Copy.hpp"
-#include "foobar/types/AddDimsWrapper.hpp"
-#include "foobar/accessors/StreamAccessor.hpp"
+#include "haLT/traits/IdentityAccessor.hpp"
+#include "haLT/policies/Copy.hpp"
+#include "haLT/types/AddDimsWrapper.hpp"
+#include "haLT/accessors/StreamAccessor.hpp"
 
 std::string
 remove_extension(const std::string& filename) {
@@ -26,8 +42,8 @@ int main(int argc, char** argv) {
 
     tiffWriter::FloatImage<> img(srcFilePath);
     std::string tmpFilePath = srcFilePath + ".txt";
-    foobar::types::AddDimsWrapper< std::ofstream, 2 > outFile(tmpFilePath);
-    foobar::policies::Copy< typename foobar::traits::IdentityAccessor<decltype(img)>::type, foobar::accessors::StringStreamAccessor<> > copy;
+    haLT::types::AddDimsWrapper< std::ofstream, 2 > outFile(tmpFilePath);
+    haLT::policies::Copy< typename haLT::traits::IdentityAccessor<decltype(img)>::type, haLT::accessors::StringStreamAccessor<> > copy;
 
     copy(img, outFile);
     outFile.close();

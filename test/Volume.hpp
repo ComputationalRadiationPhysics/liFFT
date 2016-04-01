@@ -1,11 +1,27 @@
+/* This file is part of HaLT.
+ *
+ * HaLT is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * HaLT is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with HaLT.  If not, see <www.gnu.org/licenses/>.
+ */
+ 
 #pragma once
 
-#include "foobar/traits/IntegralType.hpp"
-#include "foobar/traits/NumDims.hpp"
-#include "foobar/traits/IsComplex.hpp"
-#include "foobar/traits/IsStrided.hpp"
-#include "foobar/traits/IsAoS.hpp"
-#include "foobar/policies/GetExtents.hpp"
+#include "haLT/traits/IntegralType.hpp"
+#include "haLT/traits/NumDims.hpp"
+#include "haLT/traits/IsComplex.hpp"
+#include "haLT/traits/IsStrided.hpp"
+#include "haLT/traits/IsAoS.hpp"
+#include "haLT/policies/GetExtents.hpp"
 
 template< typename T = double >
 class Volume{
@@ -71,7 +87,7 @@ public:
     size_t zDim() const{ return m_zDim; }
 };
 
-namespace foobar {
+namespace haLT {
     namespace traits {
 
         template<typename T>
@@ -124,5 +140,5 @@ namespace foobar {
         };
 
     }  // namespace policies
-}  // namespace foobar
+}  // namespace haLT
 
