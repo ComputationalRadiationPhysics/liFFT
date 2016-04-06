@@ -51,8 +51,10 @@ if(CUDA_FOUND AND CUDA_ENABLED)
 else()
     find_package(FFTW REQUIRED)
 endif()
-set(LIBS ${LIBS} ${FFTW_LIB} ${FFTW_F_LIB})
-include_directories(${FFTW_INCLUDES})
+if(FFTW_FOUND)
+    set(LIBS ${LIBS} ${FFTW_LIB} ${FFTW_F_LIB})
+    include_directories(${FFTW_INCLUDES})
+endif()
 
 ###############################################################################
 # Boost
