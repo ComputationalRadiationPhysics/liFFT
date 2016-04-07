@@ -42,6 +42,10 @@ set(ENABLE_CUDA ${CUDA_FOUND} CACHE BOOL "Use CUDA")
 set(CUDA_PROPAGATE_HOST_FLAGS OFF)
 list(APPEND CUDA_NVCC_FLAGS_RELEASE "-O3 -DNDEBUG")
 list(APPEND CUDA_NVCC_FLAGS_DEBUG "-O0 -g")
+# Older cmakes used the default compiler, not the CMAKE C compiler
+if(${CMAKE_VERSION} VERSION_LESS 2.8.10)
+    list(APPEND CUDA_NVCC_FLAGS "-ccbin ${CMAKE_C_COMPILER}")
+endif()
 
 ###############################################################################
 # FFTW
