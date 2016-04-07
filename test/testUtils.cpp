@@ -17,7 +17,6 @@
 #include "testUtils.hpp"
 #include "libLiFFT/types/Vec.hpp"
 #include "libLiFFT/FFT.hpp"
-#include "libLiFFT/libraries/fftw/FFTW.hpp"
 #include "libLiFFT/generateData.hpp"
 #include "libLiFFT/accessors/TransformAccessor.hpp"
 #include "libLiFFT/accessors/TransposeAccessor.hpp"
@@ -217,8 +216,8 @@ namespace LiFFTTest {
         baseR2COutput.freeData();
         baseC2CInput.freeData();
         baseC2COutput.freeData();
-        delete fftR2C;
-        delete fftC2C;
+        free(fftR2C);
+        free(fftC2C);
     }
 
     void visualizeBase()

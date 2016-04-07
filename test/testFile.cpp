@@ -32,7 +32,7 @@ using namespace LiFFT::generators;
 namespace LiFFTTest {
 
     template< typename T_File >
-    void testFile( T_File& file )
+    bool testFile( T_File& file )
     {
         using FFTResult_t = LiFFT::mem::ComplexContainer<2, TestPrecision>;
         FFTResult_t fftResult(LiFFT::types::Idx2D(file.getExtents()[1], file.getExtents()[0]/2+1));
@@ -44,10 +44,10 @@ namespace LiFFTTest {
         fft(input, output);
         LiFFT::policies::copy(file, baseR2CInput);
         execBaseR2C();
-        checkResult(baseR2COutput, fftResult, "R2C with file input");
+        return checkResult(baseR2COutput, fftResult, "R2C with file input");
     }
 
-    void testTiffCp(const std::string& filePath)
+    bool testTiffCp(const std::string& filePath)
     {
         std::string filePath2 = filePath+"2.tif";
         tiffWriter::FloatImage<> img(filePath);
@@ -55,11 +55,12 @@ namespace LiFFTTest {
         img.close();
         tiffWriter::FloatImage<> img1(filePath);
         tiffWriter::FloatImage<> img2(filePath2);
-        checkResult(img1, img2, "TIFF copy");
+        bool ok = checkResult(img1, img2, "TIFF copy");
         std::remove(filePath2.c_str());
+        return ok;
     }
 
-    void testTiffModify(const std::string& filePath)
+    bool testTiffModify(const std::string& filePath)
     {
         std::string filePath2 = filePath+"2.tif";
         tiffWriter::FloatImage<> img(filePath);
@@ -77,9 +78,10 @@ namespace LiFFTTest {
         else
             std::cout << "Tiff modify passed" << std::endl;
         std::remove(filePath2.c_str());
+        return res.first;
     }
 
-    void testTiffFile(const std::string& filePath)
+    bool testTiffFile(const std::string& filePath)
     {
         tiffWriter::FloatImage<> img(filePath, false);
         using FFT_Type = LiFFT::FFT_2D_R2C_F<>;
@@ -90,11 +92,11 @@ namespace LiFFTTest {
         LiFFT::policies::copy(img, baseR2CInput);
         fft(input, output);
         execBaseR2C();
-        checkResult(baseR2COutput, output, "TIFF test");
         visualizeOutput(BaseInstance::OutR2C, "outputTiff.pdf");
+        return checkResult(baseR2COutput, output, "TIFF test");
     }
 
-    void testFile()
+    int testFile()
     {
         using FileType = LiFFT::mem::FileContainer<
             tiffWriter::Image<>,
@@ -103,10 +105,11 @@ namespace LiFFTTest {
             false
             >;
         FileType myFile("rect.tif");
-        testFile(myFile);
-        testTiffFile("input1.tif");
-        testTiffCp("input1.tif");
-        testTiffModify("input1.tif");
+        TEST( testFile(myFile) );
+        TEST( testTiffFile("input1.tif") );
+        TEST( testTiffCp("input1.tif") );
+        TEST( testTiffModify("input1.tif") );
+        return 0;
     }
 
 }  // namespace LiFFTTest

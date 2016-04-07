@@ -37,8 +37,7 @@ namespace LiFFTTest {
         }
     };
 
-    void
-    testContainerCreation()
+    bool testContainerCreation()
     {
         using FFT = LiFFT::FFT_3D_R2C_F<true>;
         auto input = FFT::createNewInput(LiFFT::types::Vec3(2048u, 1024u, 1u));
@@ -66,10 +65,10 @@ namespace LiFFTTest {
             std::cout << "Inplace container creation passed" << std::endl;
         else
             std::cerr << "Inplace container creation FAILED" << std::endl;
-        exit(0);
+        return ok;
     }
 
-    void testInplaceComplex()
+    bool testInplaceComplex()
     {
         auto aperture = ComplexContainer(TestExtents::all(testSize));
         using FFT_Type = LiFFT::FFT_2D_C2C<TestPrecision, true>;
@@ -80,10 +79,11 @@ namespace LiFFTTest {
         LiFFT::policies::copy(aperture, baseC2CInput);
         fft(input);
         execBaseC2C();
-        checkResult(baseC2COutput, output, "C2C inPlace");
+        // Inplace got some more random derivations in the low intensity regions
+        return checkResult(baseC2COutput, output, "C2C inPlace", CmpError(1e-3, 5e-5));
     }
 
-    void testInplaceR2C()
+    bool testInplaceR2C()
     {
         TestExtents ext = TestExtents::all(testSize);
         ext[testNumDims - 1] = (ext[testNumDims - 1] / 2 + 1) * 2;
@@ -97,14 +97,16 @@ namespace LiFFTTest {
         LiFFT::policies::copy(aperture, baseR2CInput);
         fft(input);
         execBaseR2C();
-        checkResult(baseR2COutput, output, "R2C inPlace");
+        // Inplace got some more random derivations in the low intensity regions
+        return checkResult(baseR2COutput, output, "R2C inPlace", CmpError(1e-3, 5e-5));
     }
 
-    void testInplace()
+    int testInplace()
     {
-        testContainerCreation();
-        testInplaceComplex();
-        testInplaceR2C();
+        TEST( testContainerCreation() );
+        TEST( testInplaceComplex() );
+        TEST( testInplaceR2C() );
+        return 0;
     }
 
 }  // namespace LiFFTTest

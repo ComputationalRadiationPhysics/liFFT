@@ -23,7 +23,9 @@
 #include "libLiFFT/FFT.hpp"
 #include "Volume.hpp"
 #include "libLiFFT/accessors/VolumeAccessor.hpp"
-#include "libLiFFT/libraries/fftw/fftw3Include.h"
+#ifndef WITH_CUDA
+#   include "libLiFFT/libraries/fftw/fftw3Include.h"
+#endif
 #include "libLiFFT/generateData.hpp"
 #include "libLiFFT/policies/Copy.hpp"
 #include "libLiFFT/traits/IdentityAccessor.hpp"
@@ -61,6 +63,7 @@ namespace LiFFT {
             using type = T; // or define this in MyComplex itself
         };
 
+#ifndef WITH_CUDA
         template<>
         struct IsComplex< fftw_complex >: std::true_type{};
 
@@ -71,6 +74,7 @@ namespace LiFFT {
         struct IsBinaryCompatibleImpl< fftw_complex, LiFFT::types::Complex<double> >: std::true_type{};
         template<>
         struct IsBinaryCompatibleImpl< fftwf_complex, LiFFT::types::Complex<float> >: std::true_type{};
+#endif
 
         template<typename T>
         struct IdentityAccessor< Volume<T> >
@@ -90,13 +94,17 @@ namespace LiFFTTest {
     }
 
     using ComplexVol     = Volume< MyComplex<TestPrecision> >;
+#ifndef WITH_CUDA
     using ComplexVolFFTW = Volume< std::conditional_t<std::is_same<TestPrecision, float>::value, fftwf_complex, fftw_complex > >;
+#else
+    using ComplexVolFFTW = ComplexVol;
+#endif
     using RealVol        = Volume< TestPrecision >;
 
     using LiFFT::types::makeRange;
     using LiFFT::types::makeSliceView;
 
-    void testComplex()
+    bool testComplex()
     {
         using LiFFT::accessors::VolumeAccessor;
         auto aperture = ComplexVol(testSize, testSize);
@@ -109,10 +117,10 @@ namespace LiFFTTest {
         fft(input, output);
         LiFFT::policies::copy(makeSliceView<0>(aperture), baseC2CInput);
         execBaseC2C();
-        checkResult(baseC2COutput, makeSliceView<0>(fftResult), "C2C with custom types");
+        return checkResult(baseC2COutput, makeSliceView<0>(fftResult), "C2C with custom types");
     }
 
-    void testReal()
+    bool testReal()
     {
         using LiFFT::accessors::VolumeAccessor;
         auto aperture = RealVol(testSize, testSize);
@@ -125,13 +133,14 @@ namespace LiFFTTest {
         fft(input, output);
         LiFFT::policies::copy(makeSliceView<0>(aperture), baseR2CInput);
         execBaseR2C();
-        checkResult(baseR2COutput, makeSliceView<0>(fftResult), "R2C with custom types");
+        return checkResult(baseR2COutput, makeSliceView<0>(fftResult), "R2C with custom types");
     }
 
-    void testCustomTypes()
+    int testCustomTypes()
     {
-        testComplex();
-        testReal();
+        TEST( testComplex() );
+        TEST( testReal() );
+        return 0;
     }
 
 }  // namespace LiFFTTest

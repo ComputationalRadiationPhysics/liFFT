@@ -20,7 +20,7 @@
 #include "tiffWriter/image.hpp"
 #include "tiffWriter/traitsAndPolicies.hpp"
 #include "libLiFFT/FFT.hpp"
-#if defined(WITH_CUDA) and false
+#if defined(WITH_CUDA)
 #   include "libLiFFT/libraries/cuFFT/cuFFT.hpp"
     using FFT_LIB = LiFFT::libraries::cuFFT::CuFFT<>;
 #else

@@ -25,7 +25,7 @@
 
 namespace LiFFTTest {
 
-    void testPlainPtr()
+    int testPlainPtr()
     {
         static_assert(testNumDims == 2, "Currently only 2D is tested");
         using Real = LiFFT::types::Real<TestPrecision>;
@@ -41,7 +41,7 @@ namespace LiFFTTest {
         fft(inWrapped, outWrapped);
         LiFFT::policies::copy(inWrapped, baseR2CInput);
         execBaseR2C();
-        checkResult(baseR2COutput, outWrapped, "R2C with PlainPtrWrapper");
+        return checkResult(baseR2COutput, outWrapped, "R2C with PlainPtrWrapper") ? 0 : 1;
     }
 
 }  // namespace LiFFTTest

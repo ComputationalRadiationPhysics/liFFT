@@ -15,6 +15,8 @@
  License along with libLiFFT. If not, see <www.gnu.org/licenses/>.
 """
  
+from matplotlib import use as mplUse
+mplUse('Agg')
 from matplotlib import cm
 from matplotlib import pyplot as plt
 from matplotlib.colors import LogNorm

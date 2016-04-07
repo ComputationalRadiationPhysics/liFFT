@@ -18,6 +18,6 @@
 
 namespace LiFFTTest {
 
-    void testCustomTypes();
+    int testCustomTypes();
 
 }  // namespace LiFFTTest
