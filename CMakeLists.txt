@@ -18,7 +18,7 @@ macro(CheckAndAddFlag flag)
 	endif()
 endmacro()
 
-project(haLT)
+project(libLiFFT)
 cmake_minimum_required(VERSION 2.8.0)
 
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} $ENV{HOME}/Software/tiff $ENV{HOME}/Software/FFTW)
@@ -75,56 +75,56 @@ CheckAndAddFlag(-Wextra)
 CheckAndAddFlag(-Wshadow)
 CheckAndAddFlag(/W3)
 
-file(GLOB haLT_Test_CPP_FILES
+file(GLOB LiFFT_Test_CPP_FILES
     "test/*.cpp"
     "test/*.hpp"
 )
 
-file(GLOB haLT_Test_CU_FILES
+file(GLOB LiFFT_Test_CU_FILES
     "test/*.cu"
     "test/*.hpp"
 )
 
 if(CUDA_FOUND AND ENABLE_CUDA)
     add_definitions(-DWITH_CUDA)
-    cuda_add_executable(haLT_Test ${haLT_Test_CU_FILES})
-    CUDA_ADD_CUFFT_TO_TARGET(haLT_Test)
+    cuda_add_executable(LiFFT_Test ${LiFFT_Test_CU_FILES})
+    CUDA_ADD_CUFFT_TO_TARGET(LiFFT_Test)
     cuda_add_executable(fftTiffImg fftTiffImg/main.cu)
     CUDA_ADD_CUFFT_TO_TARGET(fftTiffImg)
     cuda_add_executable(reportVolumes reportVolumes/main.cu)
     CUDA_ADD_CUFFT_TO_TARGET(reportVolumes)
 else()
-	add_executable(haLT_Test ${haLT_Test_CPP_FILES})
+	add_executable(LiFFT_Test ${LiFFT_Test_CPP_FILES})
 	add_executable(fftTiffImg fftTiffImg/main.cpp)
 	add_executable(reportVolumes reportVolumes/main.cpp)
 endif()
 
 add_executable(tiff2PDF tiff2Pdf/tiff2pdf.cpp)
 
-target_link_libraries(haLT_Test ${LIBS})
+target_link_libraries(LiFFT_Test ${LIBS})
 target_link_libraries(tiff2PDF ${TIFF_LIBRARIES})
 target_link_libraries(fftTiffImg ${LIBS})
 target_link_libraries(reportVolumes ${LIBS})
 
 add_custom_command(
-    TARGET haLT_Test
+    TARGET LiFFT_Test
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
     "${PROJECT_SOURCE_DIR}/writeData.py"
-    $<TARGET_FILE_DIR:haLT_Test>
+    $<TARGET_FILE_DIR:LiFFT_Test>
 )
 add_custom_command(
-    TARGET haLT_Test
+    TARGET LiFFT_Test
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
     "${PROJECT_SOURCE_DIR}/rect.tif"
-    $<TARGET_FILE_DIR:haLT_Test>
+    $<TARGET_FILE_DIR:LiFFT_Test>
 )
 add_custom_command(
-    TARGET haLT_Test
+    TARGET LiFFT_Test
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
     "${PROJECT_SOURCE_DIR}/input1.tif"
-    $<TARGET_FILE_DIR:haLT_Test>
+    $<TARGET_FILE_DIR:LiFFT_Test>
 )
 

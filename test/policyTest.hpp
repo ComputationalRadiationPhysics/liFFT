@@ -1,17 +1,17 @@
-/* This file is part of HaLT.
+/* This file is part of libLiFFT.
  *
- * HaLT is free software: you can redistribute it and/or modify
+ * libLiFFT is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
  *
- * HaLT is distributed in the hope that it will be useful,
+ * libLiFFT is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with HaLT.  If not, see <www.gnu.org/licenses/>.
+ * License along with libLiFFT.  If not, see <www.gnu.org/licenses/>.
  */
  
 #pragma once
@@ -19,10 +19,10 @@
 #include "policyExample.hpp"
 #include <chrono>
 #include <vector>
-#include "haLT/mem/DataContainer.hpp"
-#include "haLT/mem/RealValues.hpp"
-#include "haLT/mem/ComplexAoSValues.hpp"
-#include "haLT/mem/ComplexSoAValues.hpp"
+#include "libLiFFT/mem/DataContainer.hpp"
+#include "libLiFFT/mem/RealValues.hpp"
+#include "libLiFFT/mem/ComplexAoSValues.hpp"
+#include "libLiFFT/mem/ComplexSoAValues.hpp"
 
 
 using millisecs = std::chrono::duration<unsigned long long, std::milli>;
@@ -45,10 +45,10 @@ bool checkResult(const T& result, unsigned expected){
 }
 
 void test(){
-    using namespace haLT::types;
-    using namespace haLT::mem;
-    using haLT::calcIntensity;
-    using haLT::calcIntensity2;
+    using namespace LiFFT::types;
+    using namespace LiFFT::mem;
+    using LiFFT::calcIntensity;
+    using LiFFT::calcIntensity2;
 
     DataContainer< 1, RealValues<double> > simpleRealData;
     DataContainer< 1, ComplexAoSValues<double> > complexAoS;

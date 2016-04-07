@@ -1,24 +1,24 @@
-/* This file is part of HaLT.
+/* This file is part of libLiFFT.
  *
- * HaLT is free software: you can redistribute it and/or modify
+ * libLiFFT is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
  *
- * HaLT is distributed in the hope that it will be useful,
+ * libLiFFT is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with HaLT.  If not, see <www.gnu.org/licenses/>.
+ * License along with libLiFFT.  If not, see <www.gnu.org/licenses/>.
  */
  
 #include "testZip.hpp"
 #include "testUtils.hpp"
-#include "haLT/accessors/ZipAccessor.hpp"
-#include "haLT/generateData.hpp"
-#include "haLT/FFT.hpp"
+#include "libLiFFT/accessors/ZipAccessor.hpp"
+#include "libLiFFT/generateData.hpp"
+#include "libLiFFT/FFT.hpp"
 
 #include "tiffWriter/image.hpp"
 #include "tiffWriter/traitsAndPolicies.hpp"
@@ -26,10 +26,10 @@
 #include <algorithm>
 #include <iostream>
 
-using haLT::generateData;
-using namespace haLT::generators;
+using LiFFT::generateData;
+using namespace LiFFT::generators;
 
-namespace haLTTest {
+namespace LiFFTTest {
 
     void testZipBasic()
     {
@@ -44,13 +44,13 @@ namespace haLTTest {
         for(idx[0] = 0; idx[0]<testSize; idx[0]++)
             for(idx[1] = 0; idx[1]<testSize; idx[1]++)
                 inputProd(idx) = input1(idx) * input2(idx);
-        auto acc = haLT::accessors::makeZipAccessor(input1, std::multiplies<haLT::types::Real<TestPrecision>>(), haLT::traits::getIdentityAccessor(input2));
-        using FFT_Type = haLT::FFT_2D_R2C<TestPrecision>;
+        auto acc = LiFFT::accessors::makeZipAccessor(input1, std::multiplies<LiFFT::types::Real<TestPrecision>>(), LiFFT::traits::getIdentityAccessor(input2));
+        using FFT_Type = LiFFT::FFT_2D_R2C<TestPrecision>;
         auto input = FFT_Type::wrapInput(input2, acc);
         auto output = FFT_Type::createNewOutput(input);
-        auto fft = haLT::makeFFT<TestLibrary>(input, output);
+        auto fft = LiFFT::makeFFT<TestLibrary>(input, output);
         fft(input, output);
-        haLT::policies::copy(inputProd, baseR2CInput);
+        LiFFT::policies::copy(inputProd, baseR2CInput);
         execBaseR2C();
         checkResult(baseR2COutput, output, "R2C with zip accessor");
     }
@@ -59,13 +59,13 @@ namespace haLTTest {
     {
         tiffWriter::FloatImage<> img1(filePath1, false);
         tiffWriter::FloatImage<> img2(filePath2, false);
-        auto acc = haLT::accessors::makeZipAccessor(img1, std::multiplies<haLT::types::Real<TestPrecision>>(), haLT::traits::getIdentityAccessor(img2));
-        using FFT_Type = haLT::FFT_2D_R2C_F<>;
+        auto acc = LiFFT::accessors::makeZipAccessor(img1, std::multiplies<LiFFT::types::Real<TestPrecision>>(), LiFFT::traits::getIdentityAccessor(img2));
+        using FFT_Type = LiFFT::FFT_2D_R2C_F<>;
         auto input = FFT_Type::wrapInput(img2, acc);
         auto output = FFT_Type::createNewOutput(input);
-        auto fft = haLT::makeFFT< TestLibrary, false >(input, output);
+        auto fft = LiFFT::makeFFT< TestLibrary, false >(input, output);
         img1.load(); img2.load();
-        haLT::policies::copy(img2, baseR2CInput, acc);
+        LiFFT::policies::copy(img2, baseR2CInput, acc);
         fft(input, output);
         execBaseR2C();
         checkResult(baseR2COutput, output, "TIFF-ZIP test");
@@ -77,4 +77,4 @@ namespace haLTTest {
         testZipFile("input1.tif", "input2.tif");
     }
 
-}  // namespace haLTTest
+}  // namespace LiFFTTest

@@ -1,17 +1,17 @@
-/* This file is part of HaLT.
+/* This file is part of libLiFFT.
  *
- * HaLT is free software: you can redistribute it and/or modify
+ * libLiFFT is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
  *
- * HaLT is distributed in the hope that it will be useful,
+ * libLiFFT is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with HaLT.  If not, see <www.gnu.org/licenses/>.
+ * License along with libLiFFT.  If not, see <www.gnu.org/licenses/>.
  */
  
 #include <iostream>
@@ -19,21 +19,21 @@
 
 #include "tiffWriter/image.hpp"
 #include "tiffWriter/traitsAndPolicies.hpp"
-#include "haLT/FFT.hpp"
+#include "libLiFFT/FFT.hpp"
 #if defined(WITH_CUDA) and false
-#   include "haLT/libraries/cuFFT/cuFFT.hpp"
-    using FFT_LIB = haLT::libraries::cuFFT::CuFFT<>;
+#   include "libLiFFT/libraries/cuFFT/cuFFT.hpp"
+    using FFT_LIB = LiFFT::libraries::cuFFT::CuFFT<>;
 #else
-#   include "haLT/libraries/fftw/FFTW.hpp"
-    using FFT_LIB = haLT::libraries::fftw::FFTW<>;
+#   include "libLiFFT/libraries/fftw/FFTW.hpp"
+    using FFT_LIB = LiFFT::libraries::fftw::FFTW<>;
 #endif
 
-#include "haLT/policies/Copy.hpp"
-#include "haLT/accessors/TransformAccessor.hpp"
-#include "haLT/accessors/TransposeAccessor.hpp"
-#include "haLT/policies/CalcIntensityFunctor.hpp"
-#include "haLT/generateData.hpp"
-#include "haLT/types/SliceView.hpp"
+#include "libLiFFT/policies/Copy.hpp"
+#include "libLiFFT/accessors/TransformAccessor.hpp"
+#include "libLiFFT/accessors/TransposeAccessor.hpp"
+#include "libLiFFT/policies/CalcIntensityFunctor.hpp"
+#include "libLiFFT/generateData.hpp"
+#include "libLiFFT/types/SliceView.hpp"
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
@@ -160,7 +160,7 @@ struct GenData1
     template< class T_Idx >
     T
     operator()(T_Idx&& idx) const{
-        static constexpr unsigned numDims = haLT::traits::NumDims<T_Idx>::value;
+        static constexpr unsigned numDims = LiFFT::traits::NumDims<T_Idx>::value;
         static_assert(numDims == 3, "3D only");
 
         unsigned x = idx[2] + 850u;
@@ -192,16 +192,16 @@ void genData(T& data, unsigned dataSet)
     std::cout << "Generating Dataset " << dataSet << "..." << std::endl;
     switch(dataSet){
     case 1:
-        haLT::generateData(data, GenData1<float, Values1_2P5um>());
+        LiFFT::generateData(data, GenData1<float, Values1_2P5um>());
         break;
     case 2:
-        haLT::generateData(data, GenData1<float, Values1_1um>());
+        LiFFT::generateData(data, GenData1<float, Values1_1um>());
         break;
     case 3:
-        haLT::generateData(data, GenData1<float, Values1_100nm>());
+        LiFFT::generateData(data, GenData1<float, Values1_100nm>());
         break;
     case 4:
-        haLT::generateData(data, GenData1<float, Values2>());
+        LiFFT::generateData(data, GenData1<float, Values2>());
         break;
     default:
         throw std::logic_error("Wrong dataset");
@@ -212,14 +212,14 @@ void genData(T& data, unsigned dataSet)
 void writeInput(const string& filePath, unsigned dataSet)
 {
     tiffWriter::FloatImage<> img(filePath, 1024u, 1024u);
-    haLT::mem::RealContainer<3, float> data(haLT::types::Vec3(1u, 1024u, 1024u));
+    LiFFT::mem::RealContainer<3, float> data(LiFFT::types::Vec3(1u, 1024u, 1024u));
     unsigned startDS = dataSet ? dataSet : 1;
     unsigned lastDS = dataSet ? dataSet : 4;
     for(unsigned i = startDS; i<=lastDS; i++)
     {
         genData(data, i);
-        auto view = haLT::types::makeSliceView<0>(data, haLT::types::makeRange());
-        haLT::policies::copy(view, img);
+        auto view = LiFFT::types::makeSliceView<0>(data, LiFFT::types::makeRange());
+        LiFFT::policies::copy(view, img);
         if(dataSet)
             img.save();
         else
@@ -235,15 +235,15 @@ void writeInput(const string& filePath, unsigned dataSet)
 void writeAllInput(const string& filePath, unsigned dataSet)
 {
     tiffWriter::FloatImage<> img(filePath, 1024u, 1024u);
-    haLT::mem::RealContainer<3, float> data(haLT::types::Vec3(1024u, 1024u, 1024u));
+    LiFFT::mem::RealContainer<3, float> data(LiFFT::types::Vec3(1024u, 1024u, 1024u));
     unsigned startDS = dataSet ? dataSet : 1;
     unsigned lastDS = dataSet ? dataSet : 4;
     for(unsigned i = startDS; i<=lastDS; i++)
     {
         genData(data, i);
         for(unsigned z=0; z<data.getExtents()[0]; z++){
-            auto view = haLT::types::makeSliceView<0>(data, haLT::types::makeRange(haLT::types::Vec3(z, 0u, 0u)));
-            haLT::policies::copy(view, img);
+            auto view = LiFFT::types::makeSliceView<0>(data, LiFFT::types::makeRange(LiFFT::types::Vec3(z, 0u, 0u)));
+            LiFFT::policies::copy(view, img);
             boost::filesystem::path fPath(filePath);
             fPath.replace_extension(std::to_string(i) + string("_") + std::to_string(z) + fPath.extension().string());
             img.saveTo(fPath.string());
@@ -254,11 +254,11 @@ void writeAllInput(const string& filePath, unsigned dataSet)
 
 void writeFFT(const string& filePath, unsigned dataSet)
 {
-    using FFT = haLT::FFT_3D_R2C_F<true>;
-    auto input = FFT::createNewInput(haLT::types::Vec3(1024u, 1024u, 1024u));
+    using FFT = LiFFT::FFT_3D_R2C_F<true>;
+    auto input = FFT::createNewInput(LiFFT::types::Vec3(1024u, 1024u, 1024u));
     auto output = FFT::createNewOutput(input);
-    auto outSlice = haLT::types::makeSliceView<0>(haLT::getFullData(output), haLT::types::makeRange());
-    auto fft = haLT::makeFFT<FFT_LIB, false>(input);
+    auto outSlice = LiFFT::types::makeSliceView<0>(LiFFT::getFullData(output), LiFFT::types::makeRange());
+    auto fft = LiFFT::makeFFT<FFT_LIB, false>(input);
 
     unsigned startDS = dataSet ? dataSet : 1;
     unsigned lastDS = dataSet ? dataSet : 4;
@@ -267,9 +267,9 @@ void writeFFT(const string& filePath, unsigned dataSet)
         genData(input, i);
         fft(input);
         tiffWriter::FloatImage<> img(filePath, 1024u, 1024u);
-        auto acc1 = haLT::accessors::makeTransformAccessorFor(haLT::policies::CalcIntensityFunc(), outSlice);
-        haLT::accessors::TransposeAccessor<decltype(acc1)> acc(acc1);
-        haLT::policies::copy(outSlice, img, acc);
+        auto acc1 = LiFFT::accessors::makeTransformAccessorFor(LiFFT::policies::CalcIntensityFunc(), outSlice);
+        LiFFT::accessors::TransposeAccessor<decltype(acc1)> acc(acc1);
+        LiFFT::policies::copy(outSlice, img, acc);
         if(dataSet)
             img.save();
         else

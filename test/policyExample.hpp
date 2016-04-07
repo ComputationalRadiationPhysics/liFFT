@@ -1,30 +1,30 @@
-/* This file is part of HaLT.
+/* This file is part of libLiFFT.
  *
- * HaLT is free software: you can redistribute it and/or modify
+ * libLiFFT is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
  *
- * HaLT is distributed in the hope that it will be useful,
+ * libLiFFT is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with HaLT.  If not, see <www.gnu.org/licenses/>.
+ * License along with libLiFFT.  If not, see <www.gnu.org/licenses/>.
  */
  
 #pragma once
 
-#include "haLT/traits/IntegralType.hpp"
-#include "haLT/traits/IsComplex.hpp"
-#include "haLT/traits/IsAoS.hpp"
-#include "haLT/policies/GetExtents.hpp"
-#include "haLT/policies/GetStrides.hpp"
-#include "haLT/accessors/DataContainerAccessor.hpp"
-#include "haLT/policies/CalcIntensity.hpp"
+#include "libLiFFT/traits/IntegralType.hpp"
+#include "libLiFFT/traits/IsComplex.hpp"
+#include "libLiFFT/traits/IsAoS.hpp"
+#include "libLiFFT/policies/GetExtents.hpp"
+#include "libLiFFT/policies/GetStrides.hpp"
+#include "libLiFFT/accessors/DataContainerAccessor.hpp"
+#include "libLiFFT/policies/CalcIntensity.hpp"
 
-namespace haLT {
+namespace LiFFT {
 
     template< class T_Input >
     std::enable_if_t< (traits::IsComplex<T_Input>::value && traits::IsAoS<T_Input>::value) >
@@ -82,4 +82,4 @@ namespace haLT {
 
 
 
-}  // namespace haLT
+}  // namespace LiFFT
