@@ -17,8 +17,9 @@
 
 language: cpp
 
-os:
-    - linux
+os: linux
+
+sudo: false
 
 compiler:
     - gcc
@@ -27,49 +28,66 @@ compiler:
 cache:
     directories:
         - $HOME/dependencies
-    
+        - $HOME/.cache/pip
+        - $HOME/virtualenv/python2.7/lib/python2.7/site-packages
+        - $HOME/.local/lib/python2.7/site-packages
+
+addons:
+    apt:
+        sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.8
+        packages:
+            - g++-4.8
+            - clang-3.8
+            - cmake
+            - libfftw3-dev
+
 env:
     global:
         - LIFFT_BOOST=1.55.0
     matrix:
-        - LIFFT_BUILD_TYPE=Debug LIFFT_CUDA=OFF LIFFT_CLANG_VER=3.6
-        - LIFFT_BUILD_TYPE=Release LIFFT_CUDA=OFF LIFFT_CLANG_VER=3.6
-        - LIFFT_BUILD_TYPE=Release LIFFT_CUDA=OFF LIFFT_CLANG_VER=3.5
-        - LIFFT_BUILD_TYPE=Debug LIFFT_CUDA=ON LIFFT_CUDA_VER=7.0-28
-        - LIFFT_BUILD_TYPE=Release LIFFT_CUDA=ON LIFFT_CUDA_VER=7.0-28 
+        - LIFFT_BUILD_TYPE=Debug LIFFT_CUDA=OFF LIFFT_CLANG_VER=3.8
+        - LIFFT_BUILD_TYPE=Release LIFFT_CUDA=OFF LIFFT_CLANG_VER=3.8
 
 matrix:
-    exclude:
-        - compiler: gcc
-          env: LIFFT_BUILD_TYPE=Release LIFFT_CUDA=OFF LIFFT_CLANG_VER=3.5
-        - compiler: clang
-          env: LIFFT_BUILD_TYPE=Debug LIFFT_CUDA=ON LIFFT_CUDA_VER=7.0-28
-        - compiler: clang
-          env: LIFFT_BUILD_TYPE=Release LIFFT_CUDA=ON LIFFT_CUDA_VER=7.0-28
     include:
         - os: linux
           compiler: gcc
           env: LIFFT_BUILD_TYPE=Release LIFFT_CUDA=OFF LIFFT_BOOST=1.60.0
+        - os: linux
+          compiler: clang
+          env: LLIFFT_BUILD_TYPE=Release LIFFT_CUDA=OFF LIFFT_CLANG_VER=3.5
+          addons:
+              apt:
+                  sources:
+                      - ubuntu-toolchain-r-test
+                      - llvm-toolchain-precise-3.5
+                  packages:
+                      - g++-4.8
+                      - clang-3.5
+                      - cmake
+                      - libfftw3-dev
+        - os: linux
+          compiler: gcc
+          env: LIFFT_BUILD_TYPE=Debug LIFFT_CUDA=ON LIFFT_CUDA_VER=7.0-28
+          sudo: required
+        - os: linux
+          compiler: gcc
+          env: LIFFT_BUILD_TYPE=Release LIFFT_CUDA=ON LIFFT_CUDA_VER=7.0-28
           sudo: required
   
 before_install:
-    # g++ / clang dependencies
-    - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-    - |
-        if [ "${CXX}" == "clang++" ]; then
-            sudo add-apt-repository -y "deb http://llvm.org/apt/precise/ llvm-toolchain-precise-${LIFFT_CLANG_VER} main"
-            wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
-        fi
     - |
         if [ "${LIFFT_CUDA}" == "ON" ]; then
             wget http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1204/x86_64/cuda-repo-ubuntu1204_${LIFFT_CUDA_VER}_amd64.deb
             sudo dpkg -i cuda-repo-ubuntu1204_${LIFFT_CUDA_VER}_amd64.deb
+            sudo apt-get update -qq
         fi
-    - sudo apt-get update -qq
 
 install:
-    - if [ "${CXX}" == "g++" ]; then sudo apt-get install g++-4.8; export CXX=g++-4.8; fi
-    - if [ "${CXX}" == "clang++" ]; then sudo apt-get install -y clang-${LIFFT_CLANG_VER}; export CXX=clang++-${LIFFT_CLANG_VER}; fi
+    - if [ "${CXX}" == "g++" ]; then export CXX=g++-4.8; export CC=gcc-4.8; fi
+    - if [ "${CXX}" == "clang++" ]; then export CXX=clang++-${LIFFT_CLANG_VER}; export CC=clang-${LIFFT_CLANG_VER}; fi
     # CUDA
     - |
         if [ "${LIFFT_CUDA}" == "ON" ]; then
@@ -96,8 +114,7 @@ install:
         fi
     - |
         if [ "${LIFFT_CUDA}" == "OFF" ]; then
-            sudo apt-get install libfftw3-dev
-            sudo apt-get install python-matplotlib
+            pip install --user numpy matplotlib
         fi
     # Versions
     - $CXX --version
