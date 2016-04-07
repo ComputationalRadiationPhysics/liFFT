@@ -68,7 +68,6 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
 # Use the CMake variable available at 3.1 and up
 if(${CMAKE_VERSION} VERSION_LESS 3.1)
     add_definitions(-std=c++11)
-    list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
 else()
     set(CMAKE_CXX_STANDARD 11)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
