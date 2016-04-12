@@ -38,7 +38,7 @@ include_directories(${TIFF_INCLUDE_DIR})
 # CUDA
 ###############################################################################
 find_package(CUDA)
-set(ENABLE_CUDA ${CUDA_FOUND} CACHE BOOL "Use CUDA")
+set(LiFFT_ENABLE_CUDA ${CUDA_FOUND} CACHE BOOL "Use CUDA")
 set(CUDA_PROPAGATE_HOST_FLAGS OFF)
 list(APPEND CUDA_NVCC_FLAGS_RELEASE "-O3 -DNDEBUG")
 list(APPEND CUDA_NVCC_FLAGS_DEBUG "-O0 -g")
@@ -50,7 +50,7 @@ endif()
 ###############################################################################
 # FFTW
 ###############################################################################
-if(CUDA_FOUND AND CUDA_ENABLED)
+if(CUDA_FOUND AND LiFFT_ENABLE_CUDA)
     find_package(FFTW)
 else()
     find_package(FFTW REQUIRED)
@@ -84,7 +84,7 @@ CheckAndAddFlag(-Wextra)
 CheckAndAddFlag(-Wshadow)
 CheckAndAddFlag(/W3)
 
-if(CUDA_FOUND AND ENABLE_CUDA)
+if(CUDA_FOUND AND LiFFT_ENABLE_CUDA)
     add_definitions(-DWITH_CUDA)
     cuda_add_executable(fftTiffImg fftTiffImg/main.cu)
     CUDA_ADD_CUFFT_TO_TARGET(fftTiffImg)
@@ -104,5 +104,5 @@ target_link_libraries(reportVolumes ${LIBS})
 add_subdirectory(test)
 
 enable_testing()
-add_test(NAME LiFFT_Test COMMAND Test)
+add_test(NAME Main_Test COMMAND Test)
 

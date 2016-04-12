@@ -25,6 +25,11 @@ compiler:
     - gcc
     - clang
     
+branches:
+    only:
+        - master
+        - dev
+    
 cache:
     directories:
         - $HOME/dependencies
@@ -57,7 +62,7 @@ matrix:
           env: LIFFT_BUILD_TYPE=Release LIFFT_CUDA=OFF LIFFT_BOOST=1.60.0
         - os: linux
           compiler: clang
-          env: LLIFFT_BUILD_TYPE=Release LIFFT_CUDA=OFF LIFFT_CLANG_VER=3.5
+          env: LIFFT_BUILD_TYPE=Release LIFFT_CUDA=OFF LIFFT_CLANG_VER=3.5
           addons:
               apt:
                   sources:
@@ -86,8 +91,8 @@ before_install:
         fi
 
 install:
-    - if [ "${CXX}" == "g++" ]; then export CXX=g++-4.8; export CC=gcc-4.8; fi
-    - if [ "${CXX}" == "clang++" ]; then export CXX=clang++-${LIFFT_CLANG_VER}; export CC=clang-${LIFFT_CLANG_VER}; fi
+    - if [ "${CXX}" == "g++" ]; then export CXX=g++-4.8; export CC=${CXX/g++/gcc}; export GCOV=${CXX/g++/gcov}; fi
+    - if [ "${CXX}" == "clang++" ]; then export CXX=clang++-${LIFFT_CLANG_VER}; export CC=clang-${LIFFT_CLANG_VER}; export GCOV="llvm-gcov gcov"; fi
     # CUDA
     - |
         if [ "${LIFFT_CUDA}" == "ON" ]; then
@@ -108,7 +113,7 @@ install:
             wget http://sourceforge.net/projects/boost/files/boost/${LIFFT_BOOST}/${LIFFT_BOOST_FOLDER}.tar.bz2 --output-document=boost.tar.bz2
             mkdir -p $BOOST_ROOT
             tar jxf boost.tar.bz2 --strip-components=1 -C $BOOST_ROOT
-            (cd $BOOST_ROOT; ./bootstrap.sh --with-libraries=program_options,filesystem,system,unit_test_framework)
+            (cd $BOOST_ROOT; ./bootstrap.sh --with-libraries=program_options,filesystem,system,test)
             (cd $BOOST_ROOT; ./b2 --prefix=$BOOST_ROOT -d0 install)
         else echo "Using cached boost version at $BOOST_ROOT"
         fi
@@ -120,12 +125,30 @@ install:
     - $CXX --version
     - if [ "${LIFFT_CUDA}" == "ON" ]; then nvcc --version; fi
     - cmake --version
+    - gcov --version
 
 script:
     - mkdir build && cd build
     - set -e
-    - cmake ../ -DCMAKE_BUILD_TYPE=${LIFFT_BUILD_TYPE} -DENABLE_CUDA=${LIFFT_CUDA} -DCMAKE_VERBOSE_MAKEFILE=ON
+    - cmake ../ -DCMAKE_BUILD_TYPE=${LIFFT_BUILD_TYPE} -DLiFFT_ENABLE_CUDA=${LIFFT_CUDA} -DCMAKE_VERBOSE_MAKEFILE=ON
     - make
-    - if [ "${LIFFT_CUDA}" == "OFF" ]; then CTEST_OUTPUT_ON_FAILURE=1 make test; fi
+    - |
+        if [ "${LIFFT_CUDA}" == "OFF" ]; then
+            export CTEST_OUTPUT_ON_FAILURE=1
+            # Coverage is compiled in debug mode so execute the runtime test here only in release mode
+            # And in debug mode execute it while collecting coverage stats below
+            if [ "${LIFFT_BUILD_TYPE}" == "Release" ]; then
+                make test
+            fi
+            # Generate coverage stats
+            cmake ../ -DLiFFT_ENABLE_COVERAGE=ON
+            # Build and run test
+            make Test && make test
+        fi
     - set +e
+    
+after_success:
+  - find "/home/travis/build/ComputationalRadiationPhysics/halt" -type f -name '*.gcno'
+  - find "/home/travis/build/ComputationalRadiationPhysics/halt" -type f -name '*.gcda'
+  - bash <(curl -s https://codecov.io/bash) -x "${GCOV}"
 
