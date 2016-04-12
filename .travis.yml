@@ -126,6 +126,6 @@ script:
     - set -e
     - cmake ../ -DCMAKE_BUILD_TYPE=${LIFFT_BUILD_TYPE} -DENABLE_CUDA=${LIFFT_CUDA} -DCMAKE_VERBOSE_MAKEFILE=ON
     - make
-    - if [ "${LIFFT_CUDA}" == "OFF" ]; then ./LiFFT_Test; fi
+    - if [ "${LIFFT_CUDA}" == "OFF" ]; then CTEST_OUTPUT_ON_FAILURE=1 make test; fi
     - set +e
 
