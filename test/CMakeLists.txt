@@ -27,27 +27,27 @@ add_custom_command(
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
     "${PROJECT_SOURCE_DIR}/writeData.py"
-    $<TARGET_FILE_DIR:Test>
+    ${CMAKE_BINARY_DIR}
 )
 add_custom_command(
     TARGET Test
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
     "${PROJECT_SOURCE_DIR}/rect.tif"
-    $<TARGET_FILE_DIR:Test>
+    ${CMAKE_BINARY_DIR}
 )
 add_custom_command(
     TARGET Test
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
     "${PROJECT_SOURCE_DIR}/input1.tif"
-    $<TARGET_FILE_DIR:Test>
+    ${CMAKE_BINARY_DIR}
 )
 add_custom_command(
     TARGET Test
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
     "${PROJECT_SOURCE_DIR}/input2.tif"
-    $<TARGET_FILE_DIR:Test>
+    ${CMAKE_BINARY_DIR}
 )
 
