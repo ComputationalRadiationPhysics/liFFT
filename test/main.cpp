@@ -14,33 +14,20 @@
  * License along with libLiFFT.  If not, see <www.gnu.org/licenses/>.
  */
  
+#define BOOST_TEST_MODULE "C++ Unit Tests for libLiFFT"
+#include <boost/test/unit_test.hpp>
 #include "testUtils.hpp"
-#include "testInplace.hpp"
-#include "testCustomTypes.hpp"
-#include "testFile.hpp"
-#include "testPlainPtr.hpp"
-#include "testZip.hpp"
 
-int main(int /*argc*/, char** /*argv*/) {
-    using namespace LiFFTTest;
-    int errorCt = 0;
-    
-    init();
-    //visualizeBase();
+struct TestFixture
+{
+    TestFixture()
+    {
+        LiFFTTest::init();
+    }
+    ~TestFixture()
+    {
+        LiFFTTest::finalize();
+    }
+};
 
-    errorCt += testInplace();
-    errorCt += testFile();
-    errorCt += testCustomTypes();
-    errorCt += testPlainPtr();
-    errorCt += testZip();
-
-    finalize();
-    
-    if(errorCt)
-        std::cerr << errorCt << " tests failed" << std::endl;
-    else
-        std::cout << "All tests succeeded" << std::endl;
-    
-    return errorCt;
-}
-
+BOOST_GLOBAL_FIXTURE( TestFixture );

@@ -108,7 +108,7 @@ install:
             wget http://sourceforge.net/projects/boost/files/boost/${LIFFT_BOOST}/${LIFFT_BOOST_FOLDER}.tar.bz2 --output-document=boost.tar.bz2
             mkdir -p $BOOST_ROOT
             tar jxf boost.tar.bz2 --strip-components=1 -C $BOOST_ROOT
-            (cd $BOOST_ROOT; ./bootstrap.sh --with-libraries=program_options,filesystem,system)
+            (cd $BOOST_ROOT; ./bootstrap.sh --with-libraries=program_options,filesystem,system,unit_test_framework)
             (cd $BOOST_ROOT; ./b2 --prefix=$BOOST_ROOT -d0 install)
         else echo "Using cached boost version at $BOOST_ROOT"
         fi

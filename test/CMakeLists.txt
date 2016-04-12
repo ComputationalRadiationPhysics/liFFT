@@ -1,3 +1,7 @@
+find_package (Boost COMPONENTS unit_test_framework REQUIRED)
+
+add_definitions(-DBOOST_TEST_DYN_LINK)
+
 if(CUDA_FOUND AND ENABLE_CUDA)
     file(GLOB LiFFT_Test_CU_FILES
         "*.cu"
@@ -16,7 +20,7 @@ endif()
 
 add_executable(minIncludes minIncludes.cpp)
 
-target_link_libraries(Test ${LIBS})
+target_link_libraries(Test ${LIBS} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
 
 add_custom_command(
     TARGET Test

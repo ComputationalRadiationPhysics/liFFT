@@ -20,6 +20,7 @@
 #include "libLiFFT/traits/IdentityAccessor.hpp"
 #include "libLiFFT/traits/IsComplex.hpp"
 #include "libLiFFT/policies/Loop.hpp"
+#include <boost/test/unit_test.hpp>
 #include <cmath>
 #include <iostream>
 
@@ -165,23 +166,19 @@ namespace LiFFTTest {
     }
 
     /**
-     * Checks if the results match and prints a message about the result
+     * Checks if the results match and calls BOOST_ERROR on failure
      *
      * @param baseRes   Result from base execution (assumed valid)
      * @param res       Data to compare against
      * @param testDescr String the identifies the test
      * @param maxErr    Maximum allowed error
-     * @return True on success
      */
     template< class T_BaseResult, class T_Result >
-    bool checkResult(const T_BaseResult& baseRes, const T_Result& res, const std::string& testDescr, CmpError maxErr = CmpError(1e-4, 5e-5))
+    void checkResult(const T_BaseResult& baseRes, const T_Result& res, const std::string& testDescr, CmpError maxErr = CmpError(1e-4, 5e-5))
     {
         auto cmpRes = compare(baseRes, res, maxErr);
         if(!cmpRes.first)
-            std::cerr << "Error for " << testDescr << ": " << cmpRes.second << std::endl;
-        else
-            std::cout << testDescr << " passed" << std::endl;
-        return cmpRes.first;
+            BOOST_ERROR("Error for " << testDescr << ": " << cmpRes.second);
     }
 
 }  // namespace LiFFTTest

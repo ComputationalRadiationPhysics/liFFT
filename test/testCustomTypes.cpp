@@ -14,7 +14,6 @@
  * License along with libLiFFT.  If not, see <www.gnu.org/licenses/>.
  */
  
-#include "testCustomTypes.hpp"
 #include "testUtils.hpp"
 
 #include "libLiFFT/traits/IsComplex.hpp"
@@ -30,6 +29,7 @@
 #include "libLiFFT/policies/Copy.hpp"
 #include "libLiFFT/traits/IdentityAccessor.hpp"
 #include "libLiFFT/types/SliceView.hpp"
+#include <boost/test/unit_test.hpp>
 #include <type_traits>
 #include <iostream>
 
@@ -104,7 +104,9 @@ namespace LiFFTTest {
     using LiFFT::types::makeRange;
     using LiFFT::types::makeSliceView;
 
-    bool testComplex()
+    BOOST_AUTO_TEST_SUITE(CustomTypes)
+
+    BOOST_AUTO_TEST_CASE(Complex)
     {
         using LiFFT::accessors::VolumeAccessor;
         auto aperture = ComplexVol(testSize, testSize);
@@ -117,10 +119,10 @@ namespace LiFFTTest {
         fft(input, output);
         LiFFT::policies::copy(makeSliceView<0>(aperture), baseC2CInput);
         execBaseC2C();
-        return checkResult(baseC2COutput, makeSliceView<0>(fftResult), "C2C with custom types");
+        checkResult(baseC2COutput, makeSliceView<0>(fftResult), "C2C with custom types");
     }
 
-    bool testReal()
+    BOOST_AUTO_TEST_CASE(Real)
     {
         using LiFFT::accessors::VolumeAccessor;
         auto aperture = RealVol(testSize, testSize);
@@ -133,14 +135,9 @@ namespace LiFFTTest {
         fft(input, output);
         LiFFT::policies::copy(makeSliceView<0>(aperture), baseR2CInput);
         execBaseR2C();
-        return checkResult(baseR2COutput, makeSliceView<0>(fftResult), "R2C with custom types");
+        checkResult(baseR2COutput, makeSliceView<0>(fftResult), "R2C with custom types");
     }
 
-    int testCustomTypes()
-    {
-        TEST( testComplex() );
-        TEST( testReal() );
-        return 0;
-    }
+    BOOST_AUTO_TEST_SUITE_END()
 
 }  // namespace LiFFTTest
