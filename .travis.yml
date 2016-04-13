@@ -92,7 +92,7 @@ before_install:
 
 install:
     - if [ "${CXX}" == "g++" ]; then export CXX=g++-4.8; export CC=${CXX/g++/gcc}; export GCOV=${CXX/g++/gcov}; fi
-    - if [ "${CXX}" == "clang++" ]; then export CXX=clang++-${LIFFT_CLANG_VER}; export CC=clang-${LIFFT_CLANG_VER}; export GCOV="gcov"; fi
+    - if [ "${CXX}" == "clang++" ]; then export CXX=clang++-${LIFFT_CLANG_VER}; export CC=clang-${LIFFT_CLANG_VER}; export GCOV="gcov-4.8"; fi
     # CUDA
     - |
         if [ "${LIFFT_CUDA}" == "ON" ]; then
