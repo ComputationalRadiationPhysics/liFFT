@@ -4,10 +4,13 @@ add_definitions(-DBOOST_TEST_DYN_LINK)
 
 add_executable(minIncludes minIncludes.cpp)
 
-set(LiFFT_ENABLE_COVERAGE OFF CACHE BOOL "Generate coverage build")
+option(LiFFT_ENABLE_COVERAGE "Generate coverage build" OFF)
 if(LiFFT_ENABLE_COVERAGE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -coverage") # -fprofile-arcs -ftest-coverage
-    set(CMAKE_BUILD_TYPE Debug)
+    if(NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+        message(FATAL_ERROR "Coverage requires a debug build or you get false positives")
+    endif()
+    # Note: "--coverage" instead of "-coverage" makes this work with ccache
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 --coverage")
 endif()
 
 if(CUDA_FOUND AND LiFFT_ENABLE_CUDA)

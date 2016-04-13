@@ -118,8 +118,12 @@ install:
         else echo "Using cached boost version at $BOOST_ROOT"
         fi
     - |
+        export LiFFT_COVERAGE=""
         if [ "${LIFFT_CUDA}" == "OFF" ]; then
             pip install --user numpy matplotlib
+            if [ "${LIFFT_BUILD_TYPE}" == "Debug" ]; then
+                export LiFFT_COVERAGE="-DLiFFT_ENABLE_COVERAGE=ON"
+            fi
         fi
     # Versions
     - $CXX --version
@@ -130,23 +134,15 @@ install:
 script:
     - mkdir build && cd build
     - set -e
-    - cmake ../ -DCMAKE_BUILD_TYPE=${LIFFT_BUILD_TYPE} -DLiFFT_ENABLE_CUDA=${LIFFT_CUDA} -DCMAKE_VERBOSE_MAKEFILE=ON
+    - cmake ../ -DCMAKE_BUILD_TYPE=${LIFFT_BUILD_TYPE} -DLiFFT_ENABLE_CUDA=${LIFFT_CUDA} -DCMAKE_VERBOSE_MAKEFILE=ON ${LiFFT_COVERAGE}
     - make
     - |
         if [ "${LIFFT_CUDA}" == "OFF" ]; then
             export CTEST_OUTPUT_ON_FAILURE=1
-            # Coverage is compiled in debug mode so execute the runtime test here only in release mode
-            # And in debug mode execute it while collecting coverage stats below
-            if [ "${LIFFT_BUILD_TYPE}" == "Release" ]; then
-                make test
-            fi
-            # Generate coverage stats
-            cmake ../ -DLiFFT_ENABLE_COVERAGE=ON
-            # Build and run test
-            make Test && make test
+            make test
         fi
     - set +e
     
 after_success:
-  - bash <(curl -s https://codecov.io/bash) -x "${GCOV}"
+  - if [ "${LIFFT_BUILD_TYPE}" == "Debug" ]; then bash <(curl -s https://codecov.io/bash) -x "${GCOV}"; fi
 
