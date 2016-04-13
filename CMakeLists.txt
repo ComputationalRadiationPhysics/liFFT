@@ -38,7 +38,7 @@ include_directories(${TIFF_INCLUDE_DIR})
 # CUDA
 ###############################################################################
 find_package(CUDA)
-set(ENABLE_CUDA ${CUDA_FOUND} CACHE BOOL "Use CUDA")
+set(LiFFT_ENABLE_CUDA ${CUDA_FOUND} CACHE BOOL "Use CUDA")
 set(CUDA_PROPAGATE_HOST_FLAGS OFF)
 list(APPEND CUDA_NVCC_FLAGS_RELEASE "-O3 -DNDEBUG")
 list(APPEND CUDA_NVCC_FLAGS_DEBUG "-O0 -g")
@@ -50,7 +50,7 @@ endif()
 ###############################################################################
 # FFTW
 ###############################################################################
-if(CUDA_FOUND AND CUDA_ENABLED)
+if(CUDA_FOUND AND LiFFT_ENABLE_CUDA)
     find_package(FFTW)
 else()
     find_package(FFTW REQUIRED)
@@ -84,65 +84,25 @@ CheckAndAddFlag(-Wextra)
 CheckAndAddFlag(-Wshadow)
 CheckAndAddFlag(/W3)
 
-file(GLOB LiFFT_Test_CPP_FILES
-    "test/*.cpp"
-    "test/*.hpp"
-)
-list(REMOVE_ITEM LiFFT_Test_CPP_FILES ${CMAKE_CURRENT_SOURCE_DIR}/test/minIncludes.cpp)
-
-file(GLOB LiFFT_Test_CU_FILES
-    "test/*.cu"
-    "test/*.hpp"
-)
-
-if(CUDA_FOUND AND ENABLE_CUDA)
+if(CUDA_FOUND AND LiFFT_ENABLE_CUDA)
     add_definitions(-DWITH_CUDA)
-    cuda_add_executable(LiFFT_Test ${LiFFT_Test_CU_FILES})
-    CUDA_ADD_CUFFT_TO_TARGET(LiFFT_Test)
     cuda_add_executable(fftTiffImg fftTiffImg/main.cu)
     CUDA_ADD_CUFFT_TO_TARGET(fftTiffImg)
     cuda_add_executable(reportVolumes reportVolumes/main.cu)
     CUDA_ADD_CUFFT_TO_TARGET(reportVolumes)
 else()
-	add_executable(LiFFT_Test ${LiFFT_Test_CPP_FILES})
 	add_executable(fftTiffImg fftTiffImg/main.cpp)
 	add_executable(reportVolumes reportVolumes/main.cpp)
 endif()
 
 add_executable(tiff2PDF tiff2Pdf/tiff2pdf.cpp)
-add_executable(minIncludes test/minIncludes.cpp)
 
-target_link_libraries(LiFFT_Test ${LIBS})
 target_link_libraries(tiff2PDF ${TIFF_LIBRARIES})
 target_link_libraries(fftTiffImg ${LIBS})
 target_link_libraries(reportVolumes ${LIBS})
 
-add_custom_command(
-    TARGET LiFFT_Test
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    "${PROJECT_SOURCE_DIR}/writeData.py"
-    $<TARGET_FILE_DIR:LiFFT_Test>
-)
-add_custom_command(
-    TARGET LiFFT_Test
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    "${PROJECT_SOURCE_DIR}/rect.tif"
-    $<TARGET_FILE_DIR:LiFFT_Test>
-)
-add_custom_command(
-    TARGET LiFFT_Test
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    "${PROJECT_SOURCE_DIR}/input1.tif"
-    $<TARGET_FILE_DIR:LiFFT_Test>
-)
-add_custom_command(
-    TARGET LiFFT_Test
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    "${PROJECT_SOURCE_DIR}/input2.tif"
-    $<TARGET_FILE_DIR:LiFFT_Test>
-)
+add_subdirectory(test)
+
+enable_testing()
+add_test(NAME Main_Test COMMAND Test)
 

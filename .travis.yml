@@ -25,6 +25,11 @@ compiler:
     - gcc
     - clang
     
+branches:
+    only:
+        - master
+        - dev
+    
 cache:
     directories:
         - $HOME/dependencies
@@ -57,7 +62,7 @@ matrix:
           env: LIFFT_BUILD_TYPE=Release LIFFT_CUDA=OFF LIFFT_BOOST=1.60.0
         - os: linux
           compiler: clang
-          env: LLIFFT_BUILD_TYPE=Release LIFFT_CUDA=OFF LIFFT_CLANG_VER=3.5
+          env: LIFFT_BUILD_TYPE=Release LIFFT_CUDA=OFF LIFFT_CLANG_VER=3.5
           addons:
               apt:
                   sources:
@@ -86,8 +91,8 @@ before_install:
         fi
 
 install:
-    - if [ "${CXX}" == "g++" ]; then export CXX=g++-4.8; export CC=gcc-4.8; fi
-    - if [ "${CXX}" == "clang++" ]; then export CXX=clang++-${LIFFT_CLANG_VER}; export CC=clang-${LIFFT_CLANG_VER}; fi
+    - if [ "${CXX}" == "g++" ]; then export CXX=g++-4.8; export CC=${CXX/g++/gcc}; export GCOV=${CXX/g++/gcov}; fi
+    - if [ "${CXX}" == "clang++" ]; then export CXX=clang++-${LIFFT_CLANG_VER}; export CC=clang-${LIFFT_CLANG_VER}; export GCOV="gcov"; fi
     # CUDA
     - |
         if [ "${LIFFT_CUDA}" == "ON" ]; then
@@ -108,24 +113,37 @@ install:
             wget http://sourceforge.net/projects/boost/files/boost/${LIFFT_BOOST}/${LIFFT_BOOST_FOLDER}.tar.bz2 --output-document=boost.tar.bz2
             mkdir -p $BOOST_ROOT
             tar jxf boost.tar.bz2 --strip-components=1 -C $BOOST_ROOT
-            (cd $BOOST_ROOT; ./bootstrap.sh --with-libraries=program_options,filesystem,system)
+            (cd $BOOST_ROOT; ./bootstrap.sh --with-libraries=program_options,filesystem,system,test)
             (cd $BOOST_ROOT; ./b2 --prefix=$BOOST_ROOT -d0 install)
         else echo "Using cached boost version at $BOOST_ROOT"
         fi
     - |
+        export LiFFT_COVERAGE=""
         if [ "${LIFFT_CUDA}" == "OFF" ]; then
             pip install --user numpy matplotlib
+            # GCov for clang does not work for this folder structure
+            if [ "${LIFFT_BUILD_TYPE}" == "Debug" ] && [[ "$CXX" == "g++"* ]]; then
+                export LiFFT_COVERAGE="-DLiFFT_ENABLE_COVERAGE=ON"
+            fi
         fi
     # Versions
     - $CXX --version
     - if [ "${LIFFT_CUDA}" == "ON" ]; then nvcc --version; fi
     - cmake --version
+    - $GCOV --version
 
 script:
     - mkdir build && cd build
     - set -e
-    - cmake ../ -DCMAKE_BUILD_TYPE=${LIFFT_BUILD_TYPE} -DENABLE_CUDA=${LIFFT_CUDA} -DCMAKE_VERBOSE_MAKEFILE=ON
+    - cmake ../ -DCMAKE_BUILD_TYPE=${LIFFT_BUILD_TYPE} -DLiFFT_ENABLE_CUDA=${LIFFT_CUDA} -DCMAKE_VERBOSE_MAKEFILE=ON ${LiFFT_COVERAGE}
     - make
-    - if [ "${LIFFT_CUDA}" == "OFF" ]; then ./LiFFT_Test; fi
+    - |
+        if [ "${LIFFT_CUDA}" == "OFF" ]; then
+            export CTEST_OUTPUT_ON_FAILURE=1
+            make test
+        fi
     - set +e
+    
+after_success:
+  - if [ "${LIFFT_BUILD_TYPE}" == "Debug" ]; then bash <(curl -s https://codecov.io/bash) -x "${GCOV}"; fi
 

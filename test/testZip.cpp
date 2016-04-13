@@ -14,15 +14,13 @@
  * License along with libLiFFT.  If not, see <www.gnu.org/licenses/>.
  */
  
-#include "testZip.hpp"
 #include "testUtils.hpp"
 #include "libLiFFT/accessors/ZipAccessor.hpp"
 #include "libLiFFT/generateData.hpp"
 #include "libLiFFT/FFT.hpp"
-
 #include "tiffWriter/image.hpp"
 #include "tiffWriter/traitsAndPolicies.hpp"
-
+#include <boost/test/unit_test.hpp>
 #include <algorithm>
 #include <iostream>
 
@@ -31,7 +29,9 @@ using namespace LiFFT::generators;
 
 namespace LiFFTTest {
 
-    bool testZipBasic()
+    BOOST_AUTO_TEST_SUITE(Zip)
+
+    BOOST_AUTO_TEST_CASE(ZipBasic)
     {
         TestExtents extents = TestExtents::all(testSize);
         BaseR2CInput input1(extents);
@@ -52,11 +52,13 @@ namespace LiFFTTest {
         fft(input, output);
         LiFFT::policies::copy(inputProd, baseR2CInput);
         execBaseR2C();
-        return checkResult(baseR2COutput, output, "R2C with zip accessor");
+        checkResult(baseR2COutput, output, "R2C with zip accessor");
     }
 
-    bool testZipFile(const std::string& filePath1, const std::string& filePath2)
+    BOOST_AUTO_TEST_CASE(ZipFile)
     {
+        std::string filePath1 = "input1.tif";
+        std::string filePath2 = "input2.tif";
         tiffWriter::FloatImage<> img1(filePath1, false);
         tiffWriter::FloatImage<> img2(filePath2, false);
         auto acc = LiFFT::accessors::makeZipAccessor(img1, std::multiplies<LiFFT::types::Real<TestPrecision>>(), LiFFT::traits::getIdentityAccessor(img2));
@@ -69,13 +71,9 @@ namespace LiFFTTest {
         fft(input, output);
         execBaseR2C();
         visualizeOutput(BaseInstance::OutR2C, "Tiff-Zip.pdf");
-        return checkResult(baseR2COutput, output, "TIFF-ZIP test");
+        checkResult(baseR2COutput, output, "TIFF-ZIP test");
     }
 
-    int testZip(){
-        TEST( testZipBasic() );
-        TEST( testZipFile("input1.tif", "input2.tif") );
-        return 0;
-    }
+    BOOST_AUTO_TEST_SUITE_END()
 
 }  // namespace LiFFTTest

@@ -14,18 +14,20 @@
  * License along with libLiFFT.  If not, see <www.gnu.org/licenses/>.
  */
  
-#include "testPlainPtr.hpp"
 #include "testUtils.hpp"
 #include "libLiFFT/types/Complex.hpp"
 #include "libLiFFT/types/Real.hpp"
 #include "libLiFFT/mem/PlainPtrWrapper.hpp"
 #include "libLiFFT/FFT.hpp"
 #include "libLiFFT/policies/Copy.hpp"
+#include <boost/test/unit_test.hpp>
 #include <iostream>
 
 namespace LiFFTTest {
 
-    int testPlainPtr()
+    BOOST_AUTO_TEST_SUITE(PlainPtr)
+
+    BOOST_AUTO_TEST_CASE(PlainPtr)
     {
         static_assert(testNumDims == 2, "Currently only 2D is tested");
         using Real = LiFFT::types::Real<TestPrecision>;
@@ -41,7 +43,9 @@ namespace LiFFTTest {
         fft(inWrapped, outWrapped);
         LiFFT::policies::copy(inWrapped, baseR2CInput);
         execBaseR2C();
-        return checkResult(baseR2COutput, outWrapped, "R2C with PlainPtrWrapper") ? 0 : 1;
+        checkResult(baseR2COutput, outWrapped, "R2C with PlainPtrWrapper");
     }
+
+    BOOST_AUTO_TEST_SUITE_END()
 
 }  // namespace LiFFTTest

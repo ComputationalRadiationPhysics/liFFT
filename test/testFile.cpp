@@ -14,7 +14,6 @@
  * License along with libLiFFT.  If not, see <www.gnu.org/licenses/>.
  */
  
-#include "testFile.hpp"
 #include "testUtils.hpp"
 
 #include "libLiFFT/mem/DataContainer.hpp"
@@ -25,15 +24,26 @@
 #include "libLiFFT/FFT.hpp"
 #include "libLiFFT/generateData.hpp"
 #include "libLiFFT/accessors/TransposeAccessor.hpp"
+#include <boost/test/unit_test.hpp>
+
 
 using LiFFT::generateData;
 using namespace LiFFT::generators;
 
 namespace LiFFTTest {
 
-    template< typename T_File >
-    bool testFile( T_File& file )
+    BOOST_AUTO_TEST_SUITE(File)
+
+    BOOST_AUTO_TEST_CASE(File)
     {
+        using FileType = LiFFT::mem::FileContainer<
+            tiffWriter::Image<>,
+            LiFFT::accessors::ImageAccessorGetColorAsFp<TestPrecision>,
+            TestPrecision,
+            false
+            >;
+        FileType file("rect.tif");
+
         using FFTResult_t = LiFFT::mem::ComplexContainer<2, TestPrecision>;
         FFTResult_t fftResult(LiFFT::types::Idx2D(file.getExtents()[1], file.getExtents()[0]/2+1));
         using FFT_Type = LiFFT::FFT_2D_R2C<TestPrecision>;
@@ -44,24 +54,25 @@ namespace LiFFTTest {
         fft(input, output);
         LiFFT::policies::copy(file, baseR2CInput);
         execBaseR2C();
-        return checkResult(baseR2COutput, fftResult, "R2C with file input");
+        checkResult(baseR2COutput, fftResult, "R2C with file input");
     }
 
-    bool testTiffCp(const std::string& filePath)
+    BOOST_AUTO_TEST_CASE(TiffCopy)
     {
+        std::string filePath = "input1.tif";
         std::string filePath2 = filePath+"2.tif";
         tiffWriter::FloatImage<> img(filePath);
         img.saveTo(filePath2);
         img.close();
         tiffWriter::FloatImage<> img1(filePath);
         tiffWriter::FloatImage<> img2(filePath2);
-        bool ok = checkResult(img1, img2, "TIFF copy");
         std::remove(filePath2.c_str());
-        return ok;
+        checkResult(img1, img2, "TIFF copy");
     }
 
-    bool testTiffModify(const std::string& filePath)
+    BOOST_AUTO_TEST_CASE(TiffModify)
     {
+        std::string filePath = "input1.tif";
         std::string filePath2 = filePath+"2.tif";
         tiffWriter::FloatImage<> img(filePath);
         LiFFT::mem::RealContainer<2, float> data(LiFFT::types::Vec<2>(img.getHeight(), img.getWidth()));
@@ -73,16 +84,14 @@ namespace LiFFTTest {
         tiffWriter::FloatImage<> img2(filePath2);
         auto accData = LiFFT::accessors::makeTransposeAccessorFor(data);
         auto res = compare(data, img2, CmpError(1e-8, 1e-8), accData);
-        if(!res.first)
-            std::cerr << "Tiff modify failed" << std::endl;
-        else
-            std::cout << "Tiff modify passed" << std::endl;
         std::remove(filePath2.c_str());
-        return res.first;
+        if(!res.first)
+            BOOST_ERROR("Error for TiffModify: " << res.second);
     }
 
-    bool testTiffFile(const std::string& filePath)
+    BOOST_AUTO_TEST_CASE(TiffFile)
     {
+        std::string filePath = "input1.tif";
         tiffWriter::FloatImage<> img(filePath, false);
         using FFT_Type = LiFFT::FFT_2D_R2C_F<>;
         auto input = FFT_Type::wrapInput(img);
@@ -93,23 +102,9 @@ namespace LiFFTTest {
         fft(input, output);
         execBaseR2C();
         visualizeOutput(BaseInstance::OutR2C, "outputTiff.pdf");
-        return checkResult(baseR2COutput, output, "TIFF test");
+        checkResult(baseR2COutput, output, "TIFF test");
     }
 
-    int testFile()
-    {
-        using FileType = LiFFT::mem::FileContainer<
-            tiffWriter::Image<>,
-            LiFFT::accessors::ImageAccessorGetColorAsFp<TestPrecision>,
-            TestPrecision,
-            false
-            >;
-        FileType myFile("rect.tif");
-        TEST( testFile(myFile) );
-        TEST( testTiffFile("input1.tif") );
-        TEST( testTiffCp("input1.tif") );
-        TEST( testTiffModify("input1.tif") );
-        return 0;
-    }
+    BOOST_AUTO_TEST_SUITE_END()
 
 }  // namespace LiFFTTest

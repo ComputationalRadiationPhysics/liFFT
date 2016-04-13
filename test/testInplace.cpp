@@ -14,18 +14,21 @@
  * License along with libLiFFT.  If not, see <www.gnu.org/licenses/>.
  */
  
-#include "testInplace.hpp"
 #include "testUtils.hpp"
 #include "libLiFFT/FFT.hpp"
 #include "libLiFFT/generateData.hpp"
 #include "libLiFFT/types/View.hpp"
 #include "libLiFFT/types/SliceView.hpp"
+#include <boost/test/unit_test.hpp>
+#include <boost/test/floating_point_comparison.hpp>
 #include <cmath>
 
 using LiFFT::generateData;
 using namespace LiFFT::generators;
 
 namespace LiFFTTest {
+
+    BOOST_AUTO_TEST_SUITE(Inplace)
 
     struct GenData
     {
@@ -37,7 +40,7 @@ namespace LiFFTTest {
         }
     };
 
-    bool testContainerCreation()
+    BOOST_AUTO_TEST_CASE(ContainerCreation)
     {
         using FFT = LiFFT::FFT_3D_R2C_F<true>;
         auto input = FFT::createNewInput(LiFFT::types::Vec3(2048u, 1024u, 1u));
@@ -47,28 +50,20 @@ namespace LiFFTTest {
         LiFFT::generateData(view, GenData());
         LiFFT::policies::copy(view, data);
         LiFFT::policies::copy(input, data2);
-        bool ok = true;
         for(unsigned z = 0; z < input.getExtents()[2]; z++)
             for(unsigned y = 0; y < input.getExtents()[1]; y++)
             {
                 float expected = y + z * input.getExtents()[1];
                 float is = data(LiFFT::types::Vec2(z, y));
                 float diff = std::abs(expected - is);
-                if(diff > 1e-6)
-                    ok = false;
+                BOOST_REQUIRE_SMALL(diff, 1e-6f);
                 is = data2(LiFFT::types::Vec3(z, y, 0u));
                 diff = std::abs(expected - is);
-                if(diff > 1e-6)
-                    ok = false;
+                BOOST_REQUIRE_SMALL(diff, 1e-6f);
             }
-        if(ok)
-            std::cout << "Inplace container creation passed" << std::endl;
-        else
-            std::cerr << "Inplace container creation FAILED" << std::endl;
-        return ok;
     }
 
-    bool testInplaceComplex()
+    BOOST_AUTO_TEST_CASE(InplaceComplex)
     {
         auto aperture = ComplexContainer(TestExtents::all(testSize));
         using FFT_Type = LiFFT::FFT_2D_C2C<TestPrecision, true>;
@@ -80,10 +75,10 @@ namespace LiFFTTest {
         fft(input);
         execBaseC2C();
         // Inplace got some more random derivations in the low intensity regions
-        return checkResult(baseC2COutput, output, "C2C inPlace", CmpError(1e-3, 5e-5));
+        checkResult(baseC2COutput, output, "C2C inPlace", CmpError(1e-3, 5e-5));
     }
 
-    bool testInplaceR2C()
+    BOOST_AUTO_TEST_CASE(InplaceR2C)
     {
         TestExtents ext = TestExtents::all(testSize);
         ext[testNumDims - 1] = (ext[testNumDims - 1] / 2 + 1) * 2;
@@ -98,15 +93,8 @@ namespace LiFFTTest {
         fft(input);
         execBaseR2C();
         // Inplace got some more random derivations in the low intensity regions
-        return checkResult(baseR2COutput, output, "R2C inPlace", CmpError(1e-3, 5e-5));
+        checkResult(baseR2COutput, output, "R2C inPlace", CmpError(1e-3, 5e-5));
     }
 
-    int testInplace()
-    {
-        TEST( testContainerCreation() );
-        TEST( testInplaceComplex() );
-        TEST( testInplaceR2C() );
-        return 0;
-    }
-
+    BOOST_AUTO_TEST_SUITE_END()
 }  // namespace LiFFTTest

@@ -2,6 +2,7 @@
 <b>lib</b>rary for <b>L</b>ibrary-<b>i</b>ndependent <b>FFT</b>s
 
 [![Build Status](https://travis-ci.org/ComputationalRadiationPhysics/halt.svg?branch=master)](https://travis-ci.org/ComputationalRadiationPhysics/halt)
+[![codecov.io](https://codecov.io/github/ComputationalRadiationPhysics/halt/coverage.svg?branch=master)](https://codecov.io/github/ComputationalRadiationPhysics/halt?branch=master)
 
 This library contains a generic FFT interface that relies on C++11 features and template metaprogramming to do lots of compile time checks on the validy of the input. It also dynamicly compiles only the used library code, which makes it possible to include libraries headers that are not installed on the system, as those are not used in that case.
 The currently implemented libraries are:

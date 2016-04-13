@@ -14,10 +14,4 @@
  * License along with libLiFFT.  If not, see <www.gnu.org/licenses/>.
  */
  
-#pragma once
-
-namespace LiFFTTest {
-
-    int testFile();
-
-}  // namespace LiFFTTest
+#include "testWrappers.cpp"
