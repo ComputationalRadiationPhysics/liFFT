@@ -92,7 +92,7 @@ before_install:
 
 install:
     - if [ "${CXX}" == "g++" ]; then export CXX=g++-4.8; export CC=${CXX/g++/gcc}; export GCOV=${CXX/g++/gcov}; fi
-    - if [ "${CXX}" == "clang++" ]; then export CXX=clang++-${LIFFT_CLANG_VER}; export CC=clang-${LIFFT_CLANG_VER}; export GCOV="gcov-4.8"; fi
+    - if [ "${CXX}" == "clang++" ]; then export CXX=clang++-${LIFFT_CLANG_VER}; export CC=clang-${LIFFT_CLANG_VER}; export GCOV="gcov"; fi
     # CUDA
     - |
         if [ "${LIFFT_CUDA}" == "ON" ]; then
@@ -121,7 +121,8 @@ install:
         export LiFFT_COVERAGE=""
         if [ "${LIFFT_CUDA}" == "OFF" ]; then
             pip install --user numpy matplotlib
-            if [ "${LIFFT_BUILD_TYPE}" == "Debug" ]; then
+            # GCov for clang does not work for this folder structure
+            if [ "${LIFFT_BUILD_TYPE}" == "Debug" ] && [[ "$CXX" == "g++"* ]]; then
                 export LiFFT_COVERAGE="-DLiFFT_ENABLE_COVERAGE=ON"
             fi
         fi
