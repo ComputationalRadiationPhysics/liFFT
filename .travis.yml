@@ -92,7 +92,7 @@ before_install:
 
 install:
     - if [ "${CXX}" == "g++" ]; then export CXX=g++-4.8; export CC=${CXX/g++/gcc}; export GCOV=${CXX/g++/gcov}; fi
-    - if [ "${CXX}" == "clang++" ]; then export CXX=clang++-${LIFFT_CLANG_VER}; export CC=clang-${LIFFT_CLANG_VER}; export GCOV="llvm-gcov gcov"; fi
+    - if [ "${CXX}" == "clang++" ]; then export CXX=clang++-${LIFFT_CLANG_VER}; export CC=clang-${LIFFT_CLANG_VER}; export GCOV="gcov"; fi
     # CUDA
     - |
         if [ "${LIFFT_CUDA}" == "ON" ]; then
@@ -125,7 +125,7 @@ install:
     - $CXX --version
     - if [ "${LIFFT_CUDA}" == "ON" ]; then nvcc --version; fi
     - cmake --version
-    - gcov --version
+    - $GCOV --version
 
 script:
     - mkdir build && cd build
@@ -148,7 +148,5 @@ script:
     - set +e
     
 after_success:
-  - find "/home/travis/build/ComputationalRadiationPhysics/halt" -type f -name '*.gcno'
-  - find "/home/travis/build/ComputationalRadiationPhysics/halt" -type f -name '*.gcda'
   - bash <(curl -s https://codecov.io/bash) -x "${GCOV}"
 
