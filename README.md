@@ -1,10 +1,10 @@
 # libLiFFT
-<b>lib</b>rary for <b>L</b>ibrary-<b>i</b>ndependent <b>FFT</b>s
+**lib**rary for **L**ibrary-**i**ndependent **FFT**s
 
 [![Build Status](https://travis-ci.org/ComputationalRadiationPhysics/halt.svg?branch=master)](https://travis-ci.org/ComputationalRadiationPhysics/halt)
 [![codecov.io](https://codecov.io/github/ComputationalRadiationPhysics/halt/coverage.svg?branch=master)](https://codecov.io/github/ComputationalRadiationPhysics/halt?branch=master)
 
-This library contains a generic FFT interface that relies on C++11 features and template metaprogramming to do lots of compile time checks on the validy of the input. It also dynamicly compiles only the used library code, which makes it possible to include libraries headers that are not installed on the system, as those are not used in that case.
+This library contains a generic FFT interface that relies on C++11 features and template metaprogramming to do lots of compile time checks on the validity of the input. It also dynamically compiles only the used library code, which makes it possible to include libraries headers that are not installed on the system, as those are not used in that case.
 The currently implemented libraries are:
 
 1. FFTW
@@ -18,8 +18,11 @@ For convenience it also contains a generic interface on top of libTIFF to read a
 
 Almost all possible formats are converted to floating point or 32Bit ARGB images during loading. This allows importing and exporting files from analytic tools and image editors like jImage.
 
-# Namespace organisation
-All FFT related classes and methods are under the LiFFT namespace, the tiffWriter interface classes are under the tiffWriter namespace. The folder structure matches the namespace organisation with the include folder beeing the top directory.
+# Software License
+**libLiFFT** is licensed under **LGPLv3** or later.
+
+# Namespace organization
+All FFT related classes and methods are under the LiFFT namespace, the tiffWriter interface classes are under the tiffWriter namespace. The folder structure matches the namespace organization with the include folder being the top directory.
 
 # Examples
 There are a couple of example applications that can be used as a reference for implementing own applications. All of them are in a separate folder:
@@ -40,14 +43,14 @@ There are a couple of example applications that can be used as a reference for i
 - Include (at least) 'FFT.hpp'
 - Choose one of the predefined FFT types from FFT\_Definitions and typedef it to your liking (e.g. `using MyFFT = FFT_2D_C2C`)
 - Choose either LiFFT::mem::RealContainer or LiFFT::mem::ComplexContainer for the input data, and set the dimensionality and precision via the template parameters    **OR**
-- Use the static member function *MyFFT::createNewInput* to have an appropriate container automaticly choosen for you (prefered method)
+- Use the static member function *MyFFT::createNewInput* to have an appropriate container automatically chosen for you (preferred method)
 - Use the *Container::IdxType member as the index type to set the elements via ()-operator (e.g. `Container::IdxType idx(5, 3, 2); container(idx) = 1337;`)
 - (If you used a custom container you have to wrap it with `auto input = MyFFT::wrapInput(container)`)
 - Call the static member function `MyFFT::createNewOutput(input)` to create an output container (no memory is allocated for inplace transforms) or wrap an existing DataContainer with `auto output = MyFFT::wrapInput(containerOut)`
 - Once you got an input and (for non-inplace FFTs) an output container you can call *makeFFT* with the specific FFT library class as the first template parameter and your wrapped container(s) as actual parameters.   
     *Note:* The resulting functor instance contains a so called **plan** and its creation requires time and memory. It is meant to be reused for optimal performance!
 - Now everything is set up and you only need to call the created FFT functor (gotten by *makeFFT*) with the wrapped container(s) to execute an FFT. This process can be repeated with the same containers (and different data contained within) as often as required.
-- The result can be accessed via the output container. Note that for inplace transforms the output container containes only a reference to the input container, so it must not get out of scope before you are finished accessing the output.
+- The result can be accessed via the output container. Note that for inplace transforms the output container contains only a reference to the input container, so it must not get out of scope before you are finished accessing the output.
 
 A good example is the code from fftTiffImg:
 
