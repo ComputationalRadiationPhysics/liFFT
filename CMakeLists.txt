@@ -1,3 +1,18 @@
+# This file is part of libLiFFT.
+#
+# libLiFFT is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# libLiFFT is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with libLiFFT.  If not, see <www.gnu.org/licenses/>.
+
 # Hack for C++11 Support in eclipse
 # https://public.kitware.com/Bug/bug_relationship_graph.php?bug_id=15316&graph=relation
 # The CMAKE_CXX_COMPILER_ARG1 must be set before the project() call to have cmake set up
@@ -57,7 +72,7 @@ else()
 endif()
 if(FFTW_FOUND)
     set(LIBS ${LIBS} ${FFTW_LIB} ${FFTW_F_LIB})
-    include_directories(${FFTW_INCLUDES})
+    include_directories(${FFTW_INCLUDE_DIRS})
 endif()
 
 ###############################################################################
