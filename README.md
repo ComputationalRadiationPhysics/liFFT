@@ -1,8 +1,8 @@
 # libLiFFT
 **lib**rary for **L**ibrary-**i**ndependent **FFT**s
 
-[![Build Status](https://travis-ci.org/ComputationalRadiationPhysics/halt.svg?branch=master)](https://travis-ci.org/ComputationalRadiationPhysics/halt)
-[![codecov.io](https://codecov.io/github/ComputationalRadiationPhysics/halt/coverage.svg?branch=master)](https://codecov.io/github/ComputationalRadiationPhysics/halt?branch=master)
+[![Build Status](https://travis-ci.org/ComputationalRadiationPhysics/liFFT.svg?branch=master)](https://travis-ci.org/ComputationalRadiationPhysics/liFFT)
+[![codecov.io](https://codecov.io/github/ComputationalRadiationPhysics/liFFT/coverage.svg?branch=master)](https://codecov.io/github/ComputationalRadiationPhysics/liFFT?branch=master)
 
 This library contains a generic FFT interface that relies on C++11 features and template metaprogramming to do lots of compile time checks on the validity of the input. It also dynamically compiles only the used library code, which makes it possible to include libraries headers that are not installed on the system, as those are not used in that case.
 The currently implemented libraries are:
