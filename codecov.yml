@@ -1,0 +1,7 @@
+coverage:
+  range: "65..95"
+  ignore:
+    - include/tiffWriter/.*
+    - test/.*
+comment:
+  layout: "header, diff, changes"
