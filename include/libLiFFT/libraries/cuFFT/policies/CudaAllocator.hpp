@@ -16,9 +16,10 @@
  
 #pragma once
 
+#include "libLiFFT/libraries/cuFFT/cufft_helper.hpp"
+
 #include <cuda.h>
 #include <cuda_runtime_api.h>
-#include "libLiFFT/libraries/cuFFT/cudaSafeCall.hpp"
 
 namespace LiFFT {
 namespace libraries {
@@ -35,7 +36,7 @@ namespace policies {
         malloc(size_t memSize) const
         {
             void* ptr;
-            CudaSafeCall(cudaMalloc(&ptr, memSize));
+            CHECK_ERROR(cudaMalloc(&ptr, memSize));
             return reinterpret_cast<T*>(ptr);
         }
 
@@ -43,7 +44,7 @@ namespace policies {
         void
         free(T* ptr) const
         {
-            CudaSafeCall(cudaFree(ptr));
+            CHECK_ERROR(cudaFree(ptr));
         }
     };
 

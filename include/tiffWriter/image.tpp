@@ -312,7 +312,7 @@ namespace tiffWriter {
         if(!TIFFGetField(m_handle.get(), TIFFTAG_BITSPERSAMPLE, &bitsPerSample))
             throw InfoMissingException("Bits per sample");
         if(!TIFFGetField(m_handle.get(), TIFFTAG_SAMPLEFORMAT, &tiffSampleFormat)){
-            std::cerr << "SampelFormat not found. Assuming unsigned" << std::endl;
+            std::cerr << "SampleFormat not found. Assuming unsigned" << std::endl;
             tiffSampleFormat = SAMPLEFORMAT_UINT;
         }
         uint16 orientation;

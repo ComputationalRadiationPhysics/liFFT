@@ -16,9 +16,10 @@
  
 #pragma once
 
+#include "libLiFFT/libraries/cuFFT/cufft_helper.hpp"
+
 #include <cuda.h>
 #include <cuda_runtime_api.h>
-#include "libLiFFT/libraries/cuFFT/cudaSafeCall.hpp"
 
 namespace LiFFT {
 namespace libraries {
@@ -33,14 +34,14 @@ namespace policies {
     private:
         void cpy1D(void* ptrTo, void* ptrFrom, size_t size, cudaMemcpyKind direction) const
         {
-            CudaSafeCall(cudaMemcpy(ptrTo, ptrFrom, size, direction));
+            CHECK_ERROR(cudaMemcpy(ptrTo, ptrFrom, size, direction));
         }
 
         void cpyPitched(void* ptrTo, void* ptrFrom, size_t w, size_t h, size_t pitchTo, size_t pitchFrom, cudaMemcpyKind direction) const
         {
             if( pitchTo == pitchFrom && (h == 1 || pitchTo == w) )
                 cpy1D(ptrTo, ptrFrom, pitchTo*h, direction);
-            CudaSafeCall(cudaMemcpy2D(ptrTo, pitchTo, ptrFrom, pitchFrom, w, h, direction));
+            CHECK_ERROR(cudaMemcpy2D(ptrTo, pitchTo, ptrFrom, pitchFrom, w, h, direction));
         }
     public:
         template< typename T >
