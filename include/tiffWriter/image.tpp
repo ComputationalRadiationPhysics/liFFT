@@ -221,6 +221,7 @@ namespace tiffWriter {
     struct SavePolicy< ImageFormat::ARGB, true >
     {
         static constexpr ImageFormat imgFormat = ImageFormat::ARGB;
+        using ChannelType = typename PixelType<imgFormat>::ChannelType;
 
         template<typename T, typename Allocator>
         static void
@@ -232,7 +233,6 @@ namespace tiffWriter {
                 return;
             }
             // Convert from ARGB to RGB
-            using ChannelType = typename PixelType<imgFormat>::ChannelType;
             if(w * sizeof(ChannelType) * 3 != TIFFScanlineSize(handle))
                 throw FormatException("Scanline size is unexpected");
 
