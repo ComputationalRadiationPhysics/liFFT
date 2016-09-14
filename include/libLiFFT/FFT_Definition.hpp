@@ -356,10 +356,10 @@ namespace LiFFT {
     // Some definitions for commonly used FFT types
     template< typename T_Precision = float, bool T_isInplace = false, bool T_isFwd = true >
     using FFT_1D_C2C = FFT_Definition< FFT_Kind::Complex2Complex,
-									   1,
-									   T_Precision,
-									   std::integral_constant<bool, T_isFwd>,
-									   T_isInplace >;
+                                       1,
+                                       T_Precision,
+                                       std::integral_constant<bool, T_isFwd>,
+                                       T_isInplace >;
     template< bool T_isInplace = false, bool T_isFwd = true >
     using FFT_1D_C2C_F = FFT_1D_C2C< float, T_isInplace, T_isFwd >;
     template< bool T_isInplace = false, bool T_isFwd = true >
@@ -381,10 +381,10 @@ namespace LiFFT {
 
     template< typename T_Precision = float, bool T_isInplace = false, bool T_isFwd = true >
     using FFT_2D_C2C = FFT_Definition< FFT_Kind::Complex2Complex,
-									   2,
-									   T_Precision,
-									   std::integral_constant<bool, T_isFwd>,
-									   T_isInplace >;
+                                       2,
+                                       T_Precision,
+                                       std::integral_constant<bool, T_isFwd>,
+                                       T_isInplace >;
     template< bool T_isInplace = false, bool T_isFwd = true >
     using FFT_2D_C2C_F = FFT_2D_C2C< float, T_isInplace, T_isFwd >;
     template< bool T_isInplace = false, bool T_isFwd = true >
@@ -406,10 +406,10 @@ namespace LiFFT {
 
     template< typename T_Precision = float, bool T_isInplace = false, bool T_isFwd = true >
     using FFT_3D_C2C = FFT_Definition< FFT_Kind::Complex2Complex,
-									   3,
-									   T_Precision,
-									   std::integral_constant<bool, T_isFwd>,
-									   T_isInplace >;
+                                       3,
+                                       T_Precision,
+                                       std::integral_constant<bool, T_isFwd>,
+                                       T_isInplace >;
     template< bool T_isInplace = false, bool T_isFwd = true >
     using FFT_3D_C2C_F = FFT_3D_C2C< float, T_isInplace, T_isFwd >;
     template< bool T_isInplace = false, bool T_isFwd = true >

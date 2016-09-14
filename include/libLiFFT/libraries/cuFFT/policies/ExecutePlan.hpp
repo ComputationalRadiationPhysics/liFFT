@@ -178,7 +178,7 @@ namespace policies {
             else
                 throw std::runtime_error("No out device pointer");
 
-			Executer()(plan.handle, pIn, pOut);
+            Executer()(plan.handle, pIn, pOut);
 
             if( plan.OutDevicePtr || !Output::IsDeviceMemory::value)
             {
@@ -203,9 +203,9 @@ namespace policies {
             }
             LibOutType* pOut = reinterpret_cast<LibOutType*>(pIn);
 
-			Executer()(plan.handle, pIn, pOut);
+            Executer()(plan.handle, pIn, pOut);
 
-			if( plan.InDevicePtr )
+            if( plan.InDevicePtr )
             {
                 LibInType* pOutHost = safe_ptr_cast<LibInType*>(inOut.getDataPtr());
                 copy.D2H(reinterpret_cast<LibOutType*>(pOutHost), pOut, size, 1, size, size);
