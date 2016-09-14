@@ -354,13 +354,41 @@ namespace LiFFT {
     };
 
     // Some definitions for commonly used FFT types
+    template< typename T_Precision = float, bool T_isInplace = false, bool T_isFwd = true >
+    using FFT_1D_C2C = FFT_Definition< FFT_Kind::Complex2Complex,
+                                       1,
+                                       T_Precision,
+                                       std::integral_constant<bool, T_isFwd>,
+                                       T_isInplace >;
+    template< bool T_isInplace = false, bool T_isFwd = true >
+    using FFT_1D_C2C_F = FFT_1D_C2C< float, T_isInplace, T_isFwd >;
+    template< bool T_isInplace = false, bool T_isFwd = true >
+    using FFT_1D_C2C_D = FFT_1D_C2C< double, T_isInplace, T_isFwd >;
 
     template< typename T_Precision = float, bool T_isInplace = false >
-    using FFT_2D_C2C = FFT_Definition< FFT_Kind::Complex2Complex, 2, T_Precision, std::true_type, T_isInplace >;
+    using FFT_1D_R2C = FFT_Definition< FFT_Kind::Real2Complex, 1, T_Precision, AutoDetect, T_isInplace >;
     template< bool T_isInplace = false >
-    using FFT_2D_C2C_F = FFT_2D_C2C< float, T_isInplace >;
+    using FFT_1D_R2C_F = FFT_1D_R2C< float, T_isInplace >;
     template< bool T_isInplace = false >
-    using FFT_2D_C2C_D = FFT_2D_C2C< double, T_isInplace >;
+    using FFT_1D_R2C_D = FFT_1D_R2C< double, T_isInplace >;
+
+    template< typename T_Precision = float, bool T_isInplace = false >
+    using FFT_1D_C2R = FFT_Definition< FFT_Kind::Complex2Real, 1, T_Precision, AutoDetect, T_isInplace >;
+    template< bool T_isInplace = false >
+    using FFT_1D_C2R_F = FFT_1D_C2R< float, T_isInplace >;
+    template< bool T_isInplace = false >
+    using FFT_1D_C2R_D = FFT_1D_C2R< double, T_isInplace >;
+
+    template< typename T_Precision = float, bool T_isInplace = false, bool T_isFwd = true >
+    using FFT_2D_C2C = FFT_Definition< FFT_Kind::Complex2Complex,
+                                       2,
+                                       T_Precision,
+                                       std::integral_constant<bool, T_isFwd>,
+                                       T_isInplace >;
+    template< bool T_isInplace = false, bool T_isFwd = true >
+    using FFT_2D_C2C_F = FFT_2D_C2C< float, T_isInplace, T_isFwd >;
+    template< bool T_isInplace = false, bool T_isFwd = true >
+    using FFT_2D_C2C_D = FFT_2D_C2C< double, T_isInplace, T_isFwd >;
 
     template< typename T_Precision = float, bool T_isInplace = false >
     using FFT_2D_R2C = FFT_Definition< FFT_Kind::Real2Complex, 2, T_Precision, AutoDetect, T_isInplace >;
@@ -376,12 +404,16 @@ namespace LiFFT {
     template< bool T_isInplace = false >
     using FFT_2D_C2R_D = FFT_2D_C2R< double, T_isInplace >;
 
-    template< typename T_Precision = float, bool T_isInplace = false >
-    using FFT_3D_C2C = FFT_Definition< FFT_Kind::Complex2Complex, 3, T_Precision, std::true_type, T_isInplace >;
-    template< bool T_isInplace = false >
-    using FFT_3D_C2C_F = FFT_3D_C2C< float, T_isInplace >;
-    template< bool T_isInplace = false >
-    using FFT_3D_C2C_D = FFT_3D_C2C< double, T_isInplace >;
+    template< typename T_Precision = float, bool T_isInplace = false, bool T_isFwd = true >
+    using FFT_3D_C2C = FFT_Definition< FFT_Kind::Complex2Complex,
+                                       3,
+                                       T_Precision,
+                                       std::integral_constant<bool, T_isFwd>,
+                                       T_isInplace >;
+    template< bool T_isInplace = false, bool T_isFwd = true >
+    using FFT_3D_C2C_F = FFT_3D_C2C< float, T_isInplace, T_isFwd >;
+    template< bool T_isInplace = false, bool T_isFwd = true >
+    using FFT_3D_C2C_D = FFT_3D_C2C< double, T_isInplace, T_isFwd >;
 
     template< typename T_Precision = float, bool T_isInplace = false >
     using FFT_3D_R2C = FFT_Definition< FFT_Kind::Real2Complex, 3, T_Precision, AutoDetect, T_isInplace >;

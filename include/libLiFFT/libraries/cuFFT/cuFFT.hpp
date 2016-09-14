@@ -104,7 +104,7 @@ namespace cuFFT {
             Planner()(m_plan, inOut, Allocator());
         }
 
-        CuFFT(CuFFT&& obj) = default;
+        CuFFT(CuFFT&&) = default;
         CuFFT& operator=(CuFFT&&) = default;
 
         void operator()(Input& input, Output& output)

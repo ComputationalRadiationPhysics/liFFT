@@ -16,10 +16,6 @@
  
 #pragma once
 
-#include <cassert>
-#include <type_traits>
-#include <cufft.h>
-#include <string>
 #include "libLiFFT/types/TypePair.hpp"
 #include "libLiFFT/libraries/cuFFT/Plan.hpp"
 #include "libLiFFT/libraries/cuFFT/traits/FFTType.hpp"
@@ -27,6 +23,11 @@
 #include "libLiFFT/libraries/cuFFT/traits/LibTypes.hpp"
 #include "libLiFFT/policies/SafePtrCast.hpp"
 #include "libLiFFT/libraries/cuFFT/policies/GetInplaceMemSize.hpp"
+
+#include <cassert>
+#include <type_traits>
+#include <cufft.h>
+#include <string>
 
 namespace LiFFT {
 namespace libraries {
@@ -47,58 +48,58 @@ namespace policies {
         template< bool T_isFwd >
         struct ExecutePlan< float, true, true, T_isFwd >: traits::LibTypes< float, true, true >
         {
-          cufftResult operator()(cufftHandle plan, InType* in, OutType* out)
+          void operator()(cufftHandle plan, InType* in, OutType* out)
           {
-              return cufftExecC2C(plan, in, out, traits::Sign< T_isFwd >::value);
+              CHECK_ERROR( cufftExecC2C(plan, in, out, traits::Sign< T_isFwd >::value) );
           }
         };
 
         template< bool T_isFwd >
         struct ExecutePlan< float, false, true, T_isFwd >: traits::LibTypes< float, false, true >
         {
-          cufftResult operator()(cufftHandle plan, InType* in, OutType* out)
+          void operator()(cufftHandle plan, InType* in, OutType* out)
           {
               static_assert(T_isFwd, "R2C is always a forward transform!");
-              return cufftExecR2C(plan, in, out);
+              CHECK_ERROR(cufftExecR2C(plan, in, out));
           }
         };
 
         template< bool T_isFwd >
         struct ExecutePlan< float, true, false, T_isFwd >: traits::LibTypes< float, true, false >
         {
-          cufftResult operator()(cufftHandle plan, InType* in, OutType* out)
+          void operator()(cufftHandle plan, InType* in, OutType* out)
           {
               static_assert(T_isFwd, "C2R is always a inverse transform!");
-              return cufftExecC2R(plan, in, out);
+              CHECK_ERROR(cufftExecC2R(plan, in, out));
           }
         };
 
         template< bool T_isFwd >
         struct ExecutePlan< double, true, true, T_isFwd >: traits::LibTypes< double, true, true >
         {
-          cufftResult operator()(cufftHandle plan, InType* in, OutType* out)
+          void operator()(cufftHandle plan, InType* in, OutType* out)
           {
-              return cufftExecZ2Z(plan, in, out, traits::Sign< T_isFwd >::value);
+              CHECK_ERROR(cufftExecZ2Z(plan, in, out, traits::Sign< T_isFwd >::value));
           }
         };
 
         template< bool T_isFwd >
         struct ExecutePlan< double, false, true, T_isFwd >: traits::LibTypes< double, false, true >
         {
-          cufftResult operator()(cufftHandle plan, InType* in, OutType* out)
+          void operator()(cufftHandle plan, InType* in, OutType* out)
           {
               static_assert(T_isFwd, "R2C is always a forward transform!");
-              return cufftExecD2Z(plan, in, out);
+              CHECK_ERROR(cufftExecD2Z(plan, in, out));
           }
         };
 
         template< bool T_isFwd >
         struct ExecutePlan< double, true, false, T_isFwd >: traits::LibTypes< double, true, false >
         {
-          cufftResult operator()(cufftHandle plan, InType* in, OutType* out)
+          void operator()(cufftHandle plan, InType* in, OutType* out)
           {
               static_assert(T_isFwd, "C2R is always a inverse transform!");
-              return cufftExecZ2D(plan, in, out);
+              CHECK_ERROR(cufftExecZ2D(plan, in, out));
           }
         };
 
@@ -176,9 +177,9 @@ namespace policies {
                 pOut = reinterpret_cast<LibOutType*>(pIn);
             else
                 throw std::runtime_error("No out device pointer");
-            cufftResult result = Executer()(plan.handle, pIn, pOut);
-            if(result != CUFFT_SUCCESS)
-                throw std::runtime_error("Error executing plan: " + std::to_string(result));
+
+            Executer()(plan.handle, pIn, pOut);
+
             if( plan.OutDevicePtr || !Output::IsDeviceMemory::value)
             {
                 copyOut(input.getExtents(), output.getExtents(), safe_ptr_cast<LibOutType*>(output.getDataPtr()), pOut, useInplaceForHost, copy);
@@ -201,9 +202,9 @@ namespace policies {
                 pIn = plan.InDevicePtr.get();
             }
             LibOutType* pOut = reinterpret_cast<LibOutType*>(pIn);
-            cufftResult result = Executer()(plan.handle, pIn, pOut);
-            if(result != CUFFT_SUCCESS)
-                throw std::runtime_error("Error executing plan: " + std::to_string(result));
+
+            Executer()(plan.handle, pIn, pOut);
+
             if( plan.InDevicePtr )
             {
                 LibInType* pOutHost = safe_ptr_cast<LibInType*>(inOut.getDataPtr());
